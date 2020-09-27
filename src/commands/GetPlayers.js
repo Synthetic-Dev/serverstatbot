@@ -28,6 +28,7 @@ class Command extends ICommand {
 
                 await data.players.list.forEach(async player => {
                     let ci = i
+                    i++
 
                     context.font = "20px 'Pixel Font'"
                     context.textBaseline = "top"
@@ -37,9 +38,9 @@ class Command extends ICommand {
 
                     let head = await loadImage(`https://minotar.net/helm/${player}/22.png`)
                     context.drawImage(head, 2, 2 + ci * 28)
-
-                    i++
                 })
+
+                setTimeout(function(){}, util.ping() * 2)
 
                 message.channel.send("Players:", {
                     files: [{
