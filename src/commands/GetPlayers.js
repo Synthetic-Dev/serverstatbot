@@ -30,15 +30,17 @@ class Command extends ICommand {
                 context.fillStyle = "#fff"
 
                 let i = 0
+                let j = 0
                 await data.players.list.forEach(async player => {
                     let ci = i
                     i++
 
                     context.drawImage(await loadImage(`https://minotar.net/helm/${player}/22.png`), 2, 2 + ci * 28)
                     context.fillText(player, 32, ci * 28 - 2)
+                    j++
                 })
 
-                setTimeout(function(){}, util.ping(message) * 2)
+                while (j < data.players.online){}
 
                 message.channel.send("Players:", {
                     files: [{
