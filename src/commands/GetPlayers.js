@@ -29,24 +29,23 @@ class Command extends ICommand {
                 context.textAlign = "left"
                 context.fillStyle = "#fff"
 
-                let loaded = 0
-                data.players.list.forEach(async (player, i) => {
+                let promises = []
+                data.players.list.forEach((player, i) => {
+                    promises.push(loadImage(`https://minotar.net/helm/${player}/22.png`))
                     context.fillText(player, 32, i * 28 - 2)
-                    context.drawImage(await loadImage(`https://minotar.net/helm/${player}/22.png`), 2, 2 + i * 28)
+                })
 
-                    loaded++
+                Promise.all(promises).then(heads => {
+                    heads.forEach((head, i) => {
+                        context.drawImage(head, 2, 2 + i * 28)
+                    })
 
-                    if (i + 1 >= data.players.online) {
-                        console.log("Waiting for images")
-                        while (loaded < data.players.online){}
-
-                        message.channel.send("Players:", {
-                            files: [{
-                                attachment: image.toBuffer("image/png"),
-                                name: "playerlist.png"
-                            }]
-                        })
-                    }
+                    message.channel.send("Players:", {
+                        files: [{
+                            attachment: image.toBuffer("image/png"),
+                            name: "playerlist.png"
+                        }]
+                    })
                 })
             } else {
                 message.channel.send("Nobody is currently online :cry:")
