@@ -19,7 +19,7 @@ class Command extends ICommand {
     async execute(inputs, message) {
         const info = this.client.commands.get("info")
 
-        let tempMessage = discord.Message(this.client, {
+        let tempMessage = new discord.Message(this.client, {
             content: "Fetching players... :signal_strength:"
         }, message.channel)
 
