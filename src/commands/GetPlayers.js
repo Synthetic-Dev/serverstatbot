@@ -19,7 +19,7 @@ class Command extends ICommand {
     async execute(inputs, message) {
         const info = this.client.commands.get("info")
 
-        info.getServerInfo(message, async data => {
+        info.getServerInfo(message, data => {
             if (data.players.online > 0) {
                 let image = createCanvas(16 * 20 + 26, data.players.online * 28)
                 let context = image.getContext("2d")
@@ -29,24 +29,18 @@ class Command extends ICommand {
                 context.textAlign = "left"
                 context.fillStyle = "#fff"
 
-                let i = 0
-                let j = 0
-                await data.players.list.forEach(async player => {
-                    let ci = i
-                    i++
+                data.players.list.forEach(async (player, i) => {
+                    context.drawImage(await loadImage(`https://minotar.net/helm/${player}/22.png`), 2, 2 + i * 28)
+                    context.fillText(player, 32, i * 28 - 2)
 
-                    context.drawImage(await loadImage(`https://minotar.net/helm/${player}/22.png`), 2, 2 + ci * 28)
-                    context.fillText(player, 32, ci * 28 - 2)
-                    j++
-                })
-
-                while (j < data.players.online){}
-
-                message.channel.send("Players:", {
-                    files: [{
-                        attachment: image.toBuffer("image/png"),
-                        name: "playerlist.png"
-                    }]
+                    if (i + 1 >= data.players.online) {
+                        message.channel.send("Players:", {
+                            files: [{
+                                attachment: image.toBuffer("image/png"),
+                                name: "playerlist.png"
+                            }]
+                        })
+                    }
                 })
             } else {
                 message.channel.send("Nobody is currently online :cry:")
