@@ -40,7 +40,7 @@ class Command extends ICommand {
                     context.drawImage(head, 2, 2 + ci * 28)
                 })
 
-                setTimeout(function(){}, util.ping() * 2)
+                setTimeout(function(){}, util.ping(message) * 2)
 
                 message.channel.send("Players:", {
                     files: [{
