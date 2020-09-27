@@ -27,7 +27,7 @@ class Settings {
         if (!this.settings.has(name)) console.error(`No setting called '${name}' exists`);
     }
 
-    hasDefault(setting) {
+    hasDefault(setting, name) {
         if (!setting.defaultValue) console.error(`Setting '${name}' does not have a defaultValue`);
     }
 
@@ -41,7 +41,7 @@ class Settings {
         })
 
         if (!data) {
-            this.hasDefault(setting)
+            this.hasDefault(setting, name)
 
             data = new model({
                 Value: setting.defaultValue,
@@ -73,7 +73,7 @@ class Settings {
             })
             data.save()
         } else {
-            this.hasDefault(setting)
+            this.hasDefault(setting, name)
 
             data = new model({
                 Value: setting.defaultValue,
