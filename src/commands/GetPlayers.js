@@ -19,7 +19,7 @@ class Command extends ICommand {
     async execute(inputs, message) {
         const info = this.client.commands.get("info")
 
-        info.getServerInfo(message, data => {
+        info.getServerInfo(message, async data => {
             if (data.players.online > 0) {
                 let image = createCanvas(16 * 20 + 26, data.players.online * 28)
                 let context = image.getContext("2d")
@@ -35,16 +35,11 @@ class Command extends ICommand {
                     context.fillStyle = "#fff"
                     context.fillText(player, 32, ci * 28 - 2)
 
-                    let head = new Image()
-                    head.onload = function() {
-                        context.drawImage(head, 2, 2 + ci * 28)
-                    }
-                    head.src = `https://minotar.net/helm/${player}/22.png`
+                    let head = await loadImage(`https://minotar.net/helm/${player}/22.png`)
+                    context.drawImage(head, 2, 2 + ci * 28)
 
                     i++
                 })
-
-                setTimeout(function() {}, util.ping(message) * data.players.online)
 
                 message.channel.send("Players:", {
                     files: [{
