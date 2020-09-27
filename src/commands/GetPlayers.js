@@ -26,7 +26,7 @@ class Command extends ICommand {
 
                 let i = 0
 
-                data.players.list.forEach(player => {
+                await data.players.list.forEach(async player => {
                     let ci = i
 
                     context.font = "20px 'Pixel Font'"
