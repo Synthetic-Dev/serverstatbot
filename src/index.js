@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const discord = require("discord.js");
 const canvas = require("canvas")
 const Settings = require("./settings.js")
