@@ -24,13 +24,12 @@ class Command extends ICommand {
                 let image = createCanvas(16 * 20 + 26, data.players.online * 28)
                 let context = image.getContext("2d")
 
-                let buffer = image.toBuffer("image/png")
                 let i = 0
 
                 data.players.list.forEach(player => {
                     let ci = i
 
-                    context.font = "20px 'PixelFont'"
+                    context.font = "20px 'Pixel Font'"
                     context.textBaseline = "top"
                     context.textAlign = "left"
                     context.fillStyle = "#fff"
@@ -39,7 +38,6 @@ class Command extends ICommand {
                     let head = new Image()
                     head.onload = function() {
                         context.drawImage(head, 2, 2 + ci * 28)
-                        buffer = image.toBuffer("image/png")
                     }
                     head.src = `https://minotar.net/helm/${player}/22.png`
 
@@ -50,7 +48,7 @@ class Command extends ICommand {
 
                 message.channel.send("Players:", {
                     files: [{
-                        attachment: buffer,
+                        attachment: image.toBuffer("image/png"),
                         name: "playerlist.png"
                     }]
                 })

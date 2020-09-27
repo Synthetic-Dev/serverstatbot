@@ -8,7 +8,7 @@ const util = require("./util.js")
 /**
  * Startup
  */
-canvas.registerFont("./botfont.ttf", {family: "PixelFont"})
+canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
 const client = new discord.Client();
 
 mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@serverstatcluster.oi5gf.mongodb.net/data`, {
