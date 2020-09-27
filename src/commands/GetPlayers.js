@@ -29,12 +29,17 @@ class Command extends ICommand {
                 context.textAlign = "left"
                 context.fillStyle = "#fff"
 
+                let loaded = 0
                 data.players.list.forEach(async (player, i) => {
-                    console.log(i)
                     context.fillText(player, 32, i * 28 - 2)
                     context.drawImage(await loadImage(`https://minotar.net/helm/${player}/22.png`), 2, 2 + i * 28)
 
+                    loaded++
+
                     if (i + 1 >= data.players.online) {
+                        console.log("Waiting for images")
+                        while (loaded < data.players.online){}
+
                         message.channel.send("Players:", {
                             files: [{
                                 attachment: image.toBuffer("image/png"),
