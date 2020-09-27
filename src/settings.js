@@ -32,7 +32,7 @@ class Settings {
     }
 
     async getSetting(name) {
-        isSetting(name)
+        this.isSetting(name)
 
         const setting = this.settings.get(name)
         const model = setting.model
@@ -41,7 +41,7 @@ class Settings {
         })
 
         if (!data) {
-            hasDefault(setting)
+            this.hasDefault(setting)
 
             data = new model({
                 Value: setting.defaultValue,
@@ -54,7 +54,7 @@ class Settings {
     }
 
     async setSetting(name, value) {
-        isSetting(name)
+        this.isSetting(name)
 
         const setting = this.settings.get(name)
         const model = setting.model
@@ -73,8 +73,8 @@ class Settings {
             })
             data.save()
         } else {
-            hasDefault(setting)
-            
+            this.hasDefault(setting)
+
             data = new model({
                 Value: setting.defaultValue,
                 GuildID: this.guild.id
