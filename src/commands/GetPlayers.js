@@ -19,25 +19,27 @@ class Command extends ICommand {
     async execute(inputs, message) {
         const info = this.client.commands.get("info")
 
+        let tempMessage = discord.Message(this.client, {
+            content: "Fetching players... :signal_strength:"
+        }, message.channel)
+
         info.getServerInfo(message, async data => {
             if (data.players.online > 0) {
                 let image = createCanvas(16 * 20 + 26, data.players.online * 28)
                 let context = image.getContext("2d")
 
-                let i = 0
+                context.font = "20px 'Pixel Font'"
+                context.textBaseline = "top"
+                context.textAlign = "left"
+                context.fillStyle = "#fff"
 
+                let i = 0
                 await data.players.list.forEach(async player => {
                     let ci = i
                     i++
 
-                    context.font = "20px 'Pixel Font'"
-                    context.textBaseline = "top"
-                    context.textAlign = "left"
-                    context.fillStyle = "#fff"
+                    context.drawImage(await loadImage(`https://minotar.net/helm/${player}/22.png`), 2, 2 + ci * 28)
                     context.fillText(player, 32, ci * 28 - 2)
-
-                    let head = await loadImage(`https://minotar.net/helm/${player}/22.png`)
-                    context.drawImage(head, 2, 2 + ci * 28)
                 })
 
                 setTimeout(function(){}, util.ping(message) * 2)
@@ -51,6 +53,8 @@ class Command extends ICommand {
             } else {
                 message.channel.send("Nobody is currently online :cry:")
             }
+
+            tempMessage.destroy()
         })
     }
 }
