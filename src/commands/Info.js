@@ -14,7 +14,9 @@ class Command extends ICommand {
         })
     }
 
-    async getServerInfo(settings, callback) {
+    async getServerInfo(message, callback) {
+        const settings = this.client.settings[message.guild.id]
+
         util.request(`https://api.mcsrvstat.us/2/${settings.getSetting("ip")}:${settings.getSetting("port")}.tld`, true, (success, data) => {
             if (!success) {
                 message.reply(`An error occured, please contact developer\n\n${data.message}`)
@@ -29,9 +31,7 @@ class Command extends ICommand {
     }
 
     async execute(inputs, message) {
-        const settings = this.client.settings[message.guild.id]
-
-        this.getServerInfo(settings, data => {
+        this.getServerInfo(message, data => {
             message.channel.send({
                 embed: {
                     title: "Server Info",

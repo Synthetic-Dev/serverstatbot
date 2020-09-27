@@ -1,11 +1,20 @@
 const discord = require("discord.js");
 const canvas = require("canvas")
-const Settings = require("./settings.js")
+const mongoose = require("mongoose")
 
+const settings = require("./settings.js")
 const util = require("./util.js")
 
+/**
+ * Startup
+ */
 canvas.registerFont("./botfont.ttf", {family: "PixelFont"})
 const client = new discord.Client();
+
+mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@serverstatcluster.oi5gf.mongodb.net/data`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
 
 /**
  * Startup
@@ -14,7 +23,7 @@ client.on("ready", () => {
     client.settings = []
 
     client.guilds.cache.forEach(guild => {
-        client.settings[guild.id] = new Settings(guild); // this line
+        client.settings[guild.id] = new settings(guild); // this line
         console.log(`Loaded settings for guild ${guild.id}`)
     })
 
@@ -70,4 +79,7 @@ client.on("message", (message) => {
     }
 });
 
+/**
+ * Login
+ */
 client.login(process.env.TOKEN);

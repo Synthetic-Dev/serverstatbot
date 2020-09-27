@@ -1,3 +1,4 @@
+const discord = require("discord.js")
 const fs = require("fs")
 
 const defaults = require("./defaults.json")
@@ -5,49 +6,74 @@ const defaults = require("./defaults.json")
 class Settings {
     constructor(guild) {
         this.guild = guild
+        this.settings = new discord.Collection()
 
-        const dir = `${__dirname.replace("\src", "")}/configs/${guild.id}config.json`
-        this.dirname = dir
+        fs.readdir(`${__dirname}/models`, (error, files) => {
+            if (error) console.error(error);
 
-        this.settings = defaults // temp
+            const jsfiles = files.filter(file => file.split(".").pop() == "js")
 
-        /*
-        if (fs.existsSync(dir)) {
-            this.settings = require(dir)
+            if (jsfiles.length === 0) return console.log(`No model files`);
 
-            let flag = false
-
-            Object.entries(defaults).forEach(([key, value]) => {
-                if (!this.settings[key]) {
-                    this.settings[key] = value
-                    flag = true
-                }
-            });
-
-            //if (flag) fs.writeFileSync(this.dirname, JSON.stringify(this.settings), "utf8");
-        } else {
-            fs.writeFileSync(dir, JSON.stringify(defaults), "utf8")
-            this.settings = require(dir)
-        }
-        */
+            jsfiles.forEach(file => {
+                let name = file.toLowerCase()
+                if (!defaults[name]) return console.warn(`Model ${file} does not have a default, setting not registered`);
+                let model = require(`./models/${file}`)
+                this.settings.set(name, model)
+            })
+        })
     }
 
-    async save() {
-        //fs.writeFileSync(this.dirname, JSON.stringify(this.settings), "utf8")
+    isSetting(name) {
+        if (!this.settings.has(name)) console.error(`No model for a settings called '${name}' exists`);
     }
 
     getSetting(name) {
-        if (this.settings[name] == null) console.error(`${name} is not a setting`);
+        isSetting(name)
 
-        return this.settings[name];
+        const model = this.settings.get(name)
+        let data = await model.findOne({
+            GuildID: this.guild
+        })
+
+        if (!data) {
+            data = new model({
+                Value: defaults[name],
+                GuildID: this.guild
+            })
+            data.save()
+        }
+
+        return data.Value
     }
 
     async setSetting(name, value) {
-        if (!this.settings[name]) console.error(`${name} is not a setting`);
+        isSetting(name)
 
-        this.settings[name] = value;
+        const model = this.settings.get(name)
+        let data = await model.findOne({
+            GuildID: this.guild
+        })
 
-        this.save()
+        if (data) {
+            await model.findOneAndRemove({
+                GuildID: this.guild
+            })
+
+            data = new model({
+                Value: value,
+                GuildID: this.guild
+            })
+            data.save()
+        } else {
+            data = new model({
+                Value: defaults[name],
+                GuildID: this.guild
+            })
+            data.save()
+        }
+
+        return data.Value
     }
 }
 

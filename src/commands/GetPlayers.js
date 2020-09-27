@@ -16,10 +16,9 @@ class Command extends ICommand {
     }
 
     async execute(inputs, message) {
-        const settings = this.client.settings[message.guild.id]
         const info = this.client.commands.get("info")
 
-        info.getServerInfo(settings, data => {
+        info.getServerInfo(message, data => {
             if (data.players.online > 0) {
                 let imageName = `${message.guild.id}playerlist.png`
                 let path = `./temp/${imageName}`
