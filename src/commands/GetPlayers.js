@@ -29,11 +29,14 @@ class Command extends ICommand {
                 context.textAlign = "left"
                 context.fillStyle = "#fff"
 
-                data.players.list.forEach(async (player, i) => {
-                    context.drawImage(await loadImage(`https://minotar.net/helm/${player}/22.png`), 2, 2 + i * 28)
-                    context.fillText(player, 32, i * 28 - 2)
+                let i = 0
+                data.players.list.forEach(async (player) => {
+                    let ci = i
+                    i++
+                    context.drawImage(await loadImage(`https://minotar.net/helm/${player}/22.png`), 2, 2 + ci * 28)
+                    context.fillText(player, 32, ci * 28 - 2)
 
-                    if (i + 1 >= data.players.online) {
+                    if (ci + 1 >= data.players.online) {
                         message.channel.send("Players:", {
                             files: [{
                                 attachment: image.toBuffer("image/png"),
