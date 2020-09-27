@@ -28,7 +28,7 @@ class Settings {
         if (!this.settings.has(name)) console.error(`No model for a settings called '${name}' exists`);
     }
 
-    getSetting(name) {
+    async getSetting(name) {
         isSetting(name)
 
         const model = this.settings.get(name)

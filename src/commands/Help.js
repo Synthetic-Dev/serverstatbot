@@ -76,7 +76,7 @@ class Command extends ICommand {
             return false;
         })
 
-        this.postCommands(message.channel, `Prefix: ${settings.getSetting("prefix")}`, commands)
+        this.postCommands(message.channel, `Prefix: ${await settings.getSetting("prefix")}`, commands)
     }
 }
 

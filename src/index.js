@@ -44,7 +44,7 @@ client.on("message", (message) => {
     if (!message.guild) return message.reply("You can only use commands in a guild");
 
     const settings = client.settings[message.guild.id]
-    const prefix = settings.getSetting("prefix")
+    const prefix = await settings.getSetting("prefix")
 
     const content = message.content
 
