@@ -72,8 +72,6 @@ class Settings {
             })
             data.save()
         }
-
-        return data.Value
     }
 }
 
