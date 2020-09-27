@@ -19,10 +19,6 @@ class Command extends ICommand {
     async execute(inputs, message) {
         const info = this.client.commands.get("info")
 
-        let tempMessage = new discord.Message(this.client, {
-            content: "Fetching players... :signal_strength:"
-        }, message.channel)
-
         info.getServerInfo(message, async data => {
             if (data.players.online > 0) {
                 let image = createCanvas(16 * 20 + 26, data.players.online * 28)
@@ -53,8 +49,6 @@ class Command extends ICommand {
             } else {
                 message.channel.send("Nobody is currently online :cry:")
             }
-
-            tempMessage.destroy()
         })
     }
 }

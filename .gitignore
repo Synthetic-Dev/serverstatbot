@@ -1,6 +1,5 @@
-$ echo 'node_modules' >> .gitignore
-$ git rm -r --cached node_modules
-$ git commit -am 'ignore node_modules
-
-$ echo 'npm-debug.log' >> .gitignore
-$ git commit -am 'ignore npm-debug'
+node_modules
+package-lock.json
+.DS_Store
+.env
+npm-debug.log
