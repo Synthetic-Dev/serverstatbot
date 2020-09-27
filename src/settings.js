@@ -9,6 +9,9 @@ class Settings {
         const dir = `${__dirname.replace("\src", "")}/configs/${guild.id}config.json`
         this.dirname = dir
 
+        this.settings = defaults // temp
+
+        /*
         if (fs.existsSync(dir)) {
             this.settings = require(dir)
 
@@ -26,10 +29,11 @@ class Settings {
             fs.writeFileSync(dir, JSON.stringify(defaults), "utf8")
             this.settings = require(dir)
         }
+        */
     }
 
     async save() {
-        fs.writeFileSync(this.dirname, JSON.stringify(this.settings), "utf8")
+        //fs.writeFileSync(this.dirname, JSON.stringify(this.settings), "utf8")
     }
 
     getSetting(name) {

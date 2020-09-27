@@ -4,7 +4,7 @@ const Settings = require("./settings.js")
 
 const util = require("./util.js")
 
-canvas.registerFont("./Minecraftia.ttf", {family: "Minecraft"})
+canvas.registerFont("./botfont.ttf", {family: "PixelFont"})
 const client = new discord.Client();
 
 /**
@@ -14,7 +14,7 @@ client.on("ready", () => {
     client.settings = []
 
     client.guilds.cache.forEach(guild => {
-        client.settings[guild.id] = new Settings(guild);
+        client.settings[guild.id] = new Settings(guild); // this line
         console.log(`Loaded settings for guild ${guild.id}`)
     })
 

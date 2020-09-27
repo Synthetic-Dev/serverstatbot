@@ -32,7 +32,7 @@ class Command extends ICommand {
                 data.players.list.forEach(player => {
                     let ci = i
 
-                    context.font = "20px 'Minecraft'"
+                    context.font = "20px 'PixelFont'"
                     context.textBaseline = "top"
                     context.textAlign = "left"
                     context.fillStyle = "#fff"
