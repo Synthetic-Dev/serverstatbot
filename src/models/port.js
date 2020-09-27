@@ -7,4 +7,7 @@ const Schema = new mongoose.Schema({
     GuildID: String
 })
 
-const MessageModel = module.exports = mongoose.model("ports", Schema)
+module.exports = {
+    model: mongoose.model("ports", Schema),
+    defaultValue: 25565
+}

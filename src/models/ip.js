@@ -7,4 +7,7 @@ const Schema = new mongoose.Schema({
     GuildID: String
 })
 
-const MessageModel = module.exports = mongoose.model("ips", Schema)
+module.exports = {
+    model: mongoose.model("ips", Schema),
+    defaultValue: ""
+}

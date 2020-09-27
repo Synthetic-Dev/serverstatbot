@@ -23,8 +23,7 @@ client.on("ready", () => {
     client.settings = []
 
     client.guilds.cache.forEach(guild => {
-        client.settings[guild.id] = new settings(guild); // this line
-        console.log(`Loaded settings for guild ${guild.id}`)
+        client.settings[guild.id] = new settings(guild);
     })
 
     client.commands = util.loadmodules("commands", client)

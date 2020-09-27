@@ -1,8 +1,6 @@
 const discord = require("discord.js")
 const fs = require("fs")
 
-const defaults = require("./defaults.json")
-
 class Settings {
     constructor(guild) {
         this.guild = guild
@@ -13,33 +11,41 @@ class Settings {
 
             const jsfiles = files.filter(file => file.split(".").pop() == "js")
 
-            if (jsfiles.length === 0) return console.log(`No model files`);
+            if (jsfiles.length === 0) return;
 
             jsfiles.forEach(file => {
-                let name = file.toLowerCase()
-                if (!defaults[name]) return console.warn(`Model ${file} does not have a default, setting not registered`);
-                let model = require(`./models/${file}`)
-                this.settings.set(name, model)
+                let name = file.split(".").shift().toLowerCase()
+                let setting = require(`./models/${file}`)
+                this.settings.set(name, setting)
             })
         })
+
+        console.log(`Made settings for guild ${guild.id}`)
     }
 
     isSetting(name) {
-        if (!this.settings.has(name)) console.error(`No model for a settings called '${name}' exists`);
+        if (!this.settings.has(name)) console.error(`No setting called '${name}' exists`);
+    }
+
+    hasDefault(setting) {
+        if (!setting.defaultValue) console.error(`Setting '${name}' does not have a defaultValue`);
     }
 
     async getSetting(name) {
         isSetting(name)
 
-        const model = this.settings.get(name)
+        const setting = this.settings.get(name)
+        const model = setting.model
         let data = await model.findOne({
-            GuildID: this.guild
+            GuildID: this.guild.id
         })
 
         if (!data) {
+            hasDefault(setting)
+
             data = new model({
-                Value: defaults[name],
-                GuildID: this.guild
+                Value: setting.defaultValue,
+                GuildID: this.guild.id
             })
             data.save()
         }
@@ -50,25 +56,28 @@ class Settings {
     async setSetting(name, value) {
         isSetting(name)
 
-        const model = this.settings.get(name)
+        const setting = this.settings.get(name)
+        const model = setting.model
         let data = await model.findOne({
-            GuildID: this.guild
+            GuildID: this.guild.id
         })
 
         if (data) {
             await model.findOneAndRemove({
-                GuildID: this.guild
+                GuildID: this.guild.id
             })
 
             data = new model({
                 Value: value,
-                GuildID: this.guild
+                GuildID: this.guild.id
             })
             data.save()
         } else {
+            hasDefault(setting)
+            
             data = new model({
-                Value: defaults[name],
-                GuildID: this.guild
+                Value: setting.defaultValue,
+                GuildID: this.guild.id
             })
             data.save()
         }
