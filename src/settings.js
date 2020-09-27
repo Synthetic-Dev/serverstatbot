@@ -28,7 +28,7 @@ class Settings {
     }
 
     hasDefault(setting, name) {
-        if (!setting.defaultValue) console.error(`Setting '${name}' does not have a defaultValue`);
+        if (!Object.keys(setting).includes("defaultValue")) console.error(`Setting '${name}' does not have a defaultValue`);
     }
 
     async getSetting(name) {
@@ -66,21 +66,13 @@ class Settings {
             await model.findOneAndRemove({
                 GuildID: this.guild.id
             })
-
-            data = new model({
-                Value: value,
-                GuildID: this.guild.id
-            })
-            data.save()
-        } else {
-            this.hasDefault(setting, name)
-
-            data = new model({
-                Value: setting.defaultValue,
-                GuildID: this.guild.id
-            })
-            data.save()
         }
+
+        data = new model({
+            Value: value,
+            GuildID: this.guild.id
+        })
+        data.save()
     }
 }
 
