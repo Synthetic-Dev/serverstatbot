@@ -35,6 +35,19 @@ client.on("ready", () => {
     console.log("Bot started successfully")
 });
 
+client.on("guildCreate", guild => {
+    if (!client.settings) client.settings = [];
+
+    client.settings[guild.id] = new settings(guild);
+})
+
+client.on("guildDelete", guild => {
+    if (client.settings) {
+        client.settings[guild.id] = null;
+    }
+})
+
+
 /**
  * Command Parser
  */
