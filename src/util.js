@@ -33,7 +33,7 @@ class util {
      * @param {Function} callback A function that is called when a response is received
      */
     static request(url, callback) {
-        (url.toLowerCase().slice(0, 4) == "https" ? HTTPS : HTTP).get(url, response => {
+        (url.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP).get(url, response => {
             let data = ""
 
             response.on("data", chunk => {
