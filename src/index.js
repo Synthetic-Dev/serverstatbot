@@ -86,7 +86,7 @@ client.on("message", async (message) => {
 
         const permissions = command.permissions()
 
-        if (!util.doesUserHavePermission(message.member, permissions)) {
+        if (!util.doesMemberHavePermission(message.member, permissions)) {
             return message.reply("You don't have permission to do that");
         }
 

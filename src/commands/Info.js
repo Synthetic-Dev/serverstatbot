@@ -17,7 +17,7 @@ class Command extends ICommand {
     async getServerInfo(message, callback) {
         const settings = this.client.settings[message.guild.id]
 
-        util.request(`https://api.mcsrvstat.us/2/${await settings.getSetting("ip")}:${await settings.getSetting("port")}.tld`, true, (success, data) => {
+        util.request(`https://api.mcsrvstat.us/2/${await settings.getSetting("ip")}:${await settings.getSetting("port")}.tld`, (success, data) => {
             if (!success) {
                 message.reply(`An error occured, please contact developer\n\n${data.message}`)
             } else {

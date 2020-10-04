@@ -72,7 +72,7 @@ class Command extends ICommand {
 
         let commands = this.getCommands(this.client.commands, (command) => {
             const permissions = command.permissions()
-            if (command != this && !command.private && util.doesUserHavePermission(message.member, permissions)) return true;
+            if (command != this && !command.private && util.doesMemberHavePermission(message.member, permissions)) return true;
             return false;
         })
 
