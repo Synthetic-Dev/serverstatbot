@@ -104,8 +104,8 @@ class util {
 
         let flag = true
         permissions.forEach(permission => {
-            if (permission == "DEV" && member.id != DevId) flag = false;
-            else if (permission == "OWNER" && member.id != member.guild.ownerID) flag = false;
+            if (permission == "DEV") if (member.id != DevId) flag = false;
+            else if (permission == "OWNER") if (member.id != member.guild.ownerID) flag = false;
             else if (!member.hasPermission(permission, {checkAdmin: true, checkOwner: true})) flag = false;
         })
 
