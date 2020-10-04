@@ -1,5 +1,4 @@
 const discord = require("discord.js")
-const util = require("../util.js")
 
 const ICommand = require("../interfaces/ICommand.js")
 
@@ -12,7 +11,7 @@ class Command extends ICommand {
                 "dhelp"
             ],
             perms: [
-                255733848162304002
+                "DEV"
             ],
             private: true
         })

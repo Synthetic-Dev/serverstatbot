@@ -76,7 +76,7 @@ class Command extends ICommand {
             return false;
         })
 
-        this.postCommands(message.channel, `Prefix: ${await settings.getSetting("prefix")}`, commands)
+        this.postCommands(message.channel, "Requires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + await settings.getSetting("prefix") + "``", commands)
     }
 }
 

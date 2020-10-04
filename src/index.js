@@ -26,7 +26,17 @@ client.on("ready", () => {
         client.settings[guild.id] = new settings(guild);
     })
 
-    client.commands = util.loadmodules("commands", client)
+    client.commands = util.loadmodules("commands", (command, commands) => {
+        command = new command(client)
+        commands.set(command.name(true), command)
+
+        let aliases = command.aliases ? command.aliases() : null
+        if (aliases) {
+            for (let alias of aliases) {
+                commands.set(alias.toLowerCase(), command)
+            }
+        }
+    })
 
     client.user.setActivity("the stats", {
         type: "WATCHING"

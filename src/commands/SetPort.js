@@ -1,5 +1,4 @@
 const discord = require("discord.js")
-const util = require("../util.js")
 
 const ICommand = require("../interfaces/ICommand.js")
 

@@ -2,7 +2,6 @@ const discord = require("discord.js")
 const {createCanvas, loadImage, Image} = require("canvas")
 const fs = require("fs")
 
-const util = require("../util.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
