@@ -1,5 +1,3 @@
-const discord = require("discord.js")
-
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {

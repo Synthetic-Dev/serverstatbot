@@ -36,7 +36,7 @@ class util {
      */
     static request(options, callback) {
         const isUrl = typeof options == "string"
-        const method = isUrl ? (url.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : HTTPS
+        const method = isUrl ? (options.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : HTTPS
 
         let handler = response => {
             let data = ""
@@ -110,7 +110,7 @@ class util {
     static loadmodules(dir, register) {
         const modules = new Discord.Collection()
 
-        FileSystem.readdir(`${__dirname}/${dir}`, (error, files) => {
+        FileSystem.readdir(`${__dirname}/../${dir}`, (error, files) => {
             if (error) console.error(error);
             if (!files) return console.log(`There are no files at /${dir}`);
 
@@ -119,7 +119,7 @@ class util {
             if (jsfiles.length === 0) return console.log(`No .js files to load at /${dir}`);
 
             jsfiles.forEach(file => {
-                let Module = require(`/${dir}/${file}`)
+                let Module = require(`../${dir}/${file}`)
 
                 if (register) {
                     register(Module, modules)
@@ -139,10 +139,12 @@ class util {
      * @param {string} warning 
      */
     static async replyWarning(message, warning) {
-        let botMessage = await message.reply("\n:warning: " + warning)
-        botMessage.delete({
-            timeout: 15000
-        })
+        try {
+            let botMessage = await message.reply("\n:warning: " + warning)
+            botMessage.delete({
+                timeout: 15000
+            })
+        } catch {}
     }
 
     /**
@@ -151,10 +153,12 @@ class util {
      * @param {string} error 
      */
     static async replyError(message, error) {
-        let botMessage = await message.reply("\n:stop_sign: " + error)
-        botMessage.delete({
-            timeout: 5000
-        })
+        try {
+            let botMessage = await message.reply("\n:stop_sign: " + error)
+            botMessage.delete({
+                timeout: 5000
+            })
+        } catch {}
     }
 
     /**

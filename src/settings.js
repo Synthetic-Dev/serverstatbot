@@ -1,12 +1,12 @@
-const discord = require("discord.js")
-const fs = require("fs")
+const Discord = require("discord.js")
+const FileSystem = require("fs")
 
 class Settings {
     constructor(guild) {
         this.guild = guild
-        this.settings = new discord.Collection()
+        this.settings = new Discord.Collection()
 
-        fs.readdir(`${__dirname}/models`, (error, files) => {
+        FileSystem.readdir(`${__dirname}/models`, (error, files) => {
             if (error) console.error(error);
 
             const jsfiles = files.filter(file => file.split(".").pop() == "js")

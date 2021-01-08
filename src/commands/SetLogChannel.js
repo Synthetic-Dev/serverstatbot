@@ -16,17 +16,23 @@ class Command extends ICommand {
         })
     }
 
-    async execute(message, inputs) {
+    async execute(inputs, message) {
         const settings = this.client.settings[message.guild.id]
 
         let channel = inputs[0] == "here" ? message.channel : Util.parseChannel(message.guild, inputs[0])
         
         if (inputs[0] == "clear") {
-            message.reply(`Removed log channel`)
+            try {
+                message.reply(`Removed log channel`)
+            } catch(e) {console.error(e)}
+
             return settings.setSetting("logchannel", "0")
         } else if (!channel) return Util.couldNotFind(message, "channel", inputs[0], "guild");
         
-        message.reply(`Log channel set to <#${channel.id}>`)
+        try {
+            message.reply(`Log channel set to <#${channel.id}>`)
+        } catch(e) {console.error(e)}
+
         settings.setSetting("logchannel", channel.id)
     }
 }

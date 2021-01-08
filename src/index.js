@@ -1,9 +1,8 @@
 const Discord = require("discord.js");
 const Canvas = require("canvas")
 const Mongoose = require("mongoose")
-
 const Settings = require("./settings.js")
-const Util = require("./util.js")
+const Util = require("./utils/util.js")
 
 /**
  * Startup
@@ -22,7 +21,7 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
  */
 client.on("ready", async () => {
     client.settings = []
-    client.players = []
+    client.servers = []
 
     client.guilds.cache.forEach(guild => {
         client.settings[guild.id] = new Settings(guild);
@@ -58,45 +57,87 @@ client.on("ready", async () => {
 
             let address = `${await settings.getSetting("ip")}:${await settings.getSetting("port")}`
 
-            Util.request(`https://api.mcsrvstat.us/2/${address}.tld`, (success, data) => {
+            Util.request(`https://api.mcsrvstat.us/2/${address}.tld`, async (success, data) => {
                 if (success) {
                     data = JSON.parse(data)
                     
-                    let old = client.players[address]
-                    let current = data.players.list
+                    let server = client.servers[address] ? client.servers[address] : {
+                        players: [],
+                        online: false,
+                        start: true
+                    }
 
-                    current.foreach((player) => {
-                        if (!old.includes(player)) {
-                            channel.send({
-                                content: "Has joined the game.",
-                                embed: {
-                                    author: {
-                                        name: `${player}`,
-                                        icon_url: `https://minotar.net/helm/${player}/22.png`
-                                    }
-                                }
-                            })
-                        }
-                    })
+                    if (data.online && !server.online) {
+                        let flag = false
+                        let messages = await channel.messages.fetch({limit: 5})
+                        messages.forEach(message => {
+                            if (message.content == ":white_check_mark: Server is online") {
+                                flag = true
+                            }
+                        })
 
-                    old.foreach((player) => {
-                        if (!current.includes(player)) {
-                            channel.send({
-                                content: "Has left the game.",
-                                embed: {
-                                    author: {
-                                        name: `${player}`,
-                                        icon_url: `https://minotar.net/helm/${player}/22.png`
-                                    }
+                        if (!flag) {
+                            try {
+                                channel.send(":white_check_mark: Server is online")
+                                if (server.start) {
+                                    channel.send(`There is ${data.players.online}/${data.players.max} players in the server.`)
                                 }
-                            })
+                            } catch(e) {console.error(e)}
                         }
-                    })
+                    } else if (!data.online && server.online) {
+                        try {
+                            channel.send(":octagonal_sign: Server is offline")
+                        } catch(e) {console.error(e)}
+                    }
+
+                    server.online = data.online
+
+                    let old = server.players
+                    let current = data.players.list ? data.players.list : []
+
+                    if (!server.start) {
+                        current.forEach((player) => {
+                            if (!old.includes(player)) {
+                                try {
+                                    channel.send({
+                                        embed: {
+                                            author: {
+                                                name: `${player}`,
+                                                icon_url: `https://minotar.net/helm/${player}/22.png`
+                                            },
+                                            title: "has joined the game."
+                                        }
+                                    })
+                                } catch(e) {console.error(e)}
+                            }
+                        })
+
+                        old.forEach((player) => {
+                            if (!current.includes(player)) {
+                                try {
+                                    channel.send({
+                                        embed: {
+                                            author: {
+                                                name: `${player}`,
+                                                icon_url: `https://minotar.net/helm/${player}/22.png`
+                                            },
+                                            title: "has left the game."
+                                        }
+                                    })
+                                } catch(e) {console.error(e)}
+                            }
+                        })
+                    }
+
+                    server.players = current
+                    server.start = false
+
+                    client.servers[address] = server
                 }
             })
         })
 
-        await Util.sleep(60*1000)
+        await Util.sleep(10000)
     }
 });
 

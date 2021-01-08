@@ -1,5 +1,3 @@
-const discord = require("discord.js")
-
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -25,7 +23,9 @@ class Command extends ICommand {
 
         settings.setSetting("ip", inputs[0])
 
-        message.reply(`Ip set to '${inputs[0]}'`)
+        try {
+            message.reply(`Ip set to '${inputs[0]}'`)
+        } catch(e) {console.error(e)}
     }
 }
 

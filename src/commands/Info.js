@@ -1,6 +1,4 @@
-const discord = require("discord.js")
-const util = require("../util.js")
-
+const Util = require("../utils/util.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -17,13 +15,19 @@ class Command extends ICommand {
     async getServerInfo(message, callback) {
         const settings = this.client.settings[message.guild.id]
 
-        util.request(`https://api.mcsrvstat.us/2/${await settings.getSetting("ip")}:${await settings.getSetting("port")}.tld`, (success, data) => {
+        Util.request(`https://api.mcsrvstat.us/2/${await settings.getSetting("ip")}:${await settings.getSetting("port")}.tld`, (success, data) => {
             if (!success) {
-                message.reply(`An error occured, please contact developer\n\n${data.message}`)
+                Util.replyError(message, `An error occured, please contact developer\n\n${data.message}`)
             } else {
                 data = JSON.parse(data)
-                if (!data.ip || !data.port) return message.reply("An invalid ip or port is set");
-                if (!data.online) return message.reply("Server is not online");
+                if (!data.ip || !data.port) return Util.replyError(message, "An invalid ip or port is set");
+                if (!data.online) {
+                    try {
+                        message.reply("Server is not online")
+                    } catch(e) {console.error(e)}
+
+                    return
+                }
 
                 callback(data)
             }
@@ -32,27 +36,33 @@ class Command extends ICommand {
 
     async execute(inputs, message) {
         this.getServerInfo(message, data => {
-            message.channel.send({
-                embed: {
-                    title: "Server Info",
-                    description: `Address: **${data.hostname || data.ip}:${data.port}**\nOnline: **${data.online && "Yes" || "No"}**`,
-                    color: 5145560,
-                    fields: [
-                        {
-                            name: "Minecraft Version:",
-                            value: data.version
-                        },
-                        {
-                            name: "MOTD:",
-                            value: data.motd.clean
-                        },
-                        {
-                            name: "Players Online:",
-                            value: `${data.players.online}/${data.players.max}`
-                        }
-                    ]
-                }
-            })
+            try {
+                message.channel.send({
+                    embed: {
+                        title: "Server Info",
+                        description: `Address: **${data.hostname || data.ip}:${data.port}**\nOnline: **${data.online && "Yes" || "No"}**`,
+                        color: 5145560,
+                        fields: [
+                            {
+                                name: "Minecraft Version:",
+                                value: data.version
+                            },
+                            {
+                                name: "Minecraft Type:",
+                                value: data.mods ? "Modded" : "Vanilla"
+                            },
+                            {
+                                name: "MOTD:",
+                                value: data.motd.clean
+                            },
+                            {
+                                name: "Players Online:",
+                                value: `${data.players.online}/${data.players.max}`
+                            }
+                        ]
+                    }
+                })
+            } catch(e) {console.error(e)}
         })
     }
 }

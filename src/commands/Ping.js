@@ -1,6 +1,4 @@
-const discord = require("discord.js")
-const util = require("../util.js")
-
+const Util = require("../utils/util.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -13,7 +11,7 @@ class Command extends ICommand {
     }
 
     async execute(inputs, message) {
-        const ping = util.ping(message)
+        const ping = Util.ping(message)
 
         message.reply(`Pong! ${Math.abs(ping)}ms`)
     }

@@ -1,6 +1,5 @@
-const discord = require("discord.js")
-const util = require("../util.js")
-
+const Discord = require("discord.js")
+const Util = require("../utils/util.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -20,19 +19,21 @@ class Command extends ICommand {
      * @param {Array} fields 
      */
     postCommands(channel, desc, fields) {
-        channel.send({
-            embed: {
-                title: "Commands",
-                description: desc,
-                color: 5145560,
-                fields: fields
-            }
-        })
+        try {
+            channel.send({
+                embed: {
+                    title: "Commands",
+                    description: desc,
+                    color: 5145560,
+                    fields: fields
+                }
+            })
+        } catch(e) {console.error(e)}
     }
 
     /**
      * 
-     * @param {discord.Collection} commands 
+     * @param {Discord.Collection} commands 
      * @param {Function} check 
      * @return {Array}
      */
@@ -72,7 +73,7 @@ class Command extends ICommand {
 
         let commands = this.getCommands(this.client.commands, (command) => {
             const permissions = command.permissions()
-            if (command != this && !command.private && util.doesMemberHavePermission(message.member, permissions)) return true;
+            if (command != this && !command.private && Util.doesMemberHavePermission(message.member, permissions)) return true;
             return false;
         })
 

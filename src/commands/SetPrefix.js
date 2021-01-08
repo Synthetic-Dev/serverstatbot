@@ -1,5 +1,4 @@
-const discord = require("discord.js")
-
+const Util = require("../utils/util.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -23,11 +22,13 @@ class Command extends ICommand {
     async execute(inputs, message) {
         const settings = this.client.settings[message.guild.id]
 
-        if (inputs[0].length > 3) return message.reply("Prefix can only be up to 3 characters long")
+        if (inputs[0].length > 3) return Util.replyError(message, "Prefix can only be up to 3 characters long")
 
         settings.setSetting("prefix", inputs[0])
 
-        message.reply(`Prefix set to '${inputs[0]}'`)
+        try {
+            message.reply(`Prefix set to '${inputs[0]}'`)
+        } catch(e) {console.error(e)}
     }
 }
 

@@ -1,7 +1,4 @@
-const discord = require("discord.js")
-const {createCanvas, loadImage, Image} = require("canvas")
-const fs = require("fs")
-
+const {createCanvas, loadImage} = require("canvas")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -39,15 +36,19 @@ class Command extends ICommand {
                         context.drawImage(head, 2, 2 + i * 28)
                     })
 
-                    message.channel.send("Players:", {
-                        files: [{
-                            attachment: image.toBuffer("image/png"),
-                            name: "playerlist.png"
-                        }]
-                    })
+                    try {
+                        message.channel.send("Players:", {
+                            files: [{
+                                attachment: image.toBuffer("image/png"),
+                                name: "playerlist.png"
+                            }]
+                        })
+                    } catch(e) {console.error(e)}
                 })
             } else {
-                message.channel.send("Nobody is currently online :cry:")
+                try {
+                    message.channel.send("Nobody is currently online :cry:")
+                } catch(e) {console.error(e)}
             }
         })
     }
