@@ -23,19 +23,8 @@ client.on("ready", async () => {
     client.settings = []
     client.players = []
 
-    client.guilds.cache.forEach(async guild => {
-        let settings = new Settings(guild)
-        client.settings[guild.id] = settings;
-
-        let address = `${await settings.getSetting("ip")}:${await settings.getSetting("port")}`
-
-        Util.request(`https://api.mcsrvstat.us/2/${address}.tld`, (success, data) => {
-            if (success) {
-                data = JSON.parse(data)
-                
-                client.players[address] = data.players.list
-            }
-        })
+    client.guilds.cache.forEach(guild => {
+        client.settings[guild.id] = new Settings(guild);
     })
 
     client.commands = Util.loadmodules("commands", (command, commands) => {
