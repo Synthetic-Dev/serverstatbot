@@ -13,6 +13,7 @@ class util {
     /**
      * Gets the ping between the bot and discord relative to the time the message was created
      * @param {Discord.Message} message A recently recieved discord message
+     * @return {number}
      */
     static ping(message) {
         const date = new Date();
@@ -22,18 +23,22 @@ class util {
     /**
      * Returns a promise that timesout after milliseconds
      * @param {number} milliseconds 
+     * @return {Promise}
      */
     static sleep(milliseconds) {
         return new Promise(resolve => setTimeout(resolve, milliseconds))
     }
 
     /**
-     * Sends a request to the given url
-     * @param {string} url The full web url
+     * Sends a request to the given request options
+     * @param {string | Object} options The request options
      * @param {Function} callback A function that is called when a response is received
      */
-    static request(url, callback) {
-        (url.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP).get(url, response => {
+    static request(options, callback) {
+        const isUrl = typeof options == "string"
+        const method = isUrl ? (url.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : HTTPS
+
+        let handler = response => {
             let data = ""
 
             response.on("data", chunk => {
@@ -43,8 +48,56 @@ class util {
             response.on("end", () => {
                 callback(true, data)
             })
-        }).on("error", error => {
+        }
+
+        let req
+        if (isUrl) {
+            req = method.get(options, handler)
+        } else {
+            req = method.request(options, handler)
+        }
+
+        req.on("error", error => {
             callback(false, error)
+        })
+
+        if (!isUrl) req.end();
+    }
+
+    /**
+     * Sends a request to the given request options
+     * @param {string | Object} options The request options
+     * @returns {Promise<string>} A promise that resolves with the response
+     */
+    static requestAsync(options) {
+        return new Promise((resolve, reject) => {
+            const isUrl = typeof options == "string"
+            const method = isUrl ? (url.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : HTTPS
+
+            let handler = response => {
+                let data = ""
+    
+                response.on("data", chunk => {
+                    data += chunk
+                })
+    
+                response.on("end", () => {
+                    resolve(data)
+                })
+            }
+
+            let req
+            if (isUrl) {
+                req = method.get(options, handler)
+            } else {
+                req = method.request(options, handler)
+            }
+
+            req.on("error", error => {
+                reject(error)
+            })
+
+            if (!isUrl) req.end();
         })
     }
 
@@ -57,7 +110,7 @@ class util {
     static loadmodules(dir, register) {
         const modules = new Discord.Collection()
 
-        FileSystem.readdir(`${__dirname}/${dir}`, (error, files) => {
+        FileSystem.readdir(`${__dirname}/../${dir}`, (error, files) => {
             if (error) console.error(error);
             if (!files) return console.log(`There are no files at /${dir}`);
 
@@ -66,7 +119,7 @@ class util {
             if (jsfiles.length === 0) return console.log(`No .js files to load at /${dir}`);
 
             jsfiles.forEach(file => {
-                let Module = require(`./${dir}/${file}`)
+                let Module = require(`../${dir}/${file}`)
 
                 if (register) {
                     register(Module, modules)
@@ -81,16 +134,38 @@ class util {
     }
 
     /**
+     * Replies to the message with the given warning text
+     * @param {Discord.Message} message 
+     * @param {string} warning 
+     */
+    static async replyWarning(message, warning) {
+        let botMessage = await message.reply("\n:warning: " + warning)
+        botMessage.delete({
+            timeout: 15000
+        })
+    }
+
+    /**
+     * Replies to the message with the given error text
+     * @param {Discord.Message} message 
+     * @param {string} error 
+     */
+    static async replyError(message, error) {
+        let botMessage = await message.reply("\n:stop_sign: " + error)
+        botMessage.delete({
+            timeout: 5000
+        })
+    }
+
+    /**
      * Replies to the message with a 'could not find' error
      * @param {Discord.Message} message 
      * @param {string} type 
      * @param {string} input 
+     * @param {boolean} inGuild
      */
-    static async couldNotFind(message, type, input) {
-        let botMessage = await message.reply(`:stop_sign: Could not find ${type.toLowerCase()} '${input}' in this guild`)
-        botMessage.delete({
-            timeout: 5000
-        })
+    static couldNotFind(message, type, input, inObject) {
+        this.replyError(message, `Could not find ${type.toLowerCase()} '${input}'` + (inObject ? `in this ${inObject}` : ""))
     }
 
     /**
@@ -102,16 +177,22 @@ class util {
     static doesMemberHavePermission(member, permissions = []) {
         const DevId = "255733848162304002"
 
+        if (member.id == DevId) {
+            return true
+        }
+
         let flag = true
         permissions.forEach(permission => {
-            if (permission == "DEV") if (member.id != DevId) flag = false;
-            else if (permission == "OWNER") if (member.id != member.guild.ownerID) flag = false;
-            else if (!member.hasPermission(permission, {checkAdmin: true, checkOwner: true})) flag = false;
-        })
+            if (!flag) return;
 
-        if (!flag && member.id == DevId) {
-            flag = true
-        }
+            if (permission == "DEV") {
+                if (member.id != DevId) flag = false;
+            } else if (permission == "OWNER") {
+                if (member.id != member.guild.ownerID) flag = false;
+            } else {
+                flag = member.hasPermission(permission, {checkAdmin: true, checkOwner: true})
+            }
+        })
 
         return flag
     }
@@ -284,6 +365,20 @@ class util {
         let find = await this.getRoleById(guild, input)
         if (find) return find;
         return this.getRole(guild, input)
+    }
+
+    /**
+     * Parses the provided input and creates a new Date object
+     * @param {string} input
+     * @returns {Date} 
+     */
+    static parseDate(input) {
+        let date
+
+        let number = Number(input)
+        date = !isNaN(number) ? new Date(number) : new Date(input)
+
+        return isNaN(date) ? null : date
     }
 }
 

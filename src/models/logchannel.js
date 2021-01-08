@@ -2,8 +2,8 @@ const mongoose = require("mongoose")
 
 const Schema = new mongoose.Schema({
     Value: {
-        type: Number,
-        default: 25565
+        type: String,
+        default: "-1"
     },
     GuildID: {
         type: String,
@@ -11,4 +11,4 @@ const Schema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model("ports", Schema)
+module.exports = mongoose.model("logchannels", Schema)

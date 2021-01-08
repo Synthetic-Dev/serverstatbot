@@ -1,17 +1,17 @@
-const discord = require("discord.js");
-const canvas = require("canvas")
-const mongoose = require("mongoose")
+const Discord = require("discord.js");
+const Canvas = require("canvas")
+const Mongoose = require("mongoose")
 
-const settings = require("./settings.js")
-const util = require("./util.js")
+const Settings = require("./settings.js")
+const Util = require("./util.js")
 
 /**
  * Startup
  */
-canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
-const client = new discord.Client();
+Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
+const client = new Discord.Client();
 
-mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@serverstatcluster.oi5gf.mongodb.net/data`, {
+Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@serverstatcluster.oi5gf.mongodb.net/data`, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
@@ -19,14 +19,26 @@ mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@serv
 /**
  * Startup
  */
-client.on("ready", () => {
+client.on("ready", async () => {
     client.settings = []
+    client.players = []
 
-    client.guilds.cache.forEach(guild => {
-        client.settings[guild.id] = new settings(guild);
+    client.guilds.cache.forEach(async guild => {
+        let settings = new Settings(guild)
+        client.settings[guild.id] = settings;
+
+        let address = `${await settings.getSetting("ip")}:${await settings.getSetting("port")}`
+
+        Util.request(`https://api.mcsrvstat.us/2/${address}.tld`, (success, data) => {
+            if (success) {
+                data = JSON.parse(data)
+                
+                client.players[address] = data.players.list
+            }
+        })
     })
 
-    client.commands = util.loadmodules("commands", (command, commands) => {
+    client.commands = Util.loadmodules("commands", (command, commands) => {
         command = new command(client)
         commands.set(command.name(true), command)
 
@@ -43,12 +55,63 @@ client.on("ready", () => {
     })
 
     console.log("Bot started successfully")
+
+    while (true) {
+        client.guilds.cache.forEach(async guild => {
+            let settings = client.settings[guild.id]
+
+            let channelId = await settings.getSetting("logchannel")
+            let channel = Util.getChannelById(guild, channelId)
+            if (!channel) return;
+
+            let address = `${await settings.getSetting("ip")}:${await settings.getSetting("port")}`
+
+            Util.request(`https://api.mcsrvstat.us/2/${address}.tld`, (success, data) => {
+                if (success) {
+                    data = JSON.parse(data)
+                    
+                    let old = client.players[address]
+                    let current = data.players.list
+
+                    current.foreach((player) => {
+                        if (!old.includes(player)) {
+                            channel.send({
+                                content: "Has joined the game.",
+                                embed: {
+                                    author: {
+                                        name: `${player}`,
+                                        icon_url: `https://minotar.net/helm/${player}/22.png`
+                                    }
+                                }
+                            })
+                        }
+                    })
+
+                    old.foreach((player) => {
+                        if (!current.includes(player)) {
+                            channel.send({
+                                content: "Has left the game.",
+                                embed: {
+                                    author: {
+                                        name: `${player}`,
+                                        icon_url: `https://minotar.net/helm/${player}/22.png`
+                                    }
+                                }
+                            })
+                        }
+                    })
+                }
+            })
+        })
+
+        await Util.sleep(60*1000)
+    }
 });
 
 client.on("guildCreate", guild => {
     if (!client.settings) client.settings = [];
 
-    client.settings[guild.id] = new settings(guild);
+    client.settings[guild.id] = new Settings(guild);
 })
 
 client.on("guildDelete", guild => {
@@ -86,7 +149,7 @@ client.on("message", async (message) => {
 
         const permissions = command.permissions()
 
-        if (!util.doesMemberHavePermission(message.member, permissions)) {
+        if (!Util.doesMemberHavePermission(message.member, permissions)) {
             return message.reply("You don't have permission to do that");
         }
 

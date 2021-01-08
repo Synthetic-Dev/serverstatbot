@@ -2,12 +2,13 @@ const mongoose = require("mongoose")
 
 const Schema = new mongoose.Schema({
     Value: {
-        type: String
+        type: String,
+        default: "0.0.0.0"
     },
-    GuildID: String
+    GuildID: {
+        type: String,
+        required: [true, "Needs an associated guild"]
+    }
 })
 
-module.exports = {
-    model: mongoose.model("ips", Schema),
-    defaultValue: ""
-}
+module.exports = mongoose.model("ips", Schema)

@@ -32,15 +32,6 @@ class Settings {
     }
 
     /**
-     * Checks if a setting has a default value
-     * @param {Object} setting 
-     * @param {string} name 
-     */
-    hasDefault(setting, name) {
-        if (!Object.keys(setting).includes("defaultValue")) console.error(`Setting '${name}' does not have a defaultValue`);
-    }
-
-    /**
      * Get a setting's value
      * @param {string} name 
      */
@@ -48,22 +39,18 @@ class Settings {
         this.isSetting(name)
 
         const setting = this.settings.get(name)
-        const model = setting.model
-        let data = await model.findOne({
+        let data = await setting.findOne({
             GuildID: this.guild.id
         })
 
         if (!data) {
-            this.hasDefault(setting, name)
-
-            data = new model({
-                Value: setting.jsonFormatted ? JSON.stringify(setting.defaultValue) : setting.defaultValue,
+            data = new setting({
                 GuildID: this.guild.id
             })
             data.save()
         }
 
-        return setting.jsonFormatted ? JSON.parse(data.Value) : data.Value
+        return data.Value
     }
 
     /**
@@ -75,19 +62,18 @@ class Settings {
         this.isSetting(name)
 
         const setting = this.settings.get(name)
-        const model = setting.model
-        let data = await model.findOne({
+        let data = await setting.findOne({
             GuildID: this.guild.id
         })
 
         if (data) {
-            await model.findOneAndDelete({
+            await setting.findOneAndDelete({
                 GuildID: this.guild.id
             })
         }
 
-        data = new model({
-            Value: setting.jsonFormatted ? JSON.stringify(value) : value,
+        data = new setting({
+            Value: value,
             GuildID: this.guild.id
         })
         data.save()
@@ -102,30 +88,24 @@ class Settings {
         this.isSetting(name)
 
         const setting = this.settings.get(name)
-        const model = setting.model
-        let data = await model.findOne({
+        let data = await setting.findOne({
             GuildID: this.guild.id
         })
 
         if (!data) {
-            this.hasDefault(setting, name)
-
-            data = new model({
-                Value: setting.jsonFormatted ? JSON.stringify(setting.defaultValue) : setting.defaultValue,
+            data = new setting({
                 GuildID: this.guild.id
             })
         }
 
-        let newValue = await transform(setting.jsonFormatted ? JSON.parse(data.Value) : data.Value)
-        newValue = setting.jsonFormatted ? JSON.stringify(newValue) : newValue
-
+        let newValue = await transform(data.Value)
         if (!newValue || data.Value == newValue) return;
 
-        await model.findOneAndDelete({
+        await setting.findOneAndDelete({
             GuildID: this.guild.id
         })
 
-        data = new model({
+        data = new setting({
             Value: newValue,
             GuildID: this.guild.id
         })
