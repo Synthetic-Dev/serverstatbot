@@ -8,10 +8,11 @@ const Util = require("./util.js")
 /**
  * Startup
  */
+require("dotenv").config()
 Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
 const client = new Discord.Client();
 
-Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@serverstatcluster.oi5gf.mongodb.net/data`, {
+Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${process.env.DBCLUSTER}.${process.env.DBDOMAIN}.mongodb.net/data`, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
