@@ -110,7 +110,7 @@ class util {
     static loadmodules(dir, register) {
         const modules = new Discord.Collection()
 
-        FileSystem.readdir(`${__dirname}/../${dir}`, (error, files) => {
+        FileSystem.readdir(`${__dirname}/${dir}`, (error, files) => {
             if (error) console.error(error);
             if (!files) return console.log(`There are no files at /${dir}`);
 
