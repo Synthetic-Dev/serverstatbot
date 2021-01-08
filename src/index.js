@@ -93,7 +93,7 @@ client.on("ready", async () => {
                     server.online = data.online
 
                     let old = server.players
-                    let current = data.players.list ? data.players.list : []
+                    let current = data.online && data.players.list ? data.players.list : []
 
                     if (!server.start) {
                         current.forEach((player) => {
