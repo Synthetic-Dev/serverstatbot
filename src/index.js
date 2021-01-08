@@ -46,6 +46,8 @@ client.on("ready", async () => {
 
     console.log("Bot started successfully")
 
+    await Util.sleep(1000)
+
     while (true) {
         client.guilds.cache.forEach(async guild => {
             let settings = client.settings[guild.id]

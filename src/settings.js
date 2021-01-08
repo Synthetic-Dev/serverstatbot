@@ -39,6 +39,7 @@ class Settings {
         this.isSetting(name)
 
         const setting = this.settings.get(name)
+        if (!setting) return null;
         let data = await setting.findOne({
             GuildID: this.guild.id
         })
