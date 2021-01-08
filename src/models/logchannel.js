@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const Schema = new mongoose.Schema({
     Value: {
         type: String,
-        default: "-1"
+        default: "0"
     },
     GuildID: {
         type: String,
