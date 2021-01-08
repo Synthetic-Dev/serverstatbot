@@ -47,6 +47,8 @@ client.on("ready", async () => {
 
     await Util.sleep(1000)
 
+    const {createCanvas, loadImage} = require("canvas")
+
     while (true) {
         client.guilds.cache.forEach(async guild => {
             let settings = client.settings[guild.id]
@@ -69,7 +71,7 @@ client.on("ready", async () => {
 
                     if (data.online && !server.online) {
                         let flag = false
-                        let messages = await channel.messages.fetch({limit: 5})
+                        let messages = await channel.messages.fetch({limit: 10})
                         messages.forEach(message => {
                             if (message.content == ":white_check_mark: Server is online") {
                                 flag = true
@@ -96,33 +98,51 @@ client.on("ready", async () => {
                     let current = data.online && data.players.list ? data.players.list : []
 
                     if (!server.start) {
-                        current.forEach((player) => {
+                        current.forEach(async (player) => {
                             if (!old.includes(player)) {
                                 try {
+                                    let image = createCanvas((16 + 21) * 13 + 26, 28)
+                                    let context = image.getContext("2d")
+
+                                    context.font = "17px 'Pixel Font'"
+                                    context.textBaseline = "top"
+                                    context.textAlign = "left"
+                                    context.fillStyle = "#fff"
+
+                                    let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
+                                    context.drawImage(head, 2, 2)
+                                    context.fillText(`${player} has joined the game.`, 32, 2)
+
                                     channel.send({
-                                        embed: {
-                                            author: {
-                                                name: `${player}`,
-                                                icon_url: `https://minotar.net/helm/${player}/22.png`
-                                            },
-                                            title: "has joined the game."
-                                        }
+                                        files: [{
+                                            attachment: image.toBuffer("image/png"),
+                                            name: "playeraction.png"
+                                        }]
                                     })
                                 } catch(e) {console.error(e)}
                             }
                         })
 
-                        old.forEach((player) => {
+                        old.forEach(async (player) => {
                             if (!current.includes(player)) {
                                 try {
+                                    let image = createCanvas((16 + 19) * 13 + 26, 28)
+                                    let context = image.getContext("2d")
+
+                                    context.font = "17px 'Pixel Font'"
+                                    context.textBaseline = "top"
+                                    context.textAlign = "left"
+                                    context.fillStyle = "#fff"
+
+                                    let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
+                                    context.drawImage(head, 2, 2)
+                                    context.fillText(`${player} has left the game.`, 32, 2)
+
                                     channel.send({
-                                        embed: {
-                                            author: {
-                                                name: `${player}`,
-                                                icon_url: `https://minotar.net/helm/${player}/22.png`
-                                            },
-                                            title: "has left the game."
-                                        }
+                                        files: [{
+                                            attachment: image.toBuffer("image/png"),
+                                            name: "playeraction.png"
+                                        }]
                                     })
                                 } catch(e) {console.error(e)}
                             }

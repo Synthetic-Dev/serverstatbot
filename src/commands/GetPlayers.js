@@ -27,7 +27,7 @@ class Command extends ICommand {
 
                 let promises = []
                 data.players.list.forEach((player, i) => {
-                    promises.push(loadImage(`https://minotar.net/helm/${player}/22.png`))
+                    promises.push(loadImage(`https://mc-heads.net/avatar/${player}/22.png`))
                     context.fillText(player, 32, i * 28 - 2)
                 })
 
