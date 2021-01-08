@@ -5,8 +5,7 @@
   "main": "index.js",
   "engines": {
     "node": "15.x",
-    "nodemon": "2.x",
-    "npm": "7.x"
+    "nodemon": "2.x"
   },
   "scripts": {
     "start": "node ./src/index.js",
