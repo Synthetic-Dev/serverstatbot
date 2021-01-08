@@ -119,7 +119,7 @@ class util {
             if (jsfiles.length === 0) return console.log(`No .js files to load at /${dir}`);
 
             jsfiles.forEach(file => {
-                let Module = require(`../${dir}/${file}`)
+                let Module = require(`/${dir}/${file}`)
 
                 if (register) {
                     register(Module, modules)
