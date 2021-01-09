@@ -7,7 +7,8 @@ class Command extends ICommand {
             name: "getplayers",
             desc: "Gets all the players currently online",
             aliases: [
-                "players"
+                "players",
+                "plrs"
             ]
         })
     }
