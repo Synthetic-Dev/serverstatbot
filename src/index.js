@@ -166,8 +166,6 @@ client.on("ready", () => {
 
     console.log("Bot started successfully")
 
-    await Util.sleep(1000)
-
     serverLogs()
 });
 
