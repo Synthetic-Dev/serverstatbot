@@ -46,7 +46,7 @@ async function serverLogs() {
                     if (data.online && !server.online) {
                         let text = ":white_check_mark: Server is online"
                         let flag = false
-                        let messages = await channel.messages.fetch({limit: 10})
+                        let messages = await channel.messages.fetch({limit: 5})
                         messages.forEach(message => {
                             if (message.content == text) {
                                 flag = true
@@ -64,7 +64,7 @@ async function serverLogs() {
                     } else if (!data.online && (server.online || server.start)) {
                         let text = ":octagonal_sign: Server is offline"
                         let flag = false
-                        let messages = await channel.messages.fetch({limit: 10})
+                        let messages = await channel.messages.fetch({limit: 5})
                         messages.forEach(message => {
                             if (message.content == text) {
                                 flag = true
