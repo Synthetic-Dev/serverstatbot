@@ -44,26 +44,38 @@ async function serverLogs() {
                     }
 
                     if (data.online && !server.online) {
+                        let text = ":white_check_mark: Server is online"
                         let flag = false
                         let messages = await channel.messages.fetch({limit: 10})
                         messages.forEach(message => {
-                            if (message.content == ":white_check_mark: Server is online") {
+                            if (message.content == text) {
                                 flag = true
                             }
                         })
 
                         if (!flag) {
                             try {
-                                channel.send(":white_check_mark: Server is online")
+                                channel.send(text)
                                 if (server.start) {
                                     channel.send(`There is ${data.players.online}/${data.players.max} players in the server.`)
                                 }
                             } catch(e) {console.error(e)}
                         }
-                    } else if (!data.online && server.online) {
-                        try {
-                            channel.send(":octagonal_sign: Server is offline")
-                        } catch(e) {console.error(e)}
+                    } else if (!data.online && (server.online || server.start)) {
+                        let text = ":octagonal_sign: Server is offline"
+                        let flag = false
+                        let messages = await channel.messages.fetch({limit: 10})
+                        messages.forEach(message => {
+                            if (message.content == text) {
+                                flag = true
+                            }
+                        })
+
+                        if (!flag) {
+                            try {
+                                channel.send(text)
+                            } catch(e) {console.error(e)}
+                        }
                     }
 
                     server.online = data.online
