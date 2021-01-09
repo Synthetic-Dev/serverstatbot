@@ -158,7 +158,7 @@ async function activityDisplay() {
             type: "WATCHING"
         },
         {
-            text: "View commands | .help",
+            text: "view commands | .help",
             type: "PLAYING"
         },
         {
