@@ -35,6 +35,11 @@ class Command extends ICommand {
                         {
                             name: "Developed by",
                             value: "SyntheticDev",
+                            inline: true
+                        },
+                        {
+                            name: "Invite",
+                            value: "[Invite the bot](https://discord.com/oauth2/authorize?client_id=759415210628087841&scope=bot%20identify%20guilds&permissions=1275587792)"
                         },
                         {
                             name: "Credit to",
@@ -44,10 +49,7 @@ class Command extends ICommand {
                         {
                             name: "Servers",
                             value: this.client.guilds.cache.size,
-                        },
-                        {
-                            name: "Invite",
-                            value: "[Invite the bot](https://discord.com/oauth2/authorize?client_id=759415210628087841&scope=bot%20identify%20guilds&permissions=1275587792)"
+                            inline: true
                         }
                     ]
                 }
