@@ -149,6 +149,39 @@ async function serverLogs() {
 
 
 /**
+ * Activity displays
+ */
+async function activityDisplay() {
+    const activities = [
+        {
+            text: "the server stats",
+            type: "WATCHING"
+        },
+        {
+            text: "View commands | .help",
+            type: "PLAYING"
+        },
+        {
+            text: () => {
+                return `${this.client.guilds.cache.size} servers`
+            },
+            type: "WATCHING"
+        }
+    ]
+
+    while (true) {
+        for (activity of activities) {
+            client.user.setActivity(typeof activity.text == "function" ? activity.text() : activity.text, {
+                type: activity.type
+            })
+    
+            await Util.sleep(10000)
+        }
+    }
+}
+
+
+/**
  * Startup
  */
 client.on("ready", async () => {
@@ -172,15 +205,12 @@ client.on("ready", async () => {
         }
     })
 
-    client.user.setActivity("the stats", {
-        type: "WATCHING"
-    })
-
     console.log("Bot started successfully")
 
     await Util.sleep(1000)
 
     serverLogs()
+    activityDisplay()
 });
 
 
