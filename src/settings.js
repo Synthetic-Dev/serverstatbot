@@ -5,6 +5,7 @@ class Settings {
     constructor(guild) {
         this.guild = guild
         this.settings = new Discord.Collection()
+        this.loading = true
 
         FileSystem.readdir(`${__dirname}/models`, (error, files) => {
             if (error) console.error(error);
@@ -21,6 +22,7 @@ class Settings {
         })
 
         console.log(`Made settings for guild ${guild.id}`)
+        this.loading = false
     }
 
     /**
@@ -28,6 +30,7 @@ class Settings {
      * @param {string} name 
      */
     isSetting(name) {
+        while (this.loading) {}
         if (!this.settings.has(name)) console.error(`No setting called '${name}' exists`);
     }
 

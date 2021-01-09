@@ -139,7 +139,7 @@ async function serverLogs() {
 /**
  * Startup
  */
-client.on("ready", () => {
+client.on("ready", async () => {
     client.startTime = new Date()
     client.settings = []
     client.servers = []
@@ -165,6 +165,8 @@ client.on("ready", () => {
     })
 
     console.log("Bot started successfully")
+
+    await Util.sleep(1000)
 
     serverLogs()
 });
