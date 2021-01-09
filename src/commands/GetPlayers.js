@@ -20,6 +20,13 @@ class Command extends ICommand {
 
         info.getServerInfo(message, data => {
             if (data.players.online > 0) {
+                if (!data.players.list) {
+                    try {
+                        message.channel.send(`There is ${data.players.online}/${data.players.max} players in the server.\nThis server has too many players to display a playerlist.`)
+                    } catch(e) {console.error(e)}
+                    return
+                }
+
                 let image = createCanvas(16 * 20 + 26, Math.min(maxInList + 1, data.players.online) * 28)
                 let context = image.getContext("2d")
 

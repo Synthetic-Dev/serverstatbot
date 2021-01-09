@@ -23,6 +23,8 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
 async function serverLogs() {
     const {createCanvas, loadImage} = require("canvas")
 
+    await Util.sleep(1000)
+
     while (true) {
         client.guilds.cache.forEach(async guild => {
             let settings = client.settings[guild.id]
@@ -203,7 +205,7 @@ async function activityDisplay() {
 /**
  * Startup
  */
-client.on("ready", async () => {
+client.on("ready", () => {
     client.startTime = new Date()
     client.settings = []
     client.servers = []
@@ -225,8 +227,6 @@ client.on("ready", async () => {
     })
 
     console.log("Bot started successfully")
-
-    await Util.sleep(1000)
 
     serverLogs()
     activityDisplay()
