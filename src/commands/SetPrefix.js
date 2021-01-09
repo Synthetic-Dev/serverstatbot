@@ -19,7 +19,7 @@ class Command extends ICommand {
         })
     }
 
-    async execute(inputs, message) {
+    async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
 
         if (inputs[0].length > 3) return Util.replyError(message, "Prefix can only be up to 3 characters long")

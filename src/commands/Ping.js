@@ -10,7 +10,7 @@ class Command extends ICommand {
         })
     }
 
-    async execute(inputs, message) {
+    async execute(message) {
         const ping = Util.ping(message)
 
         message.reply(`Pong! ${Math.abs(ping)}ms`)

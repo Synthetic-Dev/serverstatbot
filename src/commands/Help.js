@@ -68,7 +68,7 @@ class Command extends ICommand {
         return fields
     }
 
-    async execute(inputs, message) {
+    async execute(message) {
         const settings = this.client.settings[message.guild.id]
 
         let commands = this.getCommands(this.client.commands, (command) => {

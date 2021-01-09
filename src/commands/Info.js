@@ -34,7 +34,7 @@ class Command extends ICommand {
         })
     }
 
-    async execute(inputs, message) {
+    async execute(message) {
         this.getServerInfo(message, data => {
             try {
                 message.channel.send({

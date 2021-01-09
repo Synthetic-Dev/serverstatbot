@@ -19,7 +19,7 @@ class Command extends ICommand {
         })
     }
 
-    async execute(inputs, message) {
+    async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
 
         let maxPort = 32768

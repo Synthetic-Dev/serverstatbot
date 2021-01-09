@@ -12,7 +12,7 @@ class Command extends ICommand {
         })
     }
 
-    async execute(inputs, message) {
+    async execute(message) {
         await message.reply("Goodbye :wave:")
         await this.client.user.setStatus("invisible")
 

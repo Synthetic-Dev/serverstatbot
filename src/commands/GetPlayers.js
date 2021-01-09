@@ -13,7 +13,7 @@ class Command extends ICommand {
         })
     }
 
-    async execute(inputs, message) {
+    async execute(message) {
         const info = this.client.commands.get("info")
 
         info.getServerInfo(message, data => {
