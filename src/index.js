@@ -252,7 +252,7 @@ client.on("guildDelete", guild => {
 /**
  * Command Help
  */
-function commandHelp(message, command) {
+function commandHelp(message, command, prefix) {
     let scommand = [`${prefix}${command.name()}`]
     let fields = []
 
@@ -323,7 +323,7 @@ async function parseCommand(message) {
         const arguments = command.numOfArguments()
         if (inputs.length < arguments) {
             if (inputs.length == 0) {
-                return commandHelp(message, command)
+                return commandHelp(message, command, prefix)
             } else {
                 return Util.replyError(message, `'${commandName.toLowerCase()}' expects ${arguments} argument(s), got ${inputs.length}`);
             }
