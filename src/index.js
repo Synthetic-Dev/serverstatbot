@@ -163,7 +163,7 @@ async function activityDisplay() {
         },
         {
             text: () => {
-                return `${this.client.guilds.cache.size} servers`
+                return `${client.guilds.cache.size} servers`
             },
             type: "WATCHING"
         }
