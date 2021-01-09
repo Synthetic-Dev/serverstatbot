@@ -1,6 +1,8 @@
 const {createCanvas, loadImage} = require("canvas")
 const ICommand = require("../interfaces/ICommand.js")
 
+const maxInList = 25
+
 class Command extends ICommand {
     constructor(client) {
         super(client, {
@@ -28,6 +30,13 @@ class Command extends ICommand {
 
                 let promises = []
                 data.players.list.forEach((player, i) => {
+                    if (i >= maxInList + 1) {
+                        if (i == maxInList + 1) {
+                            context.fillText(`and ${data.players.online - maxInList} more...`, 2, i * 28 - 2)
+                        }
+                        return
+                    }
+
                     promises.push(loadImage(`https://mc-heads.net/avatar/${player}/22.png`))
                     context.fillText(player, 32, i * 28 - 2)
                 })

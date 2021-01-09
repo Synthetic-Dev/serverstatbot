@@ -83,57 +83,74 @@ async function serverLogs() {
                     let old = server.players
                     let current = data.online && data.players.list ? data.players.list : []
 
-                    if (!server.start) {
-                        current.forEach(async (player) => {
-                            if (!old.includes(player)) {
-                                try {
-                                    let image = createCanvas((16 + 21) * 13 + 26, 28)
-                                    let context = image.getContext("2d")
-
-                                    context.font = "17px 'Pixel Font'"
-                                    context.textBaseline = "top"
-                                    context.textAlign = "left"
-                                    context.fillStyle = "#fff"
-
-                                    let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
-                                    context.drawImage(head, 2, 2)
-                                    context.fillText(`${player} has joined the game.`, 32, 2)
-
-                                    channel.send({
-                                        files: [{
-                                            attachment: image.toBuffer("image/png"),
-                                            name: "playeraction.png"
-                                        }]
-                                    })
-                                } catch(e) {console.error(e)}
+                    if (data.players.online > 200) {
+                        let text = ":warning: Server has too many players online to log activity"
+                        let flag = false
+                        let messages = await channel.messages.fetch({limit: 5})
+                        messages.forEach(message => {
+                            if (message.content == text) {
+                                flag = true
                             }
                         })
 
-                        old.forEach(async (player) => {
-                            if (!current.includes(player)) {
-                                try {
-                                    let image = createCanvas((16 + 19) * 13 + 26, 28)
-                                    let context = image.getContext("2d")
+                        if (!flag) {
+                            try {
+                                channel.send(text)
+                            } catch(e) {console.error(e)}
+                        }
+                    } else {
+                        if (!server.start) {
+                            current.forEach(async (player) => {
+                                if (!old.includes(player)) {
+                                    try {
+                                        let image = createCanvas((16 + 21) * 13 + 26, 28)
+                                        let context = image.getContext("2d")
 
-                                    context.font = "17px 'Pixel Font'"
-                                    context.textBaseline = "top"
-                                    context.textAlign = "left"
-                                    context.fillStyle = "#fff"
+                                        context.font = "17px 'Pixel Font'"
+                                        context.textBaseline = "top"
+                                        context.textAlign = "left"
+                                        context.fillStyle = "#fff"
 
-                                    let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
-                                    context.drawImage(head, 2, 2)
-                                    context.fillText(`${player} has left the game.`, 32, 2)
+                                        let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
+                                        context.drawImage(head, 2, 2)
+                                        context.fillText(`${player} has joined the game.`, 32, 2)
 
-                                    channel.send({
-                                        files: [{
-                                            attachment: image.toBuffer("image/png"),
-                                            name: "playeraction.png"
-                                        }]
-                                    })
-                                } catch(e) {console.error(e)}
-                            }
-                        })
-                    }
+                                        channel.send({
+                                            files: [{
+                                                attachment: image.toBuffer("image/png"),
+                                                name: "playeraction.png"
+                                            }]
+                                        })
+                                    } catch(e) {console.error(e)}
+                                }
+                            })
+
+                            old.forEach(async (player) => {
+                                if (!current.includes(player)) {
+                                    try {
+                                        let image = createCanvas((16 + 19) * 13 + 26, 28)
+                                        let context = image.getContext("2d")
+
+                                        context.font = "17px 'Pixel Font'"
+                                        context.textBaseline = "top"
+                                        context.textAlign = "left"
+                                        context.fillStyle = "#fff"
+
+                                        let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
+                                        context.drawImage(head, 2, 2)
+                                        context.fillText(`${player} has left the game.`, 32, 2)
+
+                                        channel.send({
+                                            files: [{
+                                                attachment: image.toBuffer("image/png"),
+                                                name: "playeraction.png"
+                                            }]
+                                        })
+                                    } catch(e) {console.error(e)}
+                                }
+                            })
+                        }
+                    }   
 
                     server.players = current
                     server.start = false
