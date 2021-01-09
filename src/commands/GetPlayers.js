@@ -20,7 +20,7 @@ class Command extends ICommand {
 
         info.getServerInfo(message, data => {
             if (data.players.online > 0) {
-                let image = createCanvas(16 * 20 + 26, data.players.online * 28)
+                let image = createCanvas(16 * 20 + 26, Math.min(maxInList + 1, data.players.online) * 28)
                 let context = image.getContext("2d")
 
                 context.font = "20px 'Pixel Font'"
