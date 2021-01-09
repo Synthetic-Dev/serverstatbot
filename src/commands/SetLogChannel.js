@@ -11,7 +11,7 @@ class Command extends ICommand {
                 desc: "The channel"
             }],
             perms: [
-                "MANAGE_CHANNELS"
+                "ADMINISTRATOR"
             ]
         })
     }
