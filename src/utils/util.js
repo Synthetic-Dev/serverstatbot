@@ -202,7 +202,7 @@ class util {
     }
 
     /**
-     * Gets a channel by id
+     * Gets a member by a member resolvable
      * @param {Discord.Guild} guild
      * @param {Discord.Message | Discord.User} resolvable
      * @returns {Promise<Discord.GuildMember>} 
@@ -276,6 +276,15 @@ class util {
      * @returns {Discord.GuildChannel} 
      */
     static getChannelById(guild, id) {
+        return guild.channels.cache.get(id)
+    }
+
+    /**
+     * Gets the channel with highest priority for alerts
+     * @param {Discord.Guild} guild
+     * @returns {Discord.GuildChannel} 
+     */
+    static getPriorityChannel(guild) {
         return guild.channels.cache.get(id)
     }
 

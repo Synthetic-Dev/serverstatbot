@@ -37,7 +37,48 @@ async function serverLogs() {
 
             Util.request(`https://api.mcsrvstat.us/2/${address}.tld`, async (success, data) => {
                 if (success) {
-                    data = JSON.parse(data)
+                    success = false
+                    try {
+                        data = JSON.parse(data)
+                        success = true
+                    } catch(e) {
+                        console.error(e)
+                    }
+
+                    if (!success) {
+                        let text = "An error occured when trying to gather server info"
+                        let flag = false
+                        let messages = await channel.messages.fetch({limit: 5})
+                        messages.forEach(message => {
+                            if (message.content == text) {
+                                flag = true
+                            }
+                        })
+
+                        if (!flag) {
+                            try {
+                                channel.send(text)
+                            } catch(e) {console.error(e)}
+                        }
+                    };
+                    };
+
+                    if (!data.ip || !data.port) {
+                        let text = "An invalid ip or port is set"
+                        let flag = false
+                        let messages = await channel.messages.fetch({limit: 5})
+                        messages.forEach(message => {
+                            if (message.content == text) {
+                                flag = true
+                            }
+                        })
+
+                        if (!flag) {
+                            try {
+                                channel.send(text)
+                            } catch(e) {console.error(e)}
+                        }
+                    };
                     
                     let server = client.servers[address] ? client.servers[address] : {
                         players: [],

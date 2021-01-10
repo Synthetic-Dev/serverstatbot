@@ -19,7 +19,14 @@ class Command extends ICommand {
             if (!success) {
                 Util.replyError(message, `An error occured, please contact developer\n\n${data.message}`)
             } else {
-                data = JSON.parse(data)
+                success = false
+                try {
+                    data = JSON.parse(data)
+                    success = true
+                } catch(e) {
+                    console.error(e)
+                }
+                if (!success) return Util.replyError(message, "An error occured when trying to gather server info")
                 if (!data.ip || !data.port) return Util.replyError(message, "An invalid ip or port is set");
                 if (!data.online) {
                     try {

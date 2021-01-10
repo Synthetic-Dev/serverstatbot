@@ -77,7 +77,41 @@ class Command extends ICommand {
             return false;
         })
 
-        this.postCommands(message.channel, "Requires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + await settings.getSetting("prefix") + "``", commands)
+        let prefix = await settings.getSetting("prefix")
+        this.postCommands(message.channel, "Requires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + prefix + "``", commands)
+
+        // Setup help message
+        let ip = await settings.getSetting("ip")
+
+        if (Util.doesMemberHavePermission(message.member, ["ADMINISTRATOR"]) && (ip == "0.0.0.0" || ip == "")) {
+            try {
+                message.channel.send({
+                    embed: {
+                        title: "Setup",
+                        description: "Get your server connected and setup!",
+                        color: 5145560,
+                        fields: [
+                            {
+                                name: "Add your server ip",
+                                description: `Do ${prefix}setip` + "``" + "<your ip here>" + "``"
+                            },
+                            {
+                                name: "Set your server port",
+                                description: `The server port defaults to **25565**, if your server uses a different port do ${prefix}setport` + "``" + "<your port here>" + "``"
+                            },
+                            {
+                                name: "Set up a log channel",
+                                description: `This is where server status and join/leave messages will be posted. Make sure that the bot has permission to post in this channel! Do ${prefix}setlogchannel` + "``" + "<channel or 'here' or 'clear'>" + "``"
+                            },
+                            {
+                                name: "Need support?",
+                                description: `Join the bot support server here: [Join server](https://discord.gg/uqVp2XzUP8)`
+                            }
+                        ]
+                    }
+                })
+            } catch(e) {console.error(e)}
+        }
     }
 }
 
