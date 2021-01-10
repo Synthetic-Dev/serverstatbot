@@ -100,7 +100,7 @@ async function serverLogs() {
                             }
                         })
 
-                        if (!flag || ignoreflag) {
+                        if ((!flag || ignoreflag) && !(!flag && ignoreflag)) {
                             try {
                                 channel.send(text)
                                 if (server.start) {
@@ -123,7 +123,7 @@ async function serverLogs() {
                             }
                         })
 
-                        if (!flag || ignoreflag) {
+                        if ((!flag || ignoreflag) && !(!flag && ignoreflag)) {
                             try {
                                 channel.send(text)
                             } catch(e) {console.error(e)}
