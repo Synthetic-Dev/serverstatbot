@@ -78,7 +78,7 @@ class Command extends ICommand {
         })
 
         let prefix = await settings.getSetting("prefix")
-        this.postCommands(message.channel, "Requires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + prefix + "``", commands)
+        this.postCommands(message.channel, "**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\nRequires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + prefix + "``", commands)
 
         // Setup help message
         let ip = await settings.getSetting("ip")
@@ -93,17 +93,17 @@ class Command extends ICommand {
                         fields: [
                             {
                                 name: "Add your server ip",
-                                value: `Do ${prefix}setip` + "``" + "<your ip here>" + "``",
+                                value: `Do **${prefix}setip** ` + "``" + "<your ip here>" + "``",
                                 inline: true
                             },
                             {
                                 name: "Set your server port",
-                                value: `The server port defaults to **25565**, if your server uses a different port do ${prefix}setport` + "``" + "<your port here>" + "``",
+                                value: `The server port defaults to **25565**, if your server uses a different port do **${prefix}setport** ` + "``" + "<your port here>" + "``",
                                 inline: true
                             },
                             {
                                 name: "Set up a log channel",
-                                value: `This is where server status and join/leave messages will be posted. Make sure that the bot has permission to post in this channel! Do ${prefix}setlogchannel` + "``" + "<channel or 'here' or 'clear'>" + "``"
+                                value: `This is where server status and join/leave messages will be posted. Make sure that the bot has permission to post in this channel! Do **${prefix}setlogchannel** ` + "``" + "<channel or 'here' or 'clear'>" + "``"
                             },
                             {
                                 name: "Need support?",
