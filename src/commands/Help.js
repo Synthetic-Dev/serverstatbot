@@ -78,7 +78,7 @@ class Command extends ICommand {
         })
 
         let prefix = await settings.getSetting("prefix")
-        this.postCommands(message.channel, "**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\nRequires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + prefix + "``", commands)
+        this.postCommands(message.channel, "**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\n\nRequires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + prefix + "``", commands)
 
         // Setup help message
         let ip = await settings.getSetting("ip")

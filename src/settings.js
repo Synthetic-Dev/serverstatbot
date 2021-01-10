@@ -21,7 +21,7 @@ class Settings {
             })
         })
 
-        console.log(`Made settings for guild ${guild.id}`)
+        console.log(`Made settings for guild (${guild.id}) ${guild.name}`)
         this.loading = false
     }
 
