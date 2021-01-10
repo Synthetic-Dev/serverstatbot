@@ -93,19 +93,21 @@ class Command extends ICommand {
                         fields: [
                             {
                                 name: "Add your server ip",
-                                description: `Do ${prefix}setip` + "``" + "<your ip here>" + "``"
+                                value: `Do ${prefix}setip` + "``" + "<your ip here>" + "``",
+                                inline: true
                             },
                             {
                                 name: "Set your server port",
-                                description: `The server port defaults to **25565**, if your server uses a different port do ${prefix}setport` + "``" + "<your port here>" + "``"
+                                value: `The server port defaults to **25565**, if your server uses a different port do ${prefix}setport` + "``" + "<your port here>" + "``",
+                                inline: true
                             },
                             {
                                 name: "Set up a log channel",
-                                description: `This is where server status and join/leave messages will be posted. Make sure that the bot has permission to post in this channel! Do ${prefix}setlogchannel` + "``" + "<channel or 'here' or 'clear'>" + "``"
+                                value: `This is where server status and join/leave messages will be posted. Make sure that the bot has permission to post in this channel! Do ${prefix}setlogchannel` + "``" + "<channel or 'here' or 'clear'>" + "``"
                             },
                             {
                                 name: "Need support?",
-                                description: `Join the bot support server here: [Join server](https://discord.gg/uqVp2XzUP8)`
+                                value: `Join the bot support server here: [Join server](https://discord.gg/uqVp2XzUP8)`
                             }
                         ]
                     }
