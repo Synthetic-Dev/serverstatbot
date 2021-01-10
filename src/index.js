@@ -61,7 +61,6 @@ async function serverLogs() {
                             } catch(e) {console.error(e)}
                         }
                     };
-                    };
 
                     if (!data.ip || !data.port) {
                         let text = "An invalid ip or port is set"
