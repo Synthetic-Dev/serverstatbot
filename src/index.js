@@ -383,7 +383,12 @@ async function parseCommand(message) {
         inputs = inputs.slice(0, arguments - 1)
         inputs[arguments - 1] = end
 
-        command.execute(message, inputs)
+        try {
+            command.execute(message, inputs)
+        } catch(e) {
+            Util.replyError(message, "An error occured while trying to execute that command, please report this to the developer!")
+            console.error(e)
+        }
     }
 }
 
