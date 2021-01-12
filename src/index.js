@@ -33,6 +33,16 @@ async function serverLogs() {
             let channel = Util.getChannelById(guild, channelId)
             if (!channel) return;
 
+            if (!Util.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"])) {
+                settings.setSetting("logchannel", "0")
+
+                let priorityChannel = Util.getPriorityChannel(guild)
+                if (Util.doesMemberHavePermissionsInChannel(guild.me, priorityChannel, ["SEND_MESSAGES"])) {
+                    Util.sendError(priorityChannel, "I do not have permission to send messages in the log channel! Log channel has been removed.")
+                }
+                return
+            };
+
             let address = `${await settings.getSetting("ip")}:${await settings.getSetting("port")}`
 
             Util.request(`https://api.mcsrvstat.us/2/${address}.tld`, async (success, data) => {
@@ -88,19 +98,19 @@ async function serverLogs() {
                     if (data.online && !server.online) {
                         let text = ":white_check_mark: Server is online"
                         let ignoretext = ":octagonal_sign: Server is offline"
-                        let flag = false
+                        let flag = true
                         let ignoreflag = false
 
                         let messages = await channel.messages.fetch({limit: 5})
                         messages.forEach(message => {
                             if (message.content == text) {
-                                flag = true
+                                flag = false
                             } else if (message.content == ignoretext) {
                                 ignoreflag = true
                             }
                         })
 
-                        if ((!flag || ignoreflag) && !(!flag && ignoreflag)) {
+                        if ((flag || ignoreflag) && !(flag && ignoreflag)) {
                             try {
                                 channel.send(text)
                                 if (server.start) {
@@ -111,19 +121,19 @@ async function serverLogs() {
                     } else if (!data.online && (server.online || server.start)) {
                         let text = ":octagonal_sign: Server is offline"
                         let ignoretext = ":white_check_mark: Server is online"
-                        let flag = false
+                        let flag = true
                         let ignoreflag = false
 
                         let messages = await channel.messages.fetch({limit: 5})
                         messages.forEach(message => {
                             if (message.content == text) {
-                                flag = true
+                                flag = false
                             } else if (message.content == ignoretext) {
                                 ignoreflag = true
                             }
                         })
 
-                        if ((!flag || ignoreflag) && !(!flag && ignoreflag)) {
+                        if ((flag || ignoreflag) && !(flag && ignoreflag)) {
                             try {
                                 channel.send(text)
                             } catch(e) {console.error(e)}
@@ -214,7 +224,7 @@ async function serverLogs() {
             })
         })
 
-        await Util.sleep(10000)
+        await Util.sleep(20000)
     }
 }
 

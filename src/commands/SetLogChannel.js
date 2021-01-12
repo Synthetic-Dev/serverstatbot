@@ -27,7 +27,9 @@ class Command extends ICommand {
             } catch(e) {console.error(e)}
 
             return settings.setSetting("logchannel", "0")
-        } else if (!channel) return Util.couldNotFind(message, "channel", inputs[0], "guild");
+        } else if (!channel) {
+            return Util.couldNotFind(message, "channel", inputs[0], "guild")
+        } else if (!Util.doesMemberHavePermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])) return Util.replyError(message, "I do not have permission to send messages in that channel!");
         
         try {
             message.reply(`Log channel set to <#${channel.id}>`)

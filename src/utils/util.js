@@ -4,6 +4,7 @@ const HTTP = require("http")
 const FileSystem = require("fs");
 
 const unicodeEmojis = require("./unicodeEmojis.json")
+const DevId = "255733848162304002"
 
 class util {
     constructor() {
@@ -144,7 +145,25 @@ class util {
             botMessage.delete({
                 timeout: 15000
             })
-        } catch {}
+        } catch(e) {
+            console.error(e)
+        }
+    }
+
+    /**
+     * Sends a message in the given channel with the given warning text
+     * @param {Discord.TextChannel} message 
+     * @param {string} warning 
+     */
+    static async sendWarning(channel, warning) {
+        try {
+            let botMessage = await channel.send("\n:warning: " + warning)
+            botMessage.delete({
+                timeout: 15000
+            })
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -156,9 +175,27 @@ class util {
         try {
             let botMessage = await message.reply("\n:stop_sign: " + error)
             botMessage.delete({
-                timeout: 5000
+                timeout: 15000
             })
-        } catch {}
+        } catch(e) {
+            console.error(e)
+        }
+    }
+
+    /**
+     * Sends a message in the given channel with the given error text
+     * @param {Discord.TextChannel} message 
+     * @param {string} error 
+     */
+    static async sendError(channel, error) {
+        try {
+            let botMessage = await channel.send("\n:stop_sign: " + error)
+            botMessage.delete({
+                timeout: 15000
+            })
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -173,32 +210,59 @@ class util {
     }
 
     /**
-     * Checks if the member has the given permissions
+     * Checks if the member has the given permissions in the guild
      * @param {Discord.GuildMember} member 
      * @param {Array} permissions 
      * @returns {boolean}
      */
     static doesMemberHavePermission(member, permissions = []) {
-        const DevId = "255733848162304002"
-
-        if (member.id == DevId) {
-            return true
-        }
-
-        let flag = true
-        permissions.forEach(permission => {
-            if (!flag) return;
-
-            if (permission == "DEV") {
-                if (member.id != DevId) flag = false;
-            } else if (permission == "OWNER") {
-                if (member.id != member.guild.ownerID) flag = false;
-            } else {
-                flag = member.hasPermission(permission, {checkAdmin: true, checkOwner: true})
+        try {
+            if (member.id == DevId) {
+                return true
             }
-        })
 
-        return flag
+            let flag = true
+            permissions.forEach(permission => {
+                if (!flag) return;
+
+                if (permission == "DEV") {
+                    if (member.id != DevId) flag = false;
+                } else if (permission == "OWNER") {
+                    if (member.id != member.guild.ownerID) flag = false;
+                } else {
+                    flag = member.hasPermission(permission, {checkAdmin: true, checkOwner: true})
+                }
+            })
+
+            return flag
+        } catch(e) {
+            console.error(e)
+        }
+        return false
+    }
+
+    /**
+     * Checks if the member has the given permissions in the channel
+     * @param {Discord.GuildMember} member 
+     * @param {Discord.GuildChannel} channel 
+     * @param {Array} permissions 
+     * @returns {boolean}
+     */
+    static doesMemberHavePermissionsInChannel(member, channel, permissions = []) {
+        try {
+            let flag = true
+            let memberPermissions = channel.permissionsFor(member)
+            permissions.forEach(permission => {
+                if (!flag) return;
+
+                flag = memberPermissions.has(permission, true)
+            })
+
+            return flag
+        } catch(e) {
+            console.error(e)
+        }
+        return false
     }
 
     /**
@@ -208,7 +272,11 @@ class util {
      * @returns {Promise<Discord.GuildMember>} 
      */
     static getMember(guild, resolvable) {
-        return guild.members.fetch(resolvable)
+        try {
+            return guild.members.fetch(resolvable)
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -218,7 +286,11 @@ class util {
      * @returns {Promise<Discord.Guild>} 
      */
     static getGuildById(client, id) {
-        return client.guilds.fetch(id)
+        try {
+            return client.guilds.fetch(id)
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -228,20 +300,29 @@ class util {
      * @returns {Discord.GuildEmoji}
      */
     static getEmoji(guild, input) {
-        let find
-        Object.values(unicodeEmojis).forEach(unicode => {
-            if (!find && unicode == input) find = unicode;
-        })
-        Object.keys(unicodeEmojis).forEach(name => {
-            if (!find && name == input) find = unicodeEmojis[name];
-        })
-        guild.emojis.cache.forEach(emoji => {
-            if (!find && emoji.name == input) find = emoji;
-        })
-        guild.client.emojis.cache.forEach(emoji => {
-            if (!find && emoji.name == input) find = emoji;
-        })
-        return find
+        try {
+            let find
+
+            Object.values(unicodeEmojis).forEach(unicode => {
+                if (!find && unicode == input) find = unicode;
+            })
+
+            Object.keys(unicodeEmojis).forEach(name => {
+                if (!find && name == input) find = unicodeEmojis[name];
+            })
+
+            guild.emojis.cache.forEach(emoji => {
+                if (!find && emoji.name == input) find = emoji;
+            })
+
+            guild.client.emojis.cache.forEach(emoji => {
+                if (!find && emoji.name == input) find = emoji;
+            })
+
+            return find
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -251,7 +332,11 @@ class util {
      * @returns {Discord.GuildEmoji}
      */
     static getEmojiById(guild, id) {
-        return guild.emojis.cache.get(id) ? guild.emojis.cache.get(id) : guild.client.emojis.cache.get(id)
+        try {
+            return guild.emojis.cache.get(id) ? guild.emojis.cache.get(id) : guild.client.emojis.cache.get(id)
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -259,58 +344,91 @@ class util {
      * @param {Discord.Guild} guild
      * @param {string} name 
      * @param {string} type
-     * @returns {Discord.GuildChannel} 
+     * @returns {Discord.GuildChannel?} 
      */
     static getChannel(guild, name, type) {
-        let find
-        guild.channels.cache.forEach(channel => {
-            if (!find && channel.name == name && (!type || channel.type == type)) find = channel;
-        })
-        return find
+        try {
+            let find
+            guild.channels.cache.forEach(channel => {
+                if (!find && channel.name == name
+                    && (!type || channel.type == type)
+                    && channel.viewable) find = channel;
+            })
+            return find
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
      * Gets a channel by id
      * @param {Discord.Guild} guild
      * @param {string} id
-     * @returns {Discord.GuildChannel} 
+     * @returns {Discord.GuildChannel?} 
      */
     static getChannelById(guild, id) {
-        return guild.channels.cache.get(id)
+        try {
+            let channel = guild.channels.cache.get(id)
+            if (channel.viewable) return channel;
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
      * Gets the channel with highest priority for alerts
      * @param {Discord.Guild} guild
-     * @returns {Discord.GuildChannel} 
+     * @returns {Discord.GuildChannel?} 
      */
     static getPriorityChannel(guild) {
-        return guild.channels.cache.get(id)
+        try {
+            let channel = guild.systemChannel
+            if (channel.viewable) return channel;
+            channel = null
+            
+            ["general", "commons", "announcements", "commands", "bot-cmds", "bot-commands"].forEach(name => {
+                if (channel) return;
+                channel = this.getChannel(guild, name, "text")
+            })
+            return channel
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
      * Gets a message from a channel by id
      * @param {Discord.TextChannel} channel
      * @param {string} id
-     * @returns {Promise<Discord.Message>} 
+     * @returns {Promise<Discord.Message>?} 
      */
     static async getMessageInChannel(channel, id) {
-        let messages = await channel.messages.fetch()
-        return messages.get(id)
+        try {
+            if (!channel.viewable) return;
+            let messages = await channel.messages.fetch()
+            return messages.get(id)
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
      * Gets the message before the provided message id
      * @param {Discord.TextChannel} channel
      * @param {string} id
-     * @returns {Promise<Discord.Message>} 
+     * @returns {Promise<Discord.Message>?} 
      */
     static async getPreviousMessage(channel, id) {
-        let messages = await channel.messages.fetch({
-            limit: 1,
-            before: id
-        })
-        return messages instanceof Discord.Collection ? messages.last() : messages
+        try {
+            if (!channel.viewable) return;
+            let messages = await channel.messages.fetch({
+                limit: 1,
+                before: id
+            })
+            return messages instanceof Discord.Collection ? messages.last() : messages
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -320,12 +438,16 @@ class util {
      * @returns {Promise<Discord.GuildChannel>} 
      */
     static async getRole(guild, name) {
-        let find
-        let roles = await guild.roles.fetch()
-        roles.cache.forEach(role => {
-            if (!find && role.name == name) find = role;
-        })
-        return find
+        try {
+            let find
+            let roles = await guild.roles.fetch()
+            roles.cache.forEach(role => {
+                if (!find && role.name == name) find = role;
+            })
+            return find
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -335,7 +457,11 @@ class util {
      * @returns {Promise<Discord.Role>} 
      */
     static getRoleById(guild, id) {
-        return guild.roles.fetch(id)
+        try {
+            return guild.roles.fetch(id)
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -345,11 +471,15 @@ class util {
      * @returns {Discord.GuildChannel} 
      */
     static parseChannel(guild, input) {
-        input = input.replace(/^<#/, "").replace(/>$/, "")
+        try {
+            input = input.replace(/^<#/, "").replace(/>$/, "")
 
-        let find = this.getChannelById(guild, input)
-        if (find) return find;
-        return this.getChannel(guild, input)
+            let find = this.getChannelById(guild, input)
+            if (find) return find;
+            return this.getChannel(guild, input)
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -359,11 +489,15 @@ class util {
      * @returns {Discord.GuildEmoji} 
      */
     static parseEmoji(guild, input) {
-        input = input.replace(/^<:.+:/, "").replace(/>$/, "")
+        try {
+            input = input.replace(/^<:.+:/, "").replace(/>$/, "")
 
-        let find = this.getEmojiById(guild, input)
-        if (find) return find;
-        return this.getEmoji(guild, input)
+            let find = this.getEmojiById(guild, input)
+            if (find) return find;
+            return this.getEmoji(guild, input)
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -373,11 +507,15 @@ class util {
      * @returns {Promise<Discord.Role>} 
      */
     static async parseRole(guild, input) {
-        input = input.replace(/^<@&/, "").replace(/>$/, "")
+        try {
+            input = input.replace(/^<@&/, "").replace(/>$/, "")
 
-        let find = await this.getRoleById(guild, input)
-        if (find) return find;
-        return this.getRole(guild, input)
+            let find = await this.getRoleById(guild, input)
+            if (find) return find;
+            return this.getRole(guild, input)
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**
@@ -386,12 +524,14 @@ class util {
      * @returns {Date} 
      */
     static parseDate(input) {
-        let date
+        try {
+            let number = Number(input)
+            let date = !isNaN(number) ? new Date(number) : new Date(input)
 
-        let number = Number(input)
-        date = !isNaN(number) ? new Date(number) : new Date(input)
-
-        return isNaN(date) ? null : date
+            return isNaN(date) ? null : date
+        } catch(e) {
+            console.error(e)
+        }
     }
 }
 
