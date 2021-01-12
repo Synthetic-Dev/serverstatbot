@@ -369,7 +369,7 @@ class util {
     static getChannelById(guild, id) {
         try {
             let channel = guild.channels.cache.get(id)
-            if (channel.viewable) return channel;
+            if (channel && channel.viewable) return channel;
         } catch(e) {
             console.error(e)
         }
