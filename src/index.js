@@ -37,8 +37,10 @@ async function serverLogs() {
                 settings.setSetting("logchannel", "0")
 
                 let priorityChannel = Util.getPriorityChannel(guild)
-                if (Util.doesMemberHavePermissionsInChannel(guild.me, priorityChannel, ["SEND_MESSAGES"])) {
+                if (priorityChannel && Util.doesMemberHavePermissionsInChannel(guild.me, priorityChannel, ["SEND_MESSAGES"])) {
                     Util.sendError(priorityChannel, "I do not have permission to send messages in the log channel! Log channel has been removed.")
+                } else {
+                    console.log(`Did not have permissions to send messages in (${guild.id}) ${guild.name}'s log channel and could not find/send message in priority channel.`)
                 }
                 return
             };
