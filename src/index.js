@@ -224,7 +224,7 @@ async function serverLogs() {
             })
         })
 
-        await Util.sleep(20000)
+        await Util.sleep(10000)
     }
 }
 
