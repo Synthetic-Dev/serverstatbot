@@ -101,18 +101,22 @@ async function serverLogs() {
                         let text = ":white_check_mark: Server is online"
                         let ignoretext = ":octagonal_sign: Server is offline"
                         let flag = true
-                        let ignoreflag = false
 
-                        let messages = await channel.messages.fetch({limit: 5})
-                        messages.forEach(message => {
-                            if (message.content == text) {
-                                flag = false
-                            } else if (message.content == ignoretext) {
-                                ignoreflag = true
-                            }
-                        })
+                        if (server.start) {
+                            let ignoreflag = false
 
-                        if ((flag || ignoreflag) && !(flag && ignoreflag)) {
+                            let messages = await channel.messages.fetch({limit: 5})
+                            messages.forEach(message => {
+                                if (!ignoreflag && message.content == text) {
+                                    flag = false
+                                } else if (!ignoreflag && message.content == ignoretext) {
+                                    ignoreflag = true
+                                    flag = true
+                                }
+                            })
+                        }
+
+                        if (flag) {
                             try {
                                 channel.send(text)
                                 if (server.start) {
@@ -124,18 +128,22 @@ async function serverLogs() {
                         let text = ":octagonal_sign: Server is offline"
                         let ignoretext = ":white_check_mark: Server is online"
                         let flag = true
-                        let ignoreflag = false
 
-                        let messages = await channel.messages.fetch({limit: 5})
-                        messages.forEach(message => {
-                            if (message.content == text) {
-                                flag = false
-                            } else if (message.content == ignoretext) {
-                                ignoreflag = true
-                            }
-                        })
+                        if (server.start) {
+                            let ignoreflag = false
 
-                        if ((flag || ignoreflag) && !(flag && ignoreflag)) {
+                            let messages = await channel.messages.fetch({limit: 5})
+                            messages.forEach(message => {
+                                if (!ignoreflag && message.content == text) {
+                                    flag = false
+                                } else if (!ignoreflag && message.content == ignoretext) {
+                                    ignoreflag = true
+                                    flag = true
+                                }
+                            })
+                        }
+
+                        if (flag) {
                             try {
                                 channel.send(text)
                             } catch(e) {console.error(e)}
