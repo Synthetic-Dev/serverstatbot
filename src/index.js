@@ -61,36 +61,20 @@ async function serverLogs() {
 
                     if (!success) {
                         let text = ":stop_sign: An error occured when trying to gather server info"
-                        let flag = false
-                        let messages = await channel.messages.fetch({limit: 5})
-                        messages.forEach(message => {
-                            if (message.content == text) {
-                                flag = true
-                            }
-                        })
+                        let message = await Util.getRecentMessage(channel, text)
 
-                        if (!flag) {
-                            try {
-                                channel.send(text)
-                            } catch(e) {console.error(e)}
+                        if (!message) {
+                            Util.sendMessage(channel, text)
                         }
                         return
                     };
 
                     if (!data.ip || !data.port) {
                         let text = ":warning: An invalid ip or port is set, cannot gather server info"
-                        let flag = false
-                        let messages = await channel.messages.fetch({limit: 5})
-                        messages.forEach(message => {
-                            if (message.content == text) {
-                                flag = true
-                            }
-                        })
+                        let message = await Util.getRecentMessage(channel, text)
 
-                        if (!flag) {
-                            try {
-                                channel.send(text)
-                            } catch(e) {console.error(e)}
+                        if (!message) {
+                            Util.sendMessage(channel, text)
                         }
                         return
                     };
@@ -102,61 +86,25 @@ async function serverLogs() {
                     }
 
                     if (restarted) {
-                        try {
-                            channel.send(":bulb: Bot restarted or updated, loading server...")
-                        } catch(e) {console.error(e)}
+                        Util.sendMessage(channel, ":bulb: Bot restarted or updated, loading server...")
                     }
 
+                    let onlinetext = ":white_check_mark: Server is online"
+                    let offlinetext = ":octagonal_sign: Server is offline"
+
+                    let onlineMessage = await Util.getRecentMessage(channel, onlinetext)
+                    let offlineMessage = await Util.getRecentMessage(channel, offlinetext)
+
                     if (data.online && !server.online) {
-                        let text = ":white_check_mark: Server is online"
-                        let ignoretext = ":octagonal_sign: Server is offline"
-                        let flag = true
-
-                        if (server.start) {
-                            let ignoreflag = false
-
-                            let messages = await channel.messages.fetch({limit: 5})
-                            messages.forEach(message => {
-                                if (!ignoreflag && message.content == text) {
-                                    flag = false
-                                } else if (!ignoreflag && message.content == ignoretext) {
-                                    ignoreflag = true
-                                    flag = true
-                                }
-                            })
-                        }
-
-                        if (flag) {
-                            try {
-                                channel.send(text)
-                                if (server.start) {
-                                    channel.send(`There is ${data.players.online}/${data.players.max} players in the server.`)
-                                }
-                            } catch(e) {console.error(e)}
+                        if ((!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || Util.isMessageMoreRecent(offlineMessage, onlineMessage)) {
+                            Util.sendMessage(channel, onlinetext)
+                            if (server.start) {
+                                Util.sendMessage(channel, `There is ${data.players.online}/${data.players.max} players in the server.`)
+                            }
                         }
                     } else if (!data.online && (server.online || server.start)) {
-                        let text = ":octagonal_sign: Server is offline"
-                        let ignoretext = ":white_check_mark: Server is online"
-                        let flag = true
-
-                        if (server.start) {
-                            let ignoreflag = false
-
-                            let messages = await channel.messages.fetch({limit: 5})
-                            messages.forEach(message => {
-                                if (!ignoreflag && message.content == text) {
-                                    flag = false
-                                } else if (!ignoreflag && message.content == ignoretext) {
-                                    ignoreflag = true
-                                    flag = true
-                                }
-                            })
-                        }
-
-                        if (flag) {
-                            try {
-                                channel.send(text)
-                            } catch(e) {console.error(e)}
+                        if ((!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || Util.isMessageMoreRecent(onlineMessage, offlineMessage)) {
+                            Util.sendMessage(channel, offlinetext)
                         }
                     }
 
@@ -168,18 +116,10 @@ async function serverLogs() {
                     if (data.online) {
                         if (data.players.online > 200) {
                             let text = ":warning: Server has too many players online to log activity"
-                            let flag = false
-                            let messages = await channel.messages.fetch({limit: 5})
-                            messages.forEach(message => {
-                                if (message.content == text) {
-                                    flag = true
-                                }
-                            })
+                            let message = await Util.getRecentMessage(channel, text)
 
-                            if (!flag) {
-                                try {
-                                    channel.send(text)
-                                } catch(e) {console.error(e)}
+                            if (!message) {
+                                Util.sendMessage(channel, text)
                             }
                         } else {
                             if (!server.start) {
@@ -244,9 +184,9 @@ async function serverLogs() {
             })
         })
 
-        restarted = false
-
         await Util.sleep(10000)
+
+        restarted = false
     }
 }
 
@@ -262,6 +202,10 @@ async function activityDisplay() {
         },
         {
             text: "view commands | .help",
+            type: "PLAYING"
+        },
+        {
+            text: "get support | discord.gg/uqVp2XzUP8",
             type: "PLAYING"
         },
         {
@@ -360,9 +304,13 @@ function commandHelp(message, command, prefix) {
         embed.description = `**Aliases:** ${command.aliases().join(", ")}`
     }
 
-    message.reply({
-        embed: embed
-    })
+    try {
+        message.reply({
+            embed: embed
+        })
+    } catch(e) {
+        console.error(e)
+    }
 }
  
 

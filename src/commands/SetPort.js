@@ -30,10 +30,7 @@ class Command extends ICommand {
         if (inputs[0].length > 5 || Math.abs(port) > maxPort) return Util.replyError(message, `Port cannot exceed ${maxPort}`)
 
         settings.setSetting("port", port)
-
-        try {
-            message.reply(`Port set to '${inputs[0]}'`)
-        } catch(e) {console.error(e)}
+        Util.replyMessage(message, `Port set to '${inputs[0]}'`)
     }
 }
 

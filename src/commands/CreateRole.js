@@ -50,9 +50,9 @@ class Command extends ICommand {
                 }
             }
 
-            message.reply(":+1: Duty executed.")
+            Util.replyMessage(message, ":+1: Duty executed.")
         } else {
-            message.reply(":-1: Mission failed, we'll get'em next time.")
+            Util.replyMessage(message, ":-1: Mission failed, we'll get'em next time.")
         }
     }
 }

@@ -135,6 +135,33 @@ class util {
     }
 
     /**
+     * Replies to the message with the given text, includes error handling
+     * @param {Discord.Message} message 
+     * @param {string} text 
+     */
+    static async replyMessage(message, text) {
+        try {
+            await message.reply("\n" + text)
+        } catch(e) {
+            console.error(e)
+            this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild, " + text)
+        }
+    }
+
+    /**
+     * Sends a message in the given channel, includes error handling
+     * @param {Discord.TextChannel} channel 
+     * @param {string} text 
+     */
+    static async sendMessage(channel, text) {
+        try {
+            await channel.send(text)
+        } catch(e) {
+            console.error(e)
+        }
+    }
+
+    /**
      * Replies to the message with the given warning text
      * @param {Discord.Message} message 
      * @param {string} warning 
@@ -146,13 +173,14 @@ class util {
                 timeout: 15000
             })
         } catch(e) {
-            console.log(e)
+            console.error(e)
+            this.sendMessage(message.author.dmChannel, ":warning: Failed to reply with warning in guild, " + warning)
         }
     }
 
     /**
      * Sends a message in the given channel with the given warning text
-     * @param {Discord.TextChannel} message 
+     * @param {Discord.TextChannel} channel 
      * @param {string} warning 
      */
     static async sendWarning(channel, warning) {
@@ -162,7 +190,7 @@ class util {
                 timeout: 15000
             })
         } catch(e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
@@ -178,13 +206,14 @@ class util {
                 timeout: 15000
             })
         } catch(e) {
-            console.log(e)
+            console.error(e)
+            this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with error in guild, " + error)
         }
     }
 
     /**
      * Sends a message in the given channel with the given error text
-     * @param {Discord.TextChannel} message 
+     * @param {Discord.TextChannel} channel 
      * @param {string} error 
      */
     static async sendError(channel, error) {
@@ -194,7 +223,7 @@ class util {
                 timeout: 15000
             })
         } catch(e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
@@ -203,7 +232,7 @@ class util {
      * @param {Discord.Message} message 
      * @param {string} type 
      * @param {string} input 
-     * @param {boolean} inGuild
+     * @param {boolean} inObject
      */
     static couldNotFind(message, type, input, inObject) {
         this.replyError(message, `Could not find ${type.toLowerCase()} '${input}'` + (inObject ? `in this ${inObject}` : ""))
@@ -429,6 +458,39 @@ class util {
         } catch(e) {
             console.error(e)
         }
+    }
+
+    /**
+     * Checks if one of the provided strings is equal to a recent message in the channel
+     * @param {Discord.TextChannel} channel 
+     * @param  {...string} text 
+     * @returns {Promise<Discord.Message>}
+     */
+    static async getRecentMessage(channel, ...text) {
+        let msg
+
+        try {
+            let messages = await channel.messages.fetch({limit: 5})
+            messages.forEach(message => {
+                if (msg) return;
+                if (text.includes(message.content)) {
+                    msg = message
+                }
+            })
+        } catch(e) {
+            console.error(e)
+        }
+        return msg
+    }
+
+    /**
+     * Checks if message1 is more recent than message2
+     * @param {Discord.Message} message1 
+     * @param  {Discord.Message} message2
+     * @returns {boolean}
+     */
+    static isMessageMoreRecent(message1, message2) {
+        return message1.createdAt.getTime() - message2.createdAt.getTime() > 0
     }
 
     /**

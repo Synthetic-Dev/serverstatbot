@@ -1,3 +1,4 @@
+const Util = require("../utils/util.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -13,7 +14,7 @@ class Command extends ICommand {
     }
 
     async execute(message) {
-        await message.reply("Goodbye :wave:")
+        Util.replyMessage(message, "Goodbye :wave:")
         await this.client.user.setStatus("invisible")
 
         this.client.destroy()

@@ -33,13 +33,7 @@ class Command extends ICommand {
                 
                 if (!success) return Util.replyError(message, "An error occured when trying to gather server info")
                 if (!data.ip || !data.port) return Util.replyError(message, "An invalid ip or port is set");
-                if (!data.online) {
-                    try {
-                        message.reply("Server is not online")
-                    } catch(e) {console.error(e)}
-
-                    return
-                }
+                if (!data.online) return Util.replyMessage(message, "Server is not online");
 
                 if (data.players.online > 0) {
                     if (!data.players.list) {

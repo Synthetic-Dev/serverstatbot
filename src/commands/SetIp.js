@@ -1,3 +1,4 @@
+const Util = require("../utils/util.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -20,12 +21,9 @@ class Command extends ICommand {
 
     async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
-
         settings.setSetting("ip", inputs[0])
 
-        try {
-            message.reply(`Ip set to '${inputs[0]}'`)
-        } catch(e) {console.error(e)}
+        Util.replyMessage(message, `Ip set to '${inputs[0]}'`)
     }
 }
 

@@ -11,9 +11,7 @@ class Command extends ICommand {
     }
 
     async execute(message) {
-        const ping = Util.ping(message)
-
-        message.reply(`Pong! ${Math.abs(ping)}ms`)
+        Util.replyMessage(message, `Pong! ${Math.abs(Util.ping(message))}ms`)
     }
 }
 
