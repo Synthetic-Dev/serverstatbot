@@ -25,6 +25,8 @@ async function serverLogs() {
 
     await Util.sleep(1000)
 
+    let restarted = true
+
     while (true) {
         client.guilds.cache.forEach(async guild => {
             let settings = client.settings[guild.id]
@@ -97,6 +99,12 @@ async function serverLogs() {
                         players: [],
                         online: false,
                         start: true
+                    }
+
+                    if (restarted) {
+                        try {
+                            channel.send(":bulb: Bot restarted or updated, loading server...")
+                        } catch(e) {console.error(e)}
                     }
 
                     if (data.online && !server.online) {
@@ -235,6 +243,8 @@ async function serverLogs() {
                 }
             })
         })
+
+        restarted = false
 
         await Util.sleep(10000)
     }
