@@ -58,7 +58,7 @@ async function serverLogs() {
                     }
 
                     if (!success) {
-                        let text = "An error occured when trying to gather server info"
+                        let text = ":stop_sign: An error occured when trying to gather server info"
                         let flag = false
                         let messages = await channel.messages.fetch({limit: 5})
                         messages.forEach(message => {
@@ -72,10 +72,11 @@ async function serverLogs() {
                                 channel.send(text)
                             } catch(e) {console.error(e)}
                         }
+                        return
                     };
 
                     if (!data.ip || !data.port) {
-                        let text = "An invalid ip or port is set"
+                        let text = ":warning: An invalid ip or port is set, cannot gather server info"
                         let flag = false
                         let messages = await channel.messages.fetch({limit: 5})
                         messages.forEach(message => {
@@ -89,6 +90,7 @@ async function serverLogs() {
                                 channel.send(text)
                             } catch(e) {console.error(e)}
                         }
+                        return
                     };
                     
                     let server = client.servers[address] ? client.servers[address] : {

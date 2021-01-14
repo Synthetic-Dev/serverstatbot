@@ -146,7 +146,7 @@ class util {
                 timeout: 15000
             })
         } catch(e) {
-            console.error(e)
+            console.log(e)
         }
     }
 
@@ -157,12 +157,12 @@ class util {
      */
     static async sendWarning(channel, warning) {
         try {
-            let botMessage = await channel.send("\n:warning: " + warning)
+            let botMessage = await channel.send(":warning: " + warning)
             botMessage.delete({
                 timeout: 15000
             })
         } catch(e) {
-            console.error(e)
+            console.log(e)
         }
     }
 
@@ -178,7 +178,7 @@ class util {
                 timeout: 15000
             })
         } catch(e) {
-            console.error(e)
+            console.log(e)
         }
     }
 
@@ -189,12 +189,12 @@ class util {
      */
     static async sendError(channel, error) {
         try {
-            let botMessage = await channel.send("\n:stop_sign: " + error)
+            let botMessage = await channel.send(":stop_sign: " + error)
             botMessage.delete({
                 timeout: 15000
             })
         } catch(e) {
-            console.error(e)
+            console.log(e)
         }
     }
 

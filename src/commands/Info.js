@@ -20,7 +20,7 @@ class Command extends ICommand {
 
         Util.request(`https://api.mcsrvstat.us/2/${ip}:${port}.tld`, (success, data) => {
             if (!success) {
-                Util.replyError(message, `An error occured, please contact developer\n\n${data.message}`)
+                Util.replyError(message, `An error occured, please contact the developer\n\nYou can join our support server here: https://discord.gg/uqVp2XzUP8`)
             } else {
                 success = false
                 try {
@@ -29,6 +29,7 @@ class Command extends ICommand {
                 } catch(e) {
                     console.error(e)
                 }
+                
                 if (!success) return Util.replyError(message, "An error occured when trying to gather server info")
                 if (!data.ip || !data.port) return Util.replyError(message, "An invalid ip or port is set");
                 if (!data.online) {
