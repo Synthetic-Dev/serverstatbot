@@ -226,7 +226,7 @@ async function activityDisplay() {
             type: "PLAYING"
         },
         {
-            text: "get support | discord.gg/uqVp2XzUP8",
+            text: "support | discord.gg/uqVp2XzUP8",
             type: "PLAYING"
         },
         {

@@ -22,20 +22,17 @@ class Command extends ICommand {
     }
 
     async execute(message, inputs) {
+        let channel = message.channel
+        let me = message.guild.me
+
         try {
             message.delete()
         } catch(e) {
             console.error(e)
         }
         
-        if (!Util.doesMemberHavePermission(message.guild.me, ["MANAGE_MESSAGES"])) return Util.replyError(message, ":tired_face: Sorry");
-
-        Util.sendMessage(message.channel, inputs[0])
-        try {
-            message.delete()
-        } catch(e) {
-            console.error(e)
-        }
+        if (!Util.doesMemberHavePermission(me, ["MANAGE_MESSAGES"])) return Util.sendError(channel, ":tired_face: Sorry");
+        Util.sendMessage(channel, inputs[0])
     }
 }
 
