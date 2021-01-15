@@ -144,7 +144,7 @@ class util {
             await message.reply("\n" + text)
         } catch(e) {
             console.error(e)
-            this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild, " + text)
+            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild.\n" + text);
         }
     }
 
@@ -174,7 +174,7 @@ class util {
             })
         } catch(e) {
             console.error(e)
-            this.sendMessage(message.author.dmChannel, ":warning: Failed to reply with warning in guild, " + warning)
+            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with warning in guild.\n:warning: " + warning);
         }
     }
 
@@ -207,7 +207,7 @@ class util {
             })
         } catch(e) {
             console.error(e)
-            this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with error in guild, " + error)
+            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with error in guild.\n:stop_sign: " + error);
         }
     }
 
