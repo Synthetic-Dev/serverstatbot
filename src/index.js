@@ -90,7 +90,7 @@ async function serverLogs() {
                         let message = await Util.getRecentMessage(channel, restarttext)
                         if (message && message.recency <= 1) {
                             let content = message.content
-                            let [match] = content.match(/x\d$/i)
+                            let [match] = content.match(/x\d$/)
                             if (match) {
                                 let num = Number(match.substring(1))
                                 if (isNaN(num)) num = 2;
