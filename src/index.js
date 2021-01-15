@@ -85,8 +85,28 @@ async function serverLogs() {
                         start: true
                     }
 
+                    let restarttext = ":bulb: Bot restarted or updated, loading server..."
                     if (restarted) {
-                        Util.sendMessage(channel, ":bulb: Bot restarted or updated, loading server...")
+                        let message = await Util.getRecentMessage(channel, restarttext)
+                        if (message && message.recency <= 1) {
+                            let content = message.content
+                            let [match] = content.match(/x\d$/i)
+                            if (match) {
+                                let num = Number(match.substring(1))
+                                if (isNaN(num)) num = 2;
+                                content = content.substring(0, content.length - match.length) + "x" + num
+                            } else {
+                                content += " x2"
+                            }
+
+                            try {
+                                message.edit(content)
+                            } catch(e) {
+                                console.error(e)
+                            }
+                        } else {
+                            Util.sendMessage(channel, restarttext)
+                        }
                     }
 
                     let onlinetext = ":white_check_mark: Server is online"

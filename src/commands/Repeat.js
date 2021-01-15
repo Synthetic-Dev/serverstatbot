@@ -22,6 +22,12 @@ class Command extends ICommand {
     }
 
     async execute(message, inputs) {
+        try {
+            message.delete()
+        } catch(e) {
+            console.error(e)
+        }
+        
         if (!Util.doesMemberHavePermission(message.guild.me, ["MANAGE_MESSAGES"])) return Util.replyError(message, ":tired_face: Sorry");
 
         Util.sendMessage(message.channel, inputs[0])

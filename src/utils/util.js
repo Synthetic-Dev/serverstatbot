@@ -471,11 +471,15 @@ class util {
 
         try {
             let messages = await channel.messages.fetch({limit: 5})
+            let recency = 0
             messages.forEach(message => {
                 if (msg) return;
                 if (text.includes(message.content)) {
                     msg = message
+                    msg.recency = recency
                 }
+
+                recency++
             })
         } catch(e) {
             console.error(e)
