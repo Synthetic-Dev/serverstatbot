@@ -117,14 +117,14 @@ async function serverLogs() {
                     let offlineMessage = await Util.getRecentMessage(channel, offlinetext)
 
                     if (data.online && !server.online) {
-                        if ((!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(offlineMessage, onlineMessage))) {
+                        if (restarted || (!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(offlineMessage, onlineMessage))) {
                             Util.sendMessage(channel, onlinetext)
                             if (server.start) {
                                 Util.sendMessage(channel, `There is ${data.players.online}/${data.players.max} players in the server.`)
                             }
                         }
                     } else if (!data.online && (server.online || server.start)) {
-                        if ((!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
+                        if (restarted || (!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
                             Util.sendMessage(channel, offlinetext)
                         }
                     }

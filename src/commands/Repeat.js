@@ -25,7 +25,7 @@ class Command extends ICommand {
         let channel = message.channel
         let me = message.guild.me
 
-        if (!Util.doesMemberHavePermission(me, ["MANAGE_MESSAGES"])) return Util.sendError(channel, ":tired_face: Sorry");
+        if (!Util.doesMemberHavePermission(me, ["SEND_MESSAGES", "MANAGE_MESSAGES"])) return Util.sendError(channel, ":tired_face: Sorry");
 
         try {
             message.delete()

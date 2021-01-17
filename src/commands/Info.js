@@ -33,7 +33,7 @@ class Command extends ICommand {
                 if (!success) return Util.replyError(message, "An error occured when trying to gather server info")
                 if (!data.ip || !data.port) return Util.replyError(message, "An invalid ip or port is set");
                 if (!data.online) {
-                    return Util.sendMessage(message.channel, {
+                    return Util.sendMessage(message, {
                         embed: {
                             title: "Server Info",
                             description: `Address: **${ip}:${port}**\nOnline: **${data.online && "Yes" || "No"}**`,
@@ -44,7 +44,7 @@ class Command extends ICommand {
 
                 const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
 
-                Util.sendMessage(message.channel, {
+                Util.sendMessage(message, {
                     embed: {
                         title: "Server Info",
                         description: `Address: **${data.hostname || data.ip}:${data.port}**\nOnline: **${data.online && "Yes" || "No"}**`,

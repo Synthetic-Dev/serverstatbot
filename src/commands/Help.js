@@ -15,13 +15,14 @@ class Command extends ICommand {
 
     /**
      * Post a formatted commands message
+     * @param {Discord.Message} message
      * @param {string} desc 
      * @param {Array} fields 
      */
-    postCommands(channel, desc, fields) {
+    postCommands(message, desc, fields) {
         const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
 
-        Util.sendMessage(channel, {
+        Util.sendMessage(message, {
             embed: {
                 title: "Commands",
                 description: desc,
@@ -76,12 +77,11 @@ class Command extends ICommand {
 
         let commands = this.getCommands(this.client.commands, (command) => {
             const permissions = command.permissions()
-            if (command != this && !command.private && Util.doesMemberHavePermission(message.member, permissions)) return true;
-            return false;
+            return command != this && !command.private && Util.doesMemberHavePermission(message.member, permissions)
         })
 
         let prefix = await settings.getSetting("prefix")
-        this.postCommands(message.channel, "**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\n\nRequires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + prefix + "``", commands)
+        this.postCommands(message, "**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\n\nRequires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + prefix + "``", commands)
 
         // Setup help message
         let ip = await settings.getSetting("ip")

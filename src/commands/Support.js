@@ -16,7 +16,7 @@ class Command extends ICommand {
     async execute(message) {
         const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
 
-        Util.sendMessage(message.channel, {
+        Util.sendMessage(message, {
             embed: {
                 title: "Support",
                 author: {

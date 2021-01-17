@@ -166,10 +166,17 @@ class util {
 
     /**
      * Sends a message in the given channel, includes error handling
-     * @param {Discord.TextChannel} channel 
+     * @param {Discord.TextChannel | Discord.Message} object 
      * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
      */
-    static sendMessage(channel, ...content) {
+    static sendMessage(object, ...content) {
+        let channel = object instanceof Discord.Message ? object.channel : object
+
+        if (object instanceof Discord.Message && channel != object.author.dmChannel && !this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])) {
+            if (object.author.dmChannel) this.sendMessage(object.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`);
+            return 
+        }
+
         try {
             channel.send(...content)
         } catch(e) {

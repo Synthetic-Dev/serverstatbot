@@ -19,11 +19,11 @@ class Command extends ICommand {
         const settings = this.client.settings[message.guild.id]
         const help = this.client.commands.get("help")
 
-        let commands = help.getCommands(this.client.commands, (command) => {
+        let commands = help.getCommands(this.client.commands, command => {
             return true;
         })
 
-        help.postCommands(message.channel, `Prefix: ${await settings.getSetting("prefix")}`, commands)
+        help.postCommands(message, `Prefix: ${await settings.getSetting("prefix")}`, commands)
     }
 }
 
