@@ -140,8 +140,12 @@ class util {
      * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
      */
     static replyMessage(message, content) {
-        if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
-            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`);
+        if (!(message.channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
+            message.author.createDM().then(dmChannel => {
+                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`)
+            }).catch(e => {
+                console.error(e)
+            })
             return 
         }
 
@@ -154,26 +158,32 @@ class util {
         } catch(e) {
             console.error(e)
 
-            if (message.channel != message.author.dmChannel && message.author.dmChannel) {
-                if (["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)) {
-                    this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild.\n" + content)
-                } else {
-                    this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild.", content)
-                }
+            if (!(message.channel instanceof Discord.DMChannel)) {
+                message.author.createDM().then(dmChannel => {
+                    if (["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)) {
+                        this.sendMessage(dmChannel, ":stop_sign: Failed to reply with message in guild.\n" + content)
+                    } else {
+                        this.sendMessage(dmChannel, ":stop_sign: Failed to reply with message in guild.", content)
+                    }
+                })
             }
         }
     }
 
     /**
      * Sends a message in the given channel, includes error handling
-     * @param {Discord.TextChannel | Discord.Message} object 
+     * @param {Discord.TextChannel | Discord.DMChannel | Discord.Message} object 
      * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
      */
     static sendMessage(object, ...content) {
         let channel = object instanceof Discord.Message ? object.channel : object
 
-        if (object instanceof Discord.Message && channel != object.author.dmChannel && !this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])) {
-            if (object.author.dmChannel) this.sendMessage(object.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`);
+        if (object instanceof Discord.Message && !(channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])) {
+            object.author.createDM().then(dmChannel => {
+                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`)
+            }).catch(e => {
+                console.error(e)
+            })
             return 
         }
 
@@ -211,7 +221,7 @@ class util {
 
     /**
      * Sends a message in the given channel with the given warning text
-     * @param {Discord.TextChannel} channel 
+     * @param {Discord.TextChannel | Discord.DMChannel} channel 
      * @param {string} warning 
      */
     static async sendWarning(channel, warning) {
@@ -252,7 +262,7 @@ class util {
 
     /**
      * Sends a message in the given channel with the given error text
-     * @param {Discord.TextChannel} channel 
+     * @param {Discord.TextChannel | Discord.DMChannel} channel 
      * @param {string} error 
      */
     static async sendError(channel, error) {
