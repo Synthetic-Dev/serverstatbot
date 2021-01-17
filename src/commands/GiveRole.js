@@ -24,16 +24,15 @@ class Command extends ICommand {
     async execute(message, inputs) {
         if (!Util.doesMemberHavePermission(message.guild.me, ["MANAGE_ROLES"])) return Util.replyError(message, ":tired_face: Sorry");
 
-        let role = Util.parseRole(message.guild, inputs[0])
+        let role = await Util.parseRole(message.guild, inputs[0])
 
         if (role) {
             try {
                 await message.member.roles.add(role)
+                Util.replyMessage(message, ":+1: Duty executed.")
             } catch(e) {
                 console.error(e)
             }
-
-            Util.replyMessage(message, ":+1: Duty executed.")
         } else {
             Util.replyMessage(message, ":-1: Mission failed, we'll get'em next time.")
         }
