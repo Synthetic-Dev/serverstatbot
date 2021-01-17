@@ -205,7 +205,7 @@ async function serverLogs() {
             })
         })
 
-        await Util.sleep(10000)
+        await Util.sleep(20000)
 
         restarted = false
     }
@@ -218,11 +218,7 @@ async function serverLogs() {
 async function activityDisplay() {
     const activities = [
         {
-            text: "the server stats",
-            type: "WATCHING"
-        },
-        {
-            text: "view commands | .help",
+            text: "commands | .help",
             type: "PLAYING"
         },
         {

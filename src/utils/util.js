@@ -140,11 +140,19 @@ class util {
      * @param {string} text 
      */
     static async replyMessage(message, text) {
+        if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
+            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`);
+            return 
+        }
+
         try {
             await message.reply("\n" + text)
         } catch(e) {
             console.error(e)
-            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild.\n" + text);
+
+            if (message.channel != message.author.dmChannel && message.author.dmChannel) {
+                this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild.\n" + text)
+            }
         }
     }
 
@@ -167,6 +175,11 @@ class util {
      * @param {string} warning 
      */
     static async replyWarning(message, warning) {
+        if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
+            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`);
+            return 
+        }
+
         try {
             let botMessage = await message.reply("\n:warning: " + warning)
             botMessage.delete({
@@ -174,7 +187,10 @@ class util {
             })
         } catch(e) {
             console.error(e)
-            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with warning in guild.\n:warning: " + warning);
+            
+            if (message.channel != message.author.dmChannel && message.author.dmChannel) {
+                this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with warning in guild.\n:warning: " + warning)
+            }
         }
     }
 
@@ -200,6 +216,11 @@ class util {
      * @param {string} error 
      */
     static async replyError(message, error) {
+        if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
+            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`);
+            return 
+        }
+
         try {
             let botMessage = await message.reply("\n:stop_sign: " + error)
             botMessage.delete({
@@ -207,7 +228,10 @@ class util {
             })
         } catch(e) {
             console.error(e)
-            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with error in guild.\n:stop_sign: " + error);
+            
+            if (message.channel != message.author.dmChannel && message.author.dmChannel) {
+                this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with error in guild.\n:stop_sign: " + error)
+            }
         }
     }
 
