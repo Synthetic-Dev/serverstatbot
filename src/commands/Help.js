@@ -19,16 +19,19 @@ class Command extends ICommand {
      * @param {Array} fields 
      */
     postCommands(channel, desc, fields) {
-        try {
-            channel.send({
-                embed: {
-                    title: "Commands",
-                    description: desc,
-                    color: 5145560,
-                    fields: fields
+        const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
+
+        Util.sendMessage(channel, {
+            embed: {
+                title: "Commands",
+                description: desc,
+                color: 5145560,
+                fields: fields,
+                footer: {
+                    text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
                 }
-            })
-        } catch(e) {console.error(e)}
+            }
+        })
     }
 
     /**
@@ -84,35 +87,33 @@ class Command extends ICommand {
         let ip = await settings.getSetting("ip")
 
         if (Util.doesMemberHavePermission(message.member, ["ADMINISTRATOR"]) && (ip == "0.0.0.0" || ip == "")) {
-            try {
-                message.channel.send({
-                    embed: {
-                        title: "Setup",
-                        description: "Get your server connected and setup!",
-                        color: 5145560,
-                        fields: [
-                            {
-                                name: "Add your server ip",
-                                value: `Do **${prefix}setip** ` + "``" + "<your ip here>" + "``",
-                                inline: true
-                            },
-                            {
-                                name: "Set your server port",
-                                value: `The server port defaults to **25565**, if your server uses a different port do **${prefix}setport** ` + "``" + "<your port here>" + "``",
-                                inline: true
-                            },
-                            {
-                                name: "Set up a log channel",
-                                value: `This is where server status and join/leave messages will be posted. Make sure that the bot has permission to post in this channel! Do **${prefix}setlogchannel** ` + "``" + "<channel or 'here' or 'clear'>" + "``"
-                            },
-                            {
-                                name: "Need support?",
-                                value: `Join the bot support server here: [Join server](https://discord.gg/uqVp2XzUP8)`
-                            }
-                        ]
-                    }
-                })
-            } catch(e) {console.error(e)}
+            Util.sendMessage(message.channel, {
+                embed: {
+                    title: "Setup",
+                    description: "Get your server connected and setup!",
+                    color: 5145560,
+                    fields: [
+                        {
+                            name: "Add your server ip",
+                            value: `Do **${prefix}setip** ` + "``" + "<your ip here>" + "``",
+                            inline: true
+                        },
+                        {
+                            name: "Set your server port",
+                            value: `The server port defaults to **25565**, if your server uses a different port do **${prefix}setport** ` + "``" + "<your port here>" + "``",
+                            inline: true
+                        },
+                        {
+                            name: "Set up a log channel",
+                            value: `This is where server status and join/leave messages will be posted. Make sure that the bot has permission to post in this channel! Do **${prefix}setlogchannel** ` + "``" + "<channel or 'here' or 'clear'>" + "``"
+                        },
+                        {
+                            name: "Need support?",
+                            value: `Join the bot support server here: [Join server](https://discord.gg/uqVp2XzUP8)`
+                        }
+                    ]
+                }
+            })
         }
     }
 }

@@ -159,7 +159,7 @@ async function serverLogs() {
                                             context.drawImage(head, 2, 2)
                                             context.fillText(`${player} has joined the game.`, 32, 2)
 
-                                            channel.send({
+                                            Util.sendMessage(channel, {
                                                 files: [{
                                                     attachment: image.toBuffer("image/png"),
                                                     name: "playeraction.png"
@@ -184,7 +184,7 @@ async function serverLogs() {
                                             context.drawImage(head, 2, 2)
                                             context.fillText(`${player} has left the game.`, 32, 2)
 
-                                            channel.send({
+                                            Util.sendMessage(channel, {
                                                 files: [{
                                                     attachment: image.toBuffer("image/png"),
                                                     name: "playeraction.png"
@@ -321,13 +321,9 @@ function commandHelp(message, command, prefix) {
         embed.description = `**Aliases:** ${command.aliases().join(", ")}`
     }
 
-    try {
-        message.reply({
-            embed: embed
-        })
-    } catch(e) {
-        console.error(e)
-    }
+    Util.replyMessage(message, {
+        embed: embed
+    })
 }
  
 

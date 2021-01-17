@@ -37,10 +37,7 @@ class Command extends ICommand {
 
                 if (data.players.online > 0) {
                     if (!data.players.list) {
-                        try {
-                            message.channel.send(`There is ${data.players.online}/${data.players.max} players in the server.\nThis server has too many players to display a playerlist.`)
-                        } catch(e) {console.error(e)}
-                        return
+                        return Util.sendMessage(message.channel, `There is ${data.players.online}/${data.players.max} players in the server.\nThis server has too many players to display a playerlist.`)
                     }
     
                     let image = createCanvas(16 * 20 + 26, Math.min(maxInList + 1, data.players.online) * 28)
@@ -69,19 +66,15 @@ class Command extends ICommand {
                             context.drawImage(head, 2, 2 + i * 28)
                         })
     
-                        try {
-                            message.channel.send("Players:", {
-                                files: [{
-                                    attachment: image.toBuffer("image/png"),
-                                    name: "playerlist.png"
-                                }]
-                            })
-                        } catch(e) {console.error(e)}
+                        Util.sendMessage(message.channel, "Players:", {
+                            files: [{
+                                attachment: image.toBuffer("image/png"),
+                                name: "playerlist.png"
+                            }]
+                        })
                     })
                 } else {
-                    try {
-                        message.channel.send("Nobody is currently online :cry:")
-                    } catch(e) {console.error(e)}
+                    Util.sendMessage(message.channel, "Nobody is currently online :cry:")
                 }
             }
         })

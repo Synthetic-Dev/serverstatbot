@@ -137,21 +137,29 @@ class util {
     /**
      * Replies to the message with the given text, includes error handling
      * @param {Discord.Message} message 
-     * @param {string} text 
+     * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
      */
-    static async replyMessage(message, text) {
+    static replyMessage(message, content) {
         if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
             if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`);
             return 
         }
 
         try {
-            await message.reply("\n" + text)
+            if (["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)) {
+                message.reply("\n" + content)
+            } else {
+                message.reply(content)
+            }
         } catch(e) {
             console.error(e)
 
             if (message.channel != message.author.dmChannel && message.author.dmChannel) {
-                this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild.\n" + text)
+                if (["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)) {
+                    this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild.\n" + content)
+                } else {
+                    this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with message in guild.", content)
+                }
             }
         }
     }
@@ -159,11 +167,11 @@ class util {
     /**
      * Sends a message in the given channel, includes error handling
      * @param {Discord.TextChannel} channel 
-     * @param {string} text 
+     * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
      */
-    static async sendMessage(channel, text) {
+    static sendMessage(channel, ...content) {
         try {
-            await channel.send(text)
+            channel.send(...content)
         } catch(e) {
             console.error(e)
         }

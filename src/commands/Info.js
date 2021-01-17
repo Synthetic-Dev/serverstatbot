@@ -33,46 +33,45 @@ class Command extends ICommand {
                 if (!success) return Util.replyError(message, "An error occured when trying to gather server info")
                 if (!data.ip || !data.port) return Util.replyError(message, "An invalid ip or port is set");
                 if (!data.online) {
-                    try {
-                        message.channel.send({
-                            embed: {
-                                title: "Server Info",
-                                description: `Address: **${ip}:${port}**\nOnline: **${data.online && "Yes" || "No"}**`,
-                                color: 5145560
-                            }
-                        })
-                    } catch(e) {console.error(e)}
-
-                    return
-                }
-
-                try {
-                    message.channel.send({
+                    return Util.sendMessage(message.channel, {
                         embed: {
                             title: "Server Info",
-                            description: `Address: **${data.hostname || data.ip}:${data.port}**\nOnline: **${data.online && "Yes" || "No"}**`,
-                            color: 5145560,
-                            fields: [
-                                {
-                                    name: "Minecraft Version:",
-                                    value: data.version
-                                },
-                                {
-                                    name: "Minecraft Type:",
-                                    value: data.mods ? "Modded" : "Vanilla"
-                                },
-                                {
-                                    name: "MOTD:",
-                                    value: data.motd.clean
-                                },
-                                {
-                                    name: "Players Online:",
-                                    value: `${data.players.online}/${data.players.max}`
-                                }
-                            ]
+                            description: `Address: **${ip}:${port}**\nOnline: **${data.online && "Yes" || "No"}**`,
+                            color: 5145560
                         }
                     })
-                } catch(e) {console.error(e)}
+                }
+
+                const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
+
+                Util.sendMessage(message.channel, {
+                    embed: {
+                        title: "Server Info",
+                        description: `Address: **${data.hostname || data.ip}:${data.port}**\nOnline: **${data.online && "Yes" || "No"}**`,
+                        color: 5145560,
+                        fields: [
+                            {
+                                name: "Minecraft Version:",
+                                value: data.version
+                            },
+                            {
+                                name: "Minecraft Type:",
+                                value: data.mods ? "Modded" : "Vanilla"
+                            },
+                            {
+                                name: "MOTD:",
+                                value: data.motd.clean
+                            },
+                            {
+                                name: "Players Online:",
+                                value: `${data.players.online}/${data.players.max}`
+                            }
+                        ],
+                        footer: {
+                            text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
+                        }
+                    }
+                })
             }
         })
     }
