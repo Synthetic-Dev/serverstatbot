@@ -306,23 +306,23 @@ class util {
             let botMessage = await channel.send(pages[page])
             if (pages.length == 1) return;
 
-            let emojis = ["arrow_forward", "arrow_backward", "arrow_right_hook", "leftwards_arrow_with_hook"]
+            let emojis = ["arrow_backward", "arrow_forward", "arrow_right_hook", "leftwards_arrow_with_hook"]
             emojis.forEach((name, index) => {
                 let emoji = this.getEmoji(message.guild, name)
                 emojis[index] = emoji
                 botMessage.react(emoji)
             })
 
-            let collector = botMessage.createReactionCollector((reaction, user) => user.id == message.author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name || emoji.id == reaction.emoji.id).length > 0, {time: 60000, idle: 5000})
+            let collector = botMessage.createReactionCollector((reaction, user) => user.id == message.author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name || emoji.id == reaction.emoji.id).length > 0, {time: 120000, idle: 20000})
             
             collector.on("collect", (reaction, user) => {
                 reaction.users.remove(user)
 
                 if (user.id == message.author.id) {
                     let oldPage = page
-                    if (reaction.emoji.name == emojis[0].name || reaction.emoji.id == emojis[0].id) {
+                    if (reaction.emoji.name == emojis[1].name || reaction.emoji.id == emojis[1].id) {
                         page = page + 1 < pages.length ? page + 1 : 0
-                    } else if (reaction.emoji.name == emojis[1].name || reaction.emoji.id == emojis[1].id) {
+                    } else if (reaction.emoji.name == emojis[0].name || reaction.emoji.id == emojis[0].id) {
                         page = page - 1 > 0 ? page - 1 : pages.length - 1
                     } else if (reaction.emoji.name == emojis[2].name || reaction.emoji.id == emojis[2].id) {
                         page = pages.length - 1

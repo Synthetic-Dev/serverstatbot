@@ -33,13 +33,13 @@ class Command extends ICommand {
 
                 let pages = []
                 let fields = []
-                let rawMods = Object.values(data.mods.raw)
-                rawMods.forEach((mod, index) => {
-                    let name = data.mods.names[index]
-                    let version = mod.substring(name.length + 1)
+                let rawMods = Object.values(data.mods.raw).sort()
+                data.mods.names.forEach((mod, index) => {
+                    let raw = rawMods[index]
+                    let version = raw.substring(mod.length + 1)
                     fields.push({
-                        name: name,
-                        value: version == "" ? "Unknown version" : version,
+                        name: mod,
+                        value: version == "" ? "x.x.x" : version,
                         inline: true
                     })
 
