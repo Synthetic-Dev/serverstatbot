@@ -20,12 +20,13 @@ class ICommand {
         /**
          * The description of the command
          */
-        this.desc = data.desc || "A Command";
+        this.desc = data.desc ? data.desc : "A Command";
         
         /**
          * If the command is shown
          */
-        this.private = data.private || false;
+        this.private = data.private ? data.private : false;
+        this.secret = data.secret ? data.secret : false
     }
 
     /**

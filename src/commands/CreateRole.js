@@ -20,7 +20,8 @@ class Command extends ICommand {
             perms: [
                 "DEV"
             ],
-            private: true
+            private: true,
+            secret: true
         })
     }
 

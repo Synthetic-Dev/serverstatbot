@@ -42,8 +42,6 @@ class Command extends ICommand {
                     })
                 }
 
-                const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
-
                 Util.sendMessage(message, {
                     embed: {
                         title: "Server Info",
@@ -66,10 +64,7 @@ class Command extends ICommand {
                                 name: "Players Online:",
                                 value: `${data.players.online}/${data.players.max}`
                             }
-                        ],
-                        footer: {
-                            text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
-                        }
+                        ]
                     }
                 })
             }

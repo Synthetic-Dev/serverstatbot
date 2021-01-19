@@ -3,7 +3,8 @@ const HTTPS = require("https")
 const HTTP = require("http")
 const FileSystem = require("fs");
 
-const unicodeEmojis = require("./unicodeEmojis.json")
+const unicodeEmojis = require("./unicodeEmojis.json");
+const { Collection } = require("mongoose");
 const DevId = "255733848162304002"
 
 class util {
@@ -285,6 +286,62 @@ class util {
      */
     static couldNotFind(message, type, input, inObject) {
         this.replyError(message, `Could not find ${type.toLowerCase()} '${input}'` + (inObject ? `in this ${inObject}` : ""))
+    }
+
+    /**
+     * Sends a "pages" message in the given channel
+     * @param {Discord.Message} message
+     * @param {(string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[])[]} pages
+     * @param {number} startPage
+     */
+    static async sendPages(message, pages, startPage = 0) {
+        let channel = message.channel
+        if (channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])) {
+            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`);
+            return 
+        }
+
+        try {
+            let page = startPage
+            let botMessage = await channel.send(pages[page])
+            if (pages.length == 1) return;
+
+            let emojis = ["arrow_forward", "arrow_backward", "arrow_right_hook", "leftwards_arrow_with_hook"]
+            emojis.forEach((name, index) => {
+                let emoji = this.getEmoji(message.guild, name)
+                emojis[index] = emoji
+                botMessage.react(emoji)
+            })
+
+            let collector = botMessage.createReactionCollector((reaction, user) => user.id == message.author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name || emoji.id == reaction.emoji.id).length > 0, {time: 60000, idle: 5000})
+            
+            collector.on("collect", (reaction, user) => {
+                reaction.users.remove(user)
+
+                if (user.id == message.author.id) {
+                    let oldPage = page
+                    if (reaction.emoji.name == emojis[0].name || reaction.emoji.id == emojis[0].id) {
+                        page = page + 1 < pages.length ? page + 1 : 0
+                    } else if (reaction.emoji.name == emojis[1].name || reaction.emoji.id == emojis[1].id) {
+                        page = page - 1 > 0 ? page - 1 : pages.length - 1
+                    } else if (reaction.emoji.name == emojis[2].name || reaction.emoji.id == emojis[2].id) {
+                        page = pages.length - 1
+                    } else if (reaction.emoji.name == emojis[3].name || reaction.emoji.id == emojis[3].id) {
+                        page = 0
+                    }
+
+                    if (page != oldPage) {
+                        botMessage.edit(pages[page])
+                    }
+                }
+            })
+
+            collector.on("end", (collection, reason) => {
+                botMessage.reactions.removeAll()
+            })
+        } catch(e) {
+            console.error(e)
+        }
     }
 
     /**

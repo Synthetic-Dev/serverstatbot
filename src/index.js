@@ -360,15 +360,15 @@ async function parseCommand(message) {
         const permissions = command.permissions()
 
         if (!Util.doesMemberHavePermission(message.member, permissions)) {
-            return Util.replyWarning(message, "You don't have permission to do that")
+            return command.secret ? null : Util.replyWarning(message, "You don't have permission to do that")
         }
 
         const arguments = command.numOfArguments()
         if (inputs.length < arguments) {
             if (inputs.length == 0) {
-                return commandHelp(message, command, prefix)
+                return command.secret ? null : commandHelp(message, command, prefix)
             } else {
-                return Util.replyError(message, `'${commandName.toLowerCase()}' expects ${arguments} argument(s), got ${inputs.length}`);
+                return command.secret ? null : Util.replyError(message, `'${commandName.toLowerCase()}' expects ${arguments} argument(s), got ${inputs.length}`);
             }
         }
 
