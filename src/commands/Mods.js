@@ -36,9 +36,10 @@ class Command extends ICommand {
                 let rawMods = Object.values(data.mods.raw)
                 rawMods.forEach((mod, index) => {
                     let name = data.mods.names[index]
+                    let version = mod.substring(name.length + 1)
                     fields.push({
                         name: name,
-                        value: mod.substring(name.length + 1),
+                        value: version == "" ? "Unknown version" : version,
                         inline: true
                     })
 
