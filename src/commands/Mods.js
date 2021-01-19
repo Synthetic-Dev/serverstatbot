@@ -30,15 +30,17 @@ class Command extends ICommand {
                 if (!success) return Util.replyError(message, "An error occured when trying to gather server info")
                 if (!data.ip || !data.port) return Util.replyError(message, "An invalid ip or port is set");
                 if (!data.online) return Util.replyMessage(message, "Server is not online");
+                if (!data.mods) return Util.replyMessage(message, "The linked server is not a modded server")
 
                 let pages = []
                 let fields = []
                 let rawMods = Object.values(data.mods.raw).sort()
-                data.mods.names.forEach((mod, index) => {
-                    let raw = rawMods[index]
-                    let version = raw.substring(mod.length + 1)
+                rawMods.forEach((mod, index) => {
+                    let [name, ...version] = mod.split(" ")
+                    version = version.join(" ")
+
                     fields.push({
-                        name: mod,
+                        name: name,
                         value: version == "" ? "x.x.x" : version,
                         inline: true
                     })
@@ -47,7 +49,7 @@ class Command extends ICommand {
                         pages.push({
                             embed: {
                                 title: "Server Mods",
-                                description: `Number of Mods: ${data.mods.names.length}`,
+                                description: `Number of Mods: ${rawMods.length}`,
                                 color: 5145560,
                                 fields: fields
                             }

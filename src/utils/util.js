@@ -313,20 +313,20 @@ class util {
                 botMessage.react(emoji)
             })
 
-            let collector = botMessage.createReactionCollector((reaction, user) => user.id == message.author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name || emoji.id == reaction.emoji.id).length > 0, {time: 120000, idle: 20000})
+            let collector = botMessage.createReactionCollector((reaction, user) => user.id == message.author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name).length > 0, {time: 120000, idle: 20000})
             
             collector.on("collect", (reaction, user) => {
                 reaction.users.remove(user)
 
                 if (user.id == message.author.id) {
                     let oldPage = page
-                    if (reaction.emoji.name == emojis[1].name || reaction.emoji.id == emojis[1].id) {
+                    if (reaction.emoji.name == emojis[1].name) {
                         page = page + 1 < pages.length ? page + 1 : 0
-                    } else if (reaction.emoji.name == emojis[0].name || reaction.emoji.id == emojis[0].id) {
+                    } else if (reaction.emoji.name == emojis[0].name) {
                         page = page - 1 > 0 ? page - 1 : pages.length - 1
-                    } else if (reaction.emoji.name == emojis[2].name || reaction.emoji.id == emojis[2].id) {
+                    } else if (reaction.emoji.name == emojis[2].name) {
                         page = pages.length - 1
-                    } else if (reaction.emoji.name == emojis[3].name || reaction.emoji.id == emojis[3].id) {
+                    } else if (reaction.emoji.name == emojis[3].name) {
                         page = 0
                     }
 
