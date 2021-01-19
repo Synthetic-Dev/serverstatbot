@@ -308,25 +308,24 @@ class util {
 
             let emojis = ["arrow_backward", "arrow_forward", "arrow_right_hook", "leftwards_arrow_with_hook"]
             emojis.forEach((name, index) => {
-                let emoji = this.getEmoji(message.guild, name)
-                emojis[index] = emoji
-                botMessage.react(emoji)
+                emojis[index] = this.getEmoji(message.guild, name)
             })
 
             let collector = botMessage.createReactionCollector((reaction, user) => user.id == message.author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name).length > 0, {time: 120000, idle: 20000})
             
             collector.on("collect", (reaction, user) => {
+                if (user.bot) return;
                 reaction.users.remove(user)
 
                 if (user.id == message.author.id) {
                     let oldPage = page
-                    if (reaction.emoji.name == emojis[1].name) {
+                    if (reaction.emoji.id == emojis[1].id) {
                         page = page + 1 < pages.length ? page + 1 : 0
-                    } else if (reaction.emoji.name == emojis[0].name) {
+                    } else if (reaction.emoji.id == emojis[0].id) {
                         page = page - 1 > 0 ? page - 1 : pages.length - 1
-                    } else if (reaction.emoji.name == emojis[2].name) {
+                    } else if (reaction.emoji.id == emojis[2].id) {
                         page = pages.length - 1
-                    } else if (reaction.emoji.name == emojis[3].name) {
+                    } else if (reaction.emoji.id == emojis[3].id) {
                         page = 0
                     }
 
@@ -338,6 +337,10 @@ class util {
 
             collector.on("end", (collection, reason) => {
                 botMessage.reactions.removeAll()
+            })
+
+            emojis.forEach(emoji => {
+                botMessage.react(emoji)
             })
         } catch(e) {
             console.error(e)
