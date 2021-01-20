@@ -330,7 +330,8 @@ class util {
 
             let emojis = ["arrow_backward", "arrow_forward", "arrow_right_hook", "leftwards_arrow_with_hook"]
             emojis.forEach((name, index) => {
-                emojis[index] = this.getEmoji(guild, name)
+                let emoji = this.getEmoji(guild, name)
+                emojis[index] = emoji
                 botMessage.react(emoji)
             })
 
@@ -343,7 +344,7 @@ class util {
 
                 if (user.id == author.id) {
                     let oldPage = page
-                    
+
                     if (reaction.emoji.name == emojis[0].name) {
                         page = page - 1 > 0 ? page - 1 : pages.length - 1
 
