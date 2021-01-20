@@ -335,32 +335,28 @@ class util {
                 botMessage.react(emoji)
             })
 
-            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name).length > 0, {time: 120000, idle: 30000, dispose: true})
+            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id && emojis.filter(emoji => emoji.identifier == reaction.emoji.identifier).length > 0, {time: 120000, idle: 30000, dispose: true})
             
             collector.on("collect", (reaction, user) => {
-                if (user.bot) return;
                 reaction.users.remove(user)
-                console.log(reaction.emoji.name)
 
-                if (user.id == author.id) {
-                    let oldPage = page
+                let oldPage = page
 
-                    if (reaction.emoji.name == emojis[0].name) {
-                        page = page - 1 > 0 ? page - 1 : pages.length - 1
+                if (reaction.emoji.identifier == emojis[0].identifier) {
+                    page = page - 1 > 0 ? page - 1 : pages.length - 1
 
-                    } else if (reaction.emoji.name == emojis[1].name) {
-                        page = page + 1 < pages.length ? page + 1 : 0
+                } else if (reaction.emoji.identifier == emojis[1].identifier) {
+                    page = page + 1 < pages.length ? page + 1 : 0
 
-                    } else if (reaction.emoji.name == emojis[2].name) {
-                        page = pages.length - 1
+                } else if (reaction.emoji.identifier == emojis[2].identifier) {
+                    page = pages.length - 1
 
-                    } else if (reaction.emoji.name == emojis[3].name) {
-                        page = 0
-                    }
+                } else if (reaction.emoji.identifier == emojis[3].identifier) {
+                    page = 0
+                }
 
-                    if (page != oldPage) {
-                        botMessage.edit(pages[page])
-                    }
+                if (page != oldPage) {
+                    botMessage.edit(pages[page])
                 }
             })
 

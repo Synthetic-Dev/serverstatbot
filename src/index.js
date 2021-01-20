@@ -88,7 +88,7 @@ async function serverLogs() {
                     let restarttext = ":bulb: Bot restarted or updated, loading server..."
                     if (restarted) {
                         let message = await Util.getRecentMessage(channel, restarttext)
-                        if (message && message.recency <= 1) {
+                        if (message && message.recency <= 2) {
                             let content = message.content
                             let match = content.match(/x\d$/)
                             if (match && match[0]) {
