@@ -202,7 +202,11 @@ class util {
      */
     static async replyWarning(message, warning) {
         if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
-            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`);
+            message.author.createDM().then(dmChannel => {
+                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`)
+            }).catch(e => {
+                console.error(e)
+            })
             return 
         }
 
@@ -214,8 +218,12 @@ class util {
         } catch(e) {
             console.error(e)
             
-            if (message.channel != message.author.dmChannel && message.author.dmChannel) {
-                this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with warning in guild.\n:warning: " + warning)
+            if (message.channel != message.author.dmChannel) {
+                message.author.createDM().then(dmChannel => {
+                    this.sendMessage(dmChannel, ":stop_sign: Failed to reply with warning in guild.\n:warning: " + warning)
+                }).catch(e => {
+                    console.error(e)
+                })
             }
         }
     }
@@ -243,7 +251,11 @@ class util {
      */
     static async replyError(message, error) {
         if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
-            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`);
+            message.author.createDM().then(dmChannel => {
+                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`)
+            }).catch(e => {
+                console.error(e)
+            })
             return 
         }
 
@@ -255,8 +267,12 @@ class util {
         } catch(e) {
             console.error(e)
             
-            if (message.channel != message.author.dmChannel && message.author.dmChannel) {
-                this.sendMessage(message.author.dmChannel, ":stop_sign: Failed to reply with error in guild.\n:stop_sign: " + error)
+            if (message.channel != message.author.dmChannel) {
+                message.author.createDM().then(dmChannel => {
+                    this.sendMessage(dmChannel, ":stop_sign: Failed to reply with error in guild.\n:stop_sign: " + error)
+                }).catch(e => {
+                    console.error(e)
+                })
             }
         }
     }
@@ -296,8 +312,14 @@ class util {
      */
     static async sendPages(message, pages, startPage = 0) {
         let channel = message.channel
-        if (channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])) {
-            if (message.author.dmChannel) this.sendMessage(message.author.dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`);
+        let author = message.author
+        let guild = message.guild
+        if (channel != author.dmChannel && !this.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"])) {
+            author.createDM().then(dmChannel => {
+                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`)
+            }).catch(e => {
+                console.error(e)
+            })
             return 
         }
 
@@ -308,24 +330,30 @@ class util {
 
             let emojis = ["arrow_backward", "arrow_forward", "arrow_right_hook", "leftwards_arrow_with_hook"]
             emojis.forEach((name, index) => {
-                emojis[index] = this.getEmoji(message.guild, name)
+                emojis[index] = this.getEmoji(guild, name)
+                botMessage.react(emoji)
             })
 
-            let collector = botMessage.createReactionCollector((reaction, user) => user.id == message.author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name).length > 0, {time: 120000, idle: 20000})
+            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id && emojis.filter(emoji => emoji.name == reaction.emoji.name).length > 0, {time: 120000, idle: 30000, dispose: true})
             
             collector.on("collect", (reaction, user) => {
                 if (user.bot) return;
                 reaction.users.remove(user)
+                console.log(reaction.emoji.name)
 
-                if (user.id == message.author.id) {
+                if (user.id == author.id) {
                     let oldPage = page
-                    if (reaction.emoji.id == emojis[1].id) {
-                        page = page + 1 < pages.length ? page + 1 : 0
-                    } else if (reaction.emoji.id == emojis[0].id) {
+                    
+                    if (reaction.emoji.name == emojis[0].name) {
                         page = page - 1 > 0 ? page - 1 : pages.length - 1
-                    } else if (reaction.emoji.id == emojis[2].id) {
+
+                    } else if (reaction.emoji.name == emojis[1].name) {
+                        page = page + 1 < pages.length ? page + 1 : 0
+
+                    } else if (reaction.emoji.name == emojis[2].name) {
                         page = pages.length - 1
-                    } else if (reaction.emoji.id == emojis[3].id) {
+
+                    } else if (reaction.emoji.name == emojis[3].name) {
                         page = 0
                     }
 
@@ -335,12 +363,8 @@ class util {
                 }
             })
 
-            collector.on("end", (collection, reason) => {
+            collector.on("end", () => {
                 botMessage.reactions.removeAll()
-            })
-
-            emojis.forEach(emoji => {
-                botMessage.react(emoji)
             })
         } catch(e) {
             console.error(e)
