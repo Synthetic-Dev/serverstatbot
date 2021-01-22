@@ -466,11 +466,11 @@ class util {
             let find
 
             Object.values(unicodeEmojis).forEach(unicode => {
-                if (!find && unicode == input) find = unicode;
+                if (!find && unicode == input) find = guild.emojis.resolveIdentifier(unicode);
             })
 
             Object.keys(unicodeEmojis).forEach(name => {
-                if (!find && name == input) find = unicodeEmojis[name];
+                if (!find && name == input) find = guild.emojis.resolveIdentifier(unicodeEmojis[name]);
             })
 
             guild.emojis.cache.forEach(emoji => {
