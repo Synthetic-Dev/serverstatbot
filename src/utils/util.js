@@ -340,7 +340,8 @@ class util {
             collector.on("collect", (reaction, user) => {
                 reaction.users.remove(user)
 
-                console.log(reaction.emoji, reaction.emoji.name)
+                console.log(reaction.emoji.name)
+                console.log(emojis[0].name)
 
                 let oldPage = page
 
