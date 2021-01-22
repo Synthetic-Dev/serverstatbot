@@ -86,8 +86,9 @@ async function serverLogs() {
                     }
 
                     let restarttext = ":bulb: Bot restarted or updated, loading server..."
+                    let newRestartMessage = false
                     if (restarted) {
-                        let message = await Util.getRecentMessage(channel, restarttext)
+                        let message = await Util.getRecentMessageContaining(channel, restarttext)
                         if (message && message.recency <= 2) {
                             let content = message.content
                             let match = content.match(/x\d$/)
@@ -107,6 +108,7 @@ async function serverLogs() {
                             }
                         } else {
                             Util.sendMessage(channel, restarttext)
+                            newRestartMessage = true
                         }
                     }
 
@@ -117,14 +119,14 @@ async function serverLogs() {
                     let offlineMessage = await Util.getRecentMessage(channel, offlinetext)
 
                     if (data.online && !server.online) {
-                        if (restarted || (!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(offlineMessage, onlineMessage))) {
+                        if (newRestartMessage || (!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(offlineMessage, onlineMessage))) {
                             Util.sendMessage(channel, onlinetext)
                             if (server.start) {
                                 Util.sendMessage(channel, `There is ${data.players.online}/${data.players.max} players in the server.`)
                             }
                         }
                     } else if (!data.online && (server.online || server.start)) {
-                        if (restarted || (!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
+                        if (newRestartMessage || (!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
                             Util.sendMessage(channel, offlinetext)
                         }
                     }
@@ -397,6 +399,43 @@ client.on("message", async message => {
     };
 
     parseCommand(message)
+});
+
+
+/**
+ * Raw event emitter
+ */
+client.on("raw", async packet => {
+    let reactionEvents = [
+        "MESSAGE_REACTION_ADD",
+        "MESSAGE_REACTION_REMOVE",
+        "MESSAGE_REACTION_REMOVE_ALL",
+    ]
+
+    if (reactionEvents.includes(packet.t)) {
+        const guild = await Util.getGuildById(client, packet.d.guild_id)
+        const channel = Util.getChannelById(guild, packet.d.channel_id)
+
+        if (channel.messages.cache.has(packet.d.message_id)) return;
+
+        channel.messages.fetch(packet.d.message_id).then(async message => {
+            if (packet.t === "MESSAGE_REACTION_REMOVE_ALL") {
+                client.emit("messageReactionRemoveAll", message);
+                return
+            }
+            
+            const emoji = packet.d.emoji.id ? packet.d.emoji.id : packet.d.emoji.name
+            const reaction = message.reactions.cache.get(emoji)
+            const user = await client.users.fetch(packet.d.user_id)
+            
+            if (packet.t === "MESSAGE_REACTION_ADD") {
+                client.emit("messageReactionAdd", reaction, user);
+            }
+            if (packet.t === "MESSAGE_REACTION_REMOVE") {
+                client.emit("messageReactionRemove", reaction, user);
+            }
+        });
+    }
 });
 
 

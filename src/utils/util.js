@@ -335,23 +335,25 @@ class util {
                 botMessage.react(emoji)
             })
 
-            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id && emojis.filter(emoji => emoji.identifier == reaction.emoji.identifier).length > 0, {time: 120000, idle: 30000, dispose: true})
-            
+            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: 120000, idle: 30000, dispose: true}) //emojis.filter(emoji => emoji.identifier == reaction.emoji.identifier).length > 0
+
             collector.on("collect", (reaction, user) => {
                 reaction.users.remove(user)
 
+                console.log(reaction.emoji, reaction.emoji.name)
+
                 let oldPage = page
 
-                if (reaction.emoji.identifier == emojis[0].identifier) {
+                if (reaction.emoji.name == emojis[0].name) {
                     page = page - 1 > 0 ? page - 1 : pages.length - 1
 
-                } else if (reaction.emoji.identifier == emojis[1].identifier) {
+                } else if (reaction.emoji.name == emojis[1].name) {
                     page = page + 1 < pages.length ? page + 1 : 0
 
-                } else if (reaction.emoji.identifier == emojis[2].identifier) {
+                } else if (reaction.emoji.name == emojis[2].name) {
                     page = pages.length - 1
 
-                } else if (reaction.emoji.identifier == emojis[3].identifier) {
+                } else if (reaction.emoji.name == emojis[3].name) {
                     page = 0
                 }
 
@@ -608,6 +610,36 @@ class util {
                     msg = message
                     msg.recency = recency
                 }
+
+                recency++
+            })
+        } catch(e) {
+            console.error(e)
+        }
+        return msg
+    }
+
+    /**
+     * Checks if one of the provided strings is equal to a recent message in the channel
+     * @param {Discord.TextChannel} channel 
+     * @param  {...string} text 
+     * @returns {Promise<Discord.Message>}
+     */
+    static async getRecentMessageContaining(channel, ...text) {
+        let msg
+
+        try {
+            let messages = await channel.messages.fetch({limit: 5})
+            let recency = 0
+            messages.forEach(message => {
+                if (msg) return;
+                text.forEach(string => {
+                    if (msg) return;
+                    if (message.content.includes(string)) {
+                        msg = message
+                        msg.recency = recency
+                    }
+                })
 
                 recency++
             })
