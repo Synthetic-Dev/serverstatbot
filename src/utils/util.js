@@ -465,20 +465,12 @@ class util {
         try {
             let find
 
-            Object.values(unicodeEmojis).forEach(unicode => {
-                if (!find && unicode == input) find = guild.emojis.resolveIdentifier(unicode);
-            })
-
-            Object.keys(unicodeEmojis).forEach(name => {
-                if (!find && name == input) find = guild.emojis.resolveIdentifier(unicodeEmojis[name]);
-            })
-
             guild.emojis.cache.forEach(emoji => {
-                if (!find && emoji.name == input) find = emoji;
+                if (!find && (emoji.name == input || emoji.name == unicodeEmojis[input])) find = emoji;
             })
 
             guild.client.emojis.cache.forEach(emoji => {
-                if (!find && emoji.name == input) find = emoji;
+                if (!find && (emoji.name == input || emoji.name == unicodeEmojis[input])) find = emoji;
             })
 
             return find
