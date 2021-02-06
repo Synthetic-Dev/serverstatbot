@@ -43,7 +43,7 @@ class protocol {
 
             pingData.majorVersion = version.majorVersion
             pingData.protocolVersion = version.version
-            pingData.closeTimeout = 120 * 1000
+            pingData.closeTimeout = 10 * 1000
             pingData.responseTimeout = 2 * 1000
 
             const client = new Minecraft.Client(false, version.minecraftVersion)
@@ -139,7 +139,10 @@ class protocol {
 
             closeTimer = setTimeout(() => {
                 client.end()
-                reject("Timed out")
+                let error = new Error("Timed out")
+                error.code = "ETIMEDOUT"
+                
+                reject(error)
             }, pingData.closeTimeout)
 
             DNS(client, pingData)
