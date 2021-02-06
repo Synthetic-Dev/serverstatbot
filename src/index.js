@@ -99,7 +99,7 @@ async function serverLogs() {
                 let old = server.players
                 let current = data.players.sample ? data.players.sample : []
 
-                if (!data.players.sample) {
+                if (!data.players.sample && data.players.online > 0) {
                     let text = ":warning: Server has too many players online to log activity"
                     let message = await Util.getRecentMessage(channel, text)
 
