@@ -109,7 +109,7 @@ async function serverLogs() {
                 } else {
                     if (!server.start) {
                         current.forEach(async (player) => {
-                            if (!old.includes(player)) {
+                            if (old.filter(plr => plr.id == player.id).length == 0) {
                                 let image = createCanvas((16 + 21) * 13 + 26, 28)
                                 let context = image.getContext("2d")
 
@@ -135,7 +135,7 @@ async function serverLogs() {
                         })
 
                         old.forEach(async (player) => {
-                            if (!current.includes(player)) {
+                            if (current.filter(plr => plr.id == player.id).length == 0) {
                                 let image = createCanvas((16 + 19) * 13 + 26, 28)
                                 let context = image.getContext("2d")
 

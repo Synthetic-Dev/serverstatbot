@@ -13,10 +13,9 @@ class Command extends ICommand {
         })
     }
 
-    async execute(message) {
-        Util.replyMessage(message, "Goodbye :wave:")
-
+    async execute() {
         this.client.destroy()
+        process.exit(0)
     }
 }
 
