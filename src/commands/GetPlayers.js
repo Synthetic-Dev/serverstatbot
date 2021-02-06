@@ -83,6 +83,8 @@ class Command extends ICommand {
 
             if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH") {
                 return Util.replyMessage(message, "Server is not online")
+            } else if (error.code == "ECONNREFUSED") {
+                return Util.replyWarning(message, "Server refused connection, is the server online and is ``enable-query=true``?")
             } else if (error.code == "ENOTFOUND") {
                 return Util.replyError(message, "An invalid ip or port is set");
             }

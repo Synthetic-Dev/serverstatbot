@@ -118,9 +118,9 @@ async function serverLogs() {
                                 context.textAlign = "left"
                                 context.fillStyle = "#fff"
 
-                                loadImage(`https://mc-heads.net/avatar/${player}/22.png`).then(head => {
+                                loadImage(`https://mc-heads.net/avatar/${player.name}/22.png`).then(head => {
                                     context.drawImage(head, 2, 2)
-                                    context.fillText(`${player} has joined the game.`, 32, 2)
+                                    context.fillText(`${player.name} has joined the game.`, 32, 2)
 
                                     Util.sendMessage(channel, {
                                         files: [{
@@ -129,7 +129,7 @@ async function serverLogs() {
                                         }]
                                     })
                                 }).catch(error => {
-
+                                    Util.sendMessage(channel, `${player.name} has joined the game.`)
                                 })
                             }
                         })
@@ -144,9 +144,9 @@ async function serverLogs() {
                                 context.textAlign = "left"
                                 context.fillStyle = "#fff"
 
-                                loadImage(`https://mc-heads.net/avatar/${player}/22.png`).then(head => {
+                                loadImage(`https://mc-heads.net/avatar/${player.name}/22.png`).then(head => {
                                     context.drawImage(head, 2, 2)
-                                    context.fillText(`${player} has left the game.`, 32, 2)
+                                    context.fillText(`${player.name} has left the game.`, 32, 2)
 
                                     Util.sendMessage(channel, {
                                         files: [{
@@ -155,7 +155,7 @@ async function serverLogs() {
                                         }]
                                     })
                                 }).catch(error => {
-                                    
+                                    Util.sendMessage(channel, `${player.name} has left the game.`)
                                 })
                             }
                         })
@@ -167,7 +167,7 @@ async function serverLogs() {
                 let wasOnline = server.online
                 server.online = false
 
-                if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH") {
+                if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                     if (wasOnline || server.start) {
                         if ((!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
                             Util.sendMessage(channel, offlinetext)
@@ -185,7 +185,7 @@ async function serverLogs() {
                     return
                 }
                 
-                let text = ":stop_sign: An error occured when trying to gather server info"
+                let text = ":stop_sign: An error occured when trying to get server info"
                 if (!(await Util.getRecentMessage(channel, text))) {
                     Util.sendMessage(channel, text)
                 }
