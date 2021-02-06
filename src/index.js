@@ -128,6 +128,8 @@ async function serverLogs() {
                                             name: "playeraction.png"
                                         }]
                                     })
+                                }).catch(error => {
+
                                 })
                             }
                         })
@@ -152,6 +154,8 @@ async function serverLogs() {
                                             name: "playeraction.png"
                                         }]
                                     })
+                                }).catch(error => {
+                                    
                                 })
                             }
                         })
