@@ -79,6 +79,7 @@ class protocol {
                 })
 
                 let desc = data.description ? (data.description.text ? data.description.text : data.description) : "A Minecraft Server"
+                if (typeof desc != "string") desc = "A Minecraft Server";
 
                 data.motd = {
                     raw: desc,
