@@ -13,8 +13,6 @@ class Command extends ICommand {
     }
 
     async execute(message) {
-        const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
-        
         Util.sendMessage(message, {
             embed: {
                 title: "About",
@@ -40,7 +38,7 @@ class Command extends ICommand {
                     },
                     {
                         name: "Credit to",
-                        value: "[api.mcsrvstat.us](https://api.mcsrvstat.us/)\n[mc-heads.net](https://mc-heads.net/)",
+                        value: "[mc-heads.net](https://mc-heads.net/)",
                         inline: true
                     },
                     {
@@ -59,9 +57,7 @@ class Command extends ICommand {
                         inline: true
                     }
                 ],
-                footer: {
-                    text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
-                }
+                footer: Util.getFooter(this.client)
             }
         })
     }

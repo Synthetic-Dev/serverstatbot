@@ -1,4 +1,5 @@
 const Util = require("../utils/util.js")
+const Protocol = require("../utils/protocol.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -14,8 +15,6 @@ class Command extends ICommand {
     }
 
     async execute(message) {
-        const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
-
         Util.sendMessage(message, {
             embed: {
                 title: "Support",
@@ -31,16 +30,20 @@ class Command extends ICommand {
                 fields: [
                     {
                         name: "Support the bot",
-                        value: "**[Donate](https://www.paypal.com/donate?hosted_button_id=F9CPBU97FFXYU)**"
+                        value: "**[Donate](https://www.paypal.com/donate?hosted_button_id=F9CPBU97FFXYU)**",
+                        inline: true
                     },
                     {
                         name: "Support server",
-                        value: "[Join support server](https://discord.gg/uqVp2XzUP8)"
+                        value: "[Join support server](https://discord.gg/uqVp2XzUP8)",
+                        inline: true
+                    },
+                    {
+                        name: "Supported Minecraft Versions",
+                        value: Protocol.getPrimarySupportedVersions().join(", ")
                     }
                 ],
-                footer: {
-                    text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
-                }
+                footer: Util.getFooter(this.client)
             }
         })
     }

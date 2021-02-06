@@ -1,8 +1,9 @@
-const Discord = require("discord.js");
+const Discord = require("discord.js")
 const Canvas = require("canvas")
 const Mongoose = require("mongoose")
 const Settings = require("./settings.js")
 const Util = require("./utils/util.js")
+const Protocol = require("./utils/protocol.js")
 
 /**
  * Startup
@@ -21,6 +22,8 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
  * Server Logs
  */
 async function serverLogs() {
+    //if (process.env.ISDEV == "TRUE") return;
+
     const {createCanvas, loadImage} = require("canvas")
 
     await Util.sleep(1000)
@@ -47,163 +50,149 @@ async function serverLogs() {
                 return
             };
 
-            let address = `${await settings.getSetting("ip")}:${await settings.getSetting("port")}`
+            const ip = await settings.getSetting("ip")
+            const port = await settings.getSetting("port")
 
-            Util.request(`https://api.mcsrvstat.us/2/${address}.tld`, async (success, data) => {
-                if (success) {
-                    success = false
-                    try {
-                        data = JSON.parse(data)
-                        success = true
-                    } catch(e) {
-                        console.error(e)
-                    }
+            let server = client.servers[guild.id] ? client.servers[guild.id] : {
+                ip: ip,
+                port: port,
+                players: [],
+                online: false,
+                start: true
+            }
 
-                    if (!success) {
-                        let text = ":stop_sign: An error occured when trying to gather server info"
-                        let message = await Util.getRecentMessage(channel, text)
+            if (server.ip != ip || server.port != port) {
+                server = {
+                    ip: ip,
+                    port: port,
+                    players: [],
+                    online: false,
+                    start: true
+                }
+            } 
 
-                        if (!message) {
-                            Util.sendMessage(channel, text)
-                        }
-                        return
-                    };
+            let onlinetext = ":white_check_mark: Server is online"
+            let offlinetext = ":octagonal_sign: Server is offline"
 
-                    if (!data.ip || !data.port) {
-                        let text = ":warning: An invalid ip or port is set, cannot gather server info"
-                        let message = await Util.getRecentMessage(channel, text)
+            let onlineMessage = await Util.getRecentMessage(channel, onlinetext)
+            let offlineMessage = await Util.getRecentMessage(channel, offlinetext)
 
-                        if (!message) {
-                            Util.sendMessage(channel, text)
-                        }
-                        return
-                    };
-                    
-                    let server = client.servers[address] ? client.servers[address] : {
-                        players: [],
-                        online: false,
-                        start: true
-                    }
+            Protocol.ping(ip, port).then(async data => {
+                if (!server.online) {
+                    if ((!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(offlineMessage, onlineMessage))) {
+                        Util.sendMessage(channel, onlinetext)
 
-                    let restarttext = ":bulb: Bot restarted or updated, loading server..."
-                    let newRestartMessage = false
-                    if (restarted) {
-                        let message = await Util.getRecentMessageContaining(channel, restarttext)
-                        if (message && message.recency <= 2) {
-                            let content = message.content
-                            let match = content.match(/x\d$/)
-                            if (match && match[0]) {
-                                match = match[0]
-                                let num = Number(match.substring(1))
-                                if (isNaN(num)) num = 2;
-                                content = content.substring(0, content.length - match.length) + "x" + num
-                            } else {
-                                content += " x2"
-                            }
-
-                            try {
-                                message.edit(content)
-                            } catch(e) {
-                                console.error(e)
-                            }
-                        } else {
-                            Util.sendMessage(channel, restarttext)
-                            newRestartMessage = true
+                        if (server.start) {
+                            Util.sendMessage(channel, {
+                                embed: {
+                                    title: "Server",
+                                    description: (restarted ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
+                                    color: 5145560
+                                }
+                            })
                         }
                     }
+                }
 
-                    let onlinetext = ":white_check_mark: Server is online"
-                    let offlinetext = ":octagonal_sign: Server is offline"
+                server.online = true
 
-                    let onlineMessage = await Util.getRecentMessage(channel, onlinetext)
-                    let offlineMessage = await Util.getRecentMessage(channel, offlinetext)
+                let old = server.players
+                let current = data.players.sample ? data.players.sample : []
 
-                    if (data.online && !server.online) {
-                        if (newRestartMessage || (!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(offlineMessage, onlineMessage))) {
-                            Util.sendMessage(channel, onlinetext)
-                            if (server.start) {
-                                Util.sendMessage(channel, `There is ${data.players.online}/${data.players.max} players in the server.`)
+                if (!data.players.sample) {
+                    let text = ":warning: Server has too many players online to log activity"
+                    let message = await Util.getRecentMessage(channel, text)
+
+                    if (!message) {
+                        Util.sendMessage(channel, text)
+                    }
+                } else {
+                    if (!server.start) {
+                        current.forEach(async (player) => {
+                            if (!old.includes(player)) {
+                                try {
+                                    let image = createCanvas((16 + 21) * 13 + 26, 28)
+                                    let context = image.getContext("2d")
+
+                                    context.font = "17px 'Pixel Font'"
+                                    context.textBaseline = "top"
+                                    context.textAlign = "left"
+                                    context.fillStyle = "#fff"
+
+                                    let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
+                                    context.drawImage(head, 2, 2)
+                                    context.fillText(`${player} has joined the game.`, 32, 2)
+
+                                    Util.sendMessage(channel, {
+                                        files: [{
+                                            attachment: image.toBuffer("image/png"),
+                                            name: "playeraction.png"
+                                        }]
+                                    })
+                                } catch(e) {console.error(e)}
                             }
-                        }
-                    } else if (!data.online && (server.online || server.start)) {
-                        if (newRestartMessage || (!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
+                        })
+
+                        old.forEach(async (player) => {
+                            if (!current.includes(player)) {
+                                try {
+                                    let image = createCanvas((16 + 19) * 13 + 26, 28)
+                                    let context = image.getContext("2d")
+
+                                    context.font = "17px 'Pixel Font'"
+                                    context.textBaseline = "top"
+                                    context.textAlign = "left"
+                                    context.fillStyle = "#fff"
+
+                                    let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
+                                    context.drawImage(head, 2, 2)
+                                    context.fillText(`${player} has left the game.`, 32, 2)
+
+                                    Util.sendMessage(channel, {
+                                        files: [{
+                                            attachment: image.toBuffer("image/png"),
+                                            name: "playeraction.png"
+                                        }]
+                                    })
+                                } catch(e) {console.error(e)}
+                            }
+                        })
+                    }
+                }
+
+                server.players = current
+            }).catch(async error => {
+                let wasOnline = server.online
+                server.online = false
+
+                if (error.code == "ETIMEDOUT") {
+                    if (wasOnline || server.start) {
+                        if ((!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
                             Util.sendMessage(channel, offlinetext)
                         }
                     }
 
-                    server.online = data.online
+                    return
+                } else if (error.code == "ENOTFOUND") {
+                    let text = ":warning: An invalid ip or port is set, cannot get server info"
+                    let message = await Util.getRecentMessage(channel, text)
 
-                    let old = server.players
-                    let current = data.online && data.players.list ? data.players.list : []
-
-                    if (data.online) {
-                        if (data.players.online > 200) {
-                            let text = ":warning: Server has too many players online to log activity"
-                            let message = await Util.getRecentMessage(channel, text)
-
-                            if (!message) {
-                                Util.sendMessage(channel, text)
-                            }
-                        } else {
-                            if (!server.start) {
-                                current.forEach(async (player) => {
-                                    if (!old.includes(player)) {
-                                        try {
-                                            let image = createCanvas((16 + 21) * 13 + 26, 28)
-                                            let context = image.getContext("2d")
-
-                                            context.font = "17px 'Pixel Font'"
-                                            context.textBaseline = "top"
-                                            context.textAlign = "left"
-                                            context.fillStyle = "#fff"
-
-                                            let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
-                                            context.drawImage(head, 2, 2)
-                                            context.fillText(`${player} has joined the game.`, 32, 2)
-
-                                            Util.sendMessage(channel, {
-                                                files: [{
-                                                    attachment: image.toBuffer("image/png"),
-                                                    name: "playeraction.png"
-                                                }]
-                                            })
-                                        } catch(e) {console.error(e)}
-                                    }
-                                })
-
-                                old.forEach(async (player) => {
-                                    if (!current.includes(player)) {
-                                        try {
-                                            let image = createCanvas((16 + 19) * 13 + 26, 28)
-                                            let context = image.getContext("2d")
-
-                                            context.font = "17px 'Pixel Font'"
-                                            context.textBaseline = "top"
-                                            context.textAlign = "left"
-                                            context.fillStyle = "#fff"
-
-                                            let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
-                                            context.drawImage(head, 2, 2)
-                                            context.fillText(`${player} has left the game.`, 32, 2)
-
-                                            Util.sendMessage(channel, {
-                                                files: [{
-                                                    attachment: image.toBuffer("image/png"),
-                                                    name: "playeraction.png"
-                                                }]
-                                            })
-                                        } catch(e) {console.error(e)}
-                                    }
-                                })
-                            }
-                        }
+                    if (!message) {
+                        Util.sendMessage(channel, text)
                     }
-
-                    server.players = current
-                    server.start = false
-
-                    client.servers[address] = server
+                    return
                 }
+                
+                let text = ":stop_sign: An error occured when trying to gather server info"
+                if (!(await Util.getRecentMessage(channel, text))) {
+                    Util.sendMessage(channel, text)
+                }
+
+                console.error(error)
+            }).finally(() => {
+                server.start = false
+
+                client.servers[guild.id] = server
             })
         })
 

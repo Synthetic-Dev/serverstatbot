@@ -1,4 +1,5 @@
 const Util = require("../utils/util.js")
+const Protocol = require("../utils/protocol.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
@@ -15,63 +16,60 @@ class Command extends ICommand {
         const ip = await settings.getSetting("ip")
         const port = await settings.getSetting("port")
 
-        Util.request(`https://api.mcsrvstat.us/2/${ip}:${port}.tld`, (success, data) => {
-            if (!success) {
-                Util.replyError(message, `An error occured, please contact the developer\n\nYou can join our support server here: https://discord.gg/uqVp2XzUP8`)
-            } else {
-                success = false
-                try {
-                    data = JSON.parse(data)
-                    success = true
-                } catch(e) {
-                    console.error(e)
-                }
-                
-                if (!success) return Util.replyError(message, "An error occured when trying to gather server info")
-                if (!data.ip || !data.port) return Util.replyError(message, "An invalid ip or port is set");
-                if (!data.online) return Util.replyMessage(message, "Server is not online");
-                if (!data.mods) return Util.replyMessage(message, "The linked server is not a modded server")
+        let promise = Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...")
+        if (!promise) return;
+        let botMessage = await promise
 
-                let pages = []
-                let fields = []
-                let rawMods = Object.values(data.mods.raw).sort()
-                rawMods.forEach((mod, index) => {
-                    let [name, ...version] = mod.split(" ")
-                    version = version.join(" ")
+        Protocol.ping(ip, port).then(data => {
+            try {
+                botMessage.delete()
+            } catch(e) {console.error(e)}
 
-                    fields.push({
-                        name: name,
-                        value: version == "" ? "x.x.x" : version,
-                        inline: true
+            if (!data.forgeData) return Util.replyMessage(message, "The linked server is not a modded server or does not use forge")
+
+            let pages = []
+            let modstring = ""
+            data.forgeData.mods.forEach((mod, index) => {
+                modstring += `• **${mod.modId}** - ${mod.version}\n`
+
+                if ((index % 19 == 0 && index != 0) || index + 1 == data.forgeData.mods.length) {
+                    pages.push({
+                        embed: {
+                            title: "Server Mods",
+                            description: `Number of Mods: ${data.forgeData.mods.length}\n\n` + modstring.trim(),
+                            color: 5145560
+                        }
                     })
 
-                    if ((index % 20 == 0 && index != 0) || index - 1 == rawMods.length) {
-                        pages.push({
-                            embed: {
-                                title: "Server Mods",
-                                description: `Number of Mods: ${rawMods.length}`,
-                                color: 5145560,
-                                fields: fields
-                            }
-                        })
+                    modstring = ""
+                }
+            })
 
-                        fields = []
-                    }
-                })
+            pages.forEach((page, index) => {
+                page.embed.footer = {
+                    text: `Page ${index + 1}/${pages.length}`,
+                    icon_url: message.author.avatarURL({
+                        size: 32,
+                        dynamic: true,
+                        format: "png"
+                    })
+                }
+            })
 
-                pages.forEach((page, index) => {
-                    page.embed["footer"] = {
-                        text: `Page ${index + 1}/${pages.length}`,
-                        icon_url: message.author.avatarURL({
-                            size: 32,
-                            dynamic: true,
-                            format: "png"
-                        })
-                    }
-                })
+            Util.sendPages(message, pages)
+        }).catch(error => {
+            try {
+                botMessage.delete()
+            } catch(e) {console.error(e)}
 
-                Util.sendPages(message, pages)
+            if (error.code == "ETIMEDOUT") {
+                return Util.replyMessage(message, "Server is not online")
+            } else if (error.code == "ENOTFOUND") {
+                return Util.replyError(message, "An invalid ip or port is set");
             }
+            
+            Util.replyError(message, `An error occured, please contact the developer\n\nYou can join our support server here: https://discord.gg/uqVp2XzUP8`)
+            console.error(error)
         })
     }
 }

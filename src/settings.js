@@ -41,6 +41,10 @@ class Settings {
     async getSetting(name) {
         this.isSetting(name)
 
+        if (process.env.ISDEV == "TRUE") {
+            if (name == "prefix") return "--";
+        }
+
         const setting = this.settings.get(name)
         if (!setting) return null;
         let data = await setting.findOne({

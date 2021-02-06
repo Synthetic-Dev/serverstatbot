@@ -152,9 +152,9 @@ class util {
 
         try {
             if (["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)) {
-                message.reply("\n" + content)
+                return message.reply("\n" + content)
             } else {
-                message.reply(content)
+                return message.reply(content)
             }
         } catch(e) {
             console.error(e)
@@ -189,7 +189,7 @@ class util {
         }
 
         try {
-            channel.send(...content)
+            return channel.send(...content)
         } catch(e) {
             console.error(e)
         }
@@ -335,26 +335,23 @@ class util {
                 botMessage.react(emoji)
             })
 
-            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: 120000, idle: 30000, dispose: true}) //emojis.filter(emoji => emoji.identifier == reaction.emoji.identifier).length > 0
+            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: 120000, idle: 30000, dispose: true})
 
             collector.on("collect", (reaction, user) => {
                 reaction.users.remove(user)
 
-                console.log(reaction.emoji.name)
-                console.log(emojis[0].name)
-
                 let oldPage = page
 
-                if (reaction.emoji.name == emojis[0].name) {
-                    page = page - 1 > 0 ? page - 1 : pages.length - 1
+                if (this.areEmojisEqual(reaction.emoji, emojis[0])) {
+                    page = page - 1 >= 0 ? page - 1 : pages.length - 1
 
-                } else if (reaction.emoji.name == emojis[1].name) {
+                } else if (this.areEmojisEqual(reaction.emoji, emojis[1])) {
                     page = page + 1 < pages.length ? page + 1 : 0
 
-                } else if (reaction.emoji.name == emojis[2].name) {
+                } else if (this.areEmojisEqual(reaction.emoji, emojis[2])) {
                     page = pages.length - 1
 
-                } else if (reaction.emoji.name == emojis[3].name) {
+                } else if (this.areEmojisEqual(reaction.emoji, emojis[3])) {
                     page = 0
                 }
 
@@ -457,19 +454,18 @@ class util {
 
     /**
      * Gets an emoji
-     * @param {Discord.Guild} guild 
+     * @param {Discord.Client} client 
      * @param {string} input 
      * @returns {Discord.GuildEmoji}
      */
-    static getEmoji(guild, input) {
+    static getEmoji(client, input) {
         try {
             let find
+            if (Object.values(unicodeEmojis).includes(input)) find = input;
+            else find = unicodeEmojis[input];
+            if (find) return find;
 
-            guild.emojis.cache.forEach(emoji => {
-                if (!find && (emoji.name == input || emoji.name == unicodeEmojis[input])) find = emoji;
-            })
-
-            guild.client.emojis.cache.forEach(emoji => {
+            client.emojis.cache.forEach(emoji => {
                 if (!find && (emoji.name == input || emoji.name == unicodeEmojis[input])) find = emoji;
             })
 
@@ -481,13 +477,35 @@ class util {
 
     /**
      * Gets an emoji by id
-     * @param {Discord.Guild} guild 
+     * @param {Discord.Client} client 
      * @param {string} id 
      * @returns {Discord.GuildEmoji}
      */
-    static getEmojiById(guild, id) {
+    static getEmojiById(client, id) {
         try {
-            return guild.emojis.cache.get(id) ? guild.emojis.cache.get(id) : guild.client.emojis.cache.get(id)
+            return client.emojis.cache.get(id)
+        } catch(e) {
+            console.error(e)
+        }
+    }
+
+    /**
+     * Checks if all given emojis are similar
+     * @param {string | Discord.Emoji} emojis 
+     * @returns {boolean}
+     */
+    static areEmojisEqual(...emojis) {
+        try {
+            emojis.forEach((emoji, index) => {
+                if (emoji instanceof Discord.Emoji) {
+                    emojis[index] = emoji.name
+                } else if (typeof emoji == "string") {
+                    let unicode = unicodeEmojis[emoji]
+                    if (unicode) emojis[index] = unicode;
+                }
+            })
+            
+            return emojis.filter(emoji => emoji == emojis[0]).length == emojis.length
         } catch(e) {
             console.error(e)
         }
@@ -653,6 +671,19 @@ class util {
     }
 
     /**
+     * Gets a standard embed footer object
+     * @param {Discord.Client} client 
+     * @returns {Object}
+     */
+    static getFooter(client) {
+        const onlineFor = Math.abs(((new Date()).getTime() - client.startTime.getTime()) / 1000)
+
+        return {
+            text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
+        }
+    }
+
+    /**
      * Gets a role
      * @param {Discord.Guild} guild
      * @param {string} name 
@@ -705,17 +736,17 @@ class util {
 
     /**
      * Parses the provided input to find an emoji
-     * @param {Discord.Guild} guild
+     * @param {Discord.Client} client
      * @param {string} input
-     * @returns {Discord.GuildEmoji} 
+     * @returns {Discord.GuildEmoji | Discord.ReactionEmoji | Discord.Emoji} 
      */
-    static parseEmoji(guild, input) {
+    static parseEmoji(client, input) {
         try {
             input = input.replace(/^<:.+:/, "").replace(/>$/, "")
 
-            let find = this.getEmojiById(guild, input)
+            let find = this.getEmojiById(client, input)
             if (find) return find;
-            return this.getEmoji(guild, input)
+            return this.getEmoji(client, input)
         } catch(e) {
             console.error(e)
         }

@@ -15,7 +15,6 @@ class Command extends ICommand {
 
     async execute(message) {
         Util.replyMessage(message, "Goodbye :wave:")
-        await this.client.user.setStatus("invisible")
 
         this.client.destroy()
     }

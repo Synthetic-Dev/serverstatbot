@@ -4,10 +4,11 @@ const ICommand = require("../interfaces/ICommand.js")
 class Command extends ICommand {
     constructor(client) {
         super(client, {
-            name: "giverole",
+            name: "devgiverole",
             desc: "",
             aliases: [
-                "gr"
+                "dgiverole",
+                "dgr"
             ],
             args: [
                 {

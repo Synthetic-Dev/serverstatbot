@@ -19,18 +19,13 @@ class Command extends ICommand {
      * @param {string} desc 
      * @param {Array} fields 
      */
-    postCommands(message, desc, fields) {
-        const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
-
+    postCommands(message, desc, commandliststring) {
         Util.sendMessage(message, {
             embed: {
                 title: "Commands",
-                description: desc,
+                description: desc + "\n" + commandliststring,
                 color: 5145560,
-                fields: fields,
-                footer: {
-                    text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
-                }
+                footer: Util.getFooter(this.client)
             }
         })
     }
@@ -39,19 +34,15 @@ class Command extends ICommand {
      * 
      * @param {Discord.Collection} commands 
      * @param {Function} check 
-     * @return {Array}
+     * @return {string}
      */
     getCommands(commands, check) {
-        let fields = []
         let modules = []
+        let string = ""
 
         commands.forEach(command => {
             if ((check && check(command)) || !check) {
                 if (modules.includes(command)) return;
-
-                let field = {
-                    inline: true
-                }
 
                 let scommand = [`${command.name()}`]
     
@@ -61,27 +52,24 @@ class Command extends ICommand {
                     })
                 }
     
-                field.name = scommand.join(" ")
-                field.value = `*${command.desc}*`
-    
-                fields.push(field)
+                string += `• **${scommand.join(" ")}** - *${command.desc}*\n`
                 modules.push(command)
             }
         })
 
-        return fields
+        return string
     }
 
     async execute(message) {
         const settings = this.client.settings[message.guild.id]
 
-        let commands = this.getCommands(this.client.commands, (command) => {
+        let commandliststring = this.getCommands(this.client.commands, (command) => {
             const permissions = command.permissions()
             return command != this && !command.private && Util.doesMemberHavePermission(message.member, permissions)
         })
 
         let prefix = await settings.getSetting("prefix")
-        this.postCommands(message, "**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\n\nRequires a minecraft server running 1.7+ or with ``enable-query=true``\nPrefix: ``" + prefix + "``", commands)
+        this.postCommands(message, "**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\n\nRequires a minecraft server running a supported version with ``enable-query=true``\n__Prefix:__ ``" + prefix + "``", commandliststring)
 
         // Setup help message
         let ip = await settings.getSetting("ip")
