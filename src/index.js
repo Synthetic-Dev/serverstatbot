@@ -110,16 +110,15 @@ async function serverLogs() {
                     if (!server.start) {
                         current.forEach(async (player) => {
                             if (!old.includes(player)) {
-                                try {
-                                    let image = createCanvas((16 + 21) * 13 + 26, 28)
-                                    let context = image.getContext("2d")
+                                let image = createCanvas((16 + 21) * 13 + 26, 28)
+                                let context = image.getContext("2d")
 
-                                    context.font = "17px 'Pixel Font'"
-                                    context.textBaseline = "top"
-                                    context.textAlign = "left"
-                                    context.fillStyle = "#fff"
+                                context.font = "17px 'Pixel Font'"
+                                context.textBaseline = "top"
+                                context.textAlign = "left"
+                                context.fillStyle = "#fff"
 
-                                    let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
+                                loadImage(`https://mc-heads.net/avatar/${player}/22.png`).then(head => {
                                     context.drawImage(head, 2, 2)
                                     context.fillText(`${player} has joined the game.`, 32, 2)
 
@@ -129,22 +128,21 @@ async function serverLogs() {
                                             name: "playeraction.png"
                                         }]
                                     })
-                                } catch(e) {console.error(e)}
+                                })
                             }
                         })
 
                         old.forEach(async (player) => {
                             if (!current.includes(player)) {
-                                try {
-                                    let image = createCanvas((16 + 19) * 13 + 26, 28)
-                                    let context = image.getContext("2d")
+                                let image = createCanvas((16 + 19) * 13 + 26, 28)
+                                let context = image.getContext("2d")
 
-                                    context.font = "17px 'Pixel Font'"
-                                    context.textBaseline = "top"
-                                    context.textAlign = "left"
-                                    context.fillStyle = "#fff"
+                                context.font = "17px 'Pixel Font'"
+                                context.textBaseline = "top"
+                                context.textAlign = "left"
+                                context.fillStyle = "#fff"
 
-                                    let head = await loadImage(`https://mc-heads.net/avatar/${player}/22.png`)
+                                loadImage(`https://mc-heads.net/avatar/${player}/22.png`).then(head => {
                                     context.drawImage(head, 2, 2)
                                     context.fillText(`${player} has left the game.`, 32, 2)
 
@@ -154,7 +152,7 @@ async function serverLogs() {
                                             name: "playeraction.png"
                                         }]
                                     })
-                                } catch(e) {console.error(e)}
+                                })
                             }
                         })
                     }
