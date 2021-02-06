@@ -294,7 +294,7 @@ function commandHelp(message, command, prefix) {
 
     if (command.numOfArguments() > 0) {
         command.arguments().forEach(arg => {
-            scommand.push("``<" + arg.name + ">``")
+            scommand.push(`\`\`<${arg.name}>\`\``)
 
             fields.push({
                 inline: true,

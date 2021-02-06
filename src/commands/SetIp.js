@@ -21,9 +21,11 @@ class Command extends ICommand {
 
     async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
-        settings.setSetting("ip", inputs[0])
+        let [ip, port] = inputs[0].split(":")
 
-        Util.replyMessage(message, `Ip set to '${inputs[0]}'`)
+        settings.setSetting("ip", ip)
+
+        Util.replyMessage(message, (port ? `:warning: Found port in ip, to set the port do \`\`${await settings.getSetting("prefix")}setport ${port}\`\`\n` : "") + `Ip set to '${ip}'`)
     }
 }
 
