@@ -77,7 +77,7 @@ class Command extends ICommand {
                 botMessage.delete()
             } catch(e) {console.error(e)}
 
-            if (error.code == "ETIMEDOUT") {
+            if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH") {
                 return Util.sendMessage(message, {
                     embed: {
                         title: "Server Info",
@@ -88,7 +88,7 @@ class Command extends ICommand {
             } else if (error.code == "ENOTFOUND") {
                 return Util.replyError(message, "An invalid ip or port is set");
             }
-            
+
             Util.replyError(message, `An error occured, please contact the developer\n\nYou can join our support server here: https://discord.gg/uqVp2XzUP8`)
             console.error(error)
         })

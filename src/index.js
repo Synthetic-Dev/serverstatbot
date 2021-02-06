@@ -165,7 +165,7 @@ async function serverLogs() {
                 let wasOnline = server.online
                 server.online = false
 
-                if (error.code == "ETIMEDOUT") {
+                if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH") {
                     if (wasOnline || server.start) {
                         if ((!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
                             Util.sendMessage(channel, offlinetext)
