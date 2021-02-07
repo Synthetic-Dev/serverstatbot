@@ -28,6 +28,7 @@ class Command extends ICommand {
         const settings = this.client.settings[guild.id]
         
         let logchannel = await settings.getSetting("logchannel")
+        let owner = await Util.getMember(guild, guild.ownerID)
 
         return {
             embed: {
@@ -35,7 +36,7 @@ class Command extends ICommand {
                     name: guild.name,
                     icon_url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
                 },
-                description: `**Owner:** \`\`${guild.owner.user.tag}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.getSetting("prefix")}\`\`\n• **Ip:** \`\`${await settings.getSetting("ip")}\`\`\n• **Port:** \`\`${await settings.getSetting("port")}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `<#${await settings.getSetting("logchannel")}>`}`,
+                description: `**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.getSetting("prefix")}\`\`\n• **Ip:** \`\`${await settings.getSetting("ip")}\`\`\n• **Port:** \`\`${await settings.getSetting("port")}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `<#${await settings.getSetting("logchannel")}>`}`,
                 color: 5145560
             }
         }

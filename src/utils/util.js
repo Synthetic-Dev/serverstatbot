@@ -440,7 +440,7 @@ class util {
     /**
      * Gets a member by a member resolvable
      * @param {Discord.Guild} guild
-     * @param {Discord.Message | Discord.User} resolvable
+     * @param {Discord.Snowflake | Discord.Message | Discord.User} resolvable
      * @returns {Promise<Discord.GuildMember>} 
      */
     static getMember(guild, resolvable) {
