@@ -324,11 +324,24 @@ class util {
         }
 
         try {
+            pages.forEach((page, index) => {
+                if (!page.embed) return;
+
+                page.embed.footer = {
+                    text: `Page ${index + 1}/${pages.length}`,
+                    icon_url: author.avatarURL({
+                        size: 32,
+                        dynamic: true,
+                        format: "png"
+                    })
+                }
+            })
+
             let page = startPage
             let botMessage = await channel.send(pages[page])
             if (pages.length == 1) return;
 
-            let emojis = ["arrow_backward", "arrow_forward", "arrow_right_hook", "leftwards_arrow_with_hook"]
+            let emojis = ["arrow_backward", "arrow_forward", "previous_track", "next_track"]
             emojis.forEach((name, index) => {
                 let emoji = this.getEmoji(guild, name)
                 emojis[index] = emoji
@@ -349,10 +362,10 @@ class util {
                     page = page + 1 < pages.length ? page + 1 : 0
 
                 } else if (this.areEmojisEqual(reaction.emoji, emojis[2])) {
-                    page = pages.length - 1
+                    page = 0
 
                 } else if (this.areEmojisEqual(reaction.emoji, emojis[3])) {
-                    page = 0
+                    page = pages.length - 1
                 }
 
                 if (page != oldPage) {

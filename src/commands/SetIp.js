@@ -11,7 +11,7 @@ class Command extends ICommand {
             ],
             args: [{
                 name: "ip",
-                desc: "The ip"
+                desc: "The ip of your server e.g. ``172.16.254.1`` or ``mc.hypixel.net``"
             }],
             perms: [
                 "ADMINISTRATOR"
@@ -25,7 +25,7 @@ class Command extends ICommand {
 
         settings.setSetting("ip", ip)
 
-        Util.replyMessage(message, (port ? `:warning: Found port in ip, to set the port do \`\`${await settings.getSetting("prefix")}setport ${port}\`\`\n` : "") + `Ip set to '${ip}'`)
+        Util.replyMessage(message, `${port ? `:warning: Found port in ip, to set the port do \`\`${await settings.getSetting("prefix")}setport ${port}\`\`\n` : ""}Ip set to '${ip}'`)
     }
 }
 

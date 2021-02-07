@@ -4,7 +4,7 @@ class Command extends ICommand {
     constructor(client) {
         super(client, {
             name: "devhelp",
-            desc: "Displays all commands and bot details",
+            desc: "Displays __all__ commands and bot details",
             aliases: [
                 "dhelp"
             ],

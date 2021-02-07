@@ -17,13 +17,13 @@ class Command extends ICommand {
         let versions = ""
 
         Protocol.getPrimarySupportedVersions().forEach(version => {
-            versions += "• " + Protocol.getSupportedVersions().filter(subversion => subversion.includes(version)).join(", ") + "\n"
+            versions += `• ${Protocol.getSupportedVersions().filter(subversion => subversion.includes(version)).join(", ")}\n`
         })
 
         Util.sendMessage(message, {
             embed: {
                 title: "Supported Versions",
-                description: "A list of all supported minecraft versions:\n" + versions.trim(),
+                description: `A list of all supported minecraft versions:\n${versions.trim()}`,
                 color: 5145560,
                 footer: Util.getFooter(this.client)
             }

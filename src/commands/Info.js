@@ -45,7 +45,7 @@ class Command extends ICommand {
                     }],
                     embed: {
                         title: "Server Info",
-                        description: `Address: **${ip}` + (port != 25565 ? `:${port}` : "") + `**\nStatus: :white_check_mark: **Online**\nLatency: **${data.latency}ms**`,
+                        description: `Address: **${ip}${port != 25565 ? `:${port}` : ""}**\nStatus: :white_check_mark: **Online**\nLatency: **${data.latency}ms**`,
                         color: 5145560,
                         thumbnail: {
                             url: "attachment://favicon.png"
@@ -81,7 +81,7 @@ class Command extends ICommand {
                 return Util.sendMessage(message, {
                     embed: {
                         title: "Server Info",
-                        description: (error.code == "ECONNREFUSED" ? ":warning: Server refused connection is ``enable-query=true``?\n" : "") + `Address: **${ip}:${port}**\nStatus: :octagonal_sign: **Offline**`,
+                        description: `${error.code == "ECONNREFUSED" ? ":warning: Server refused connection is ``enable-query=true``?\n" : ""}Address: **${ip}:${port}**\nStatus: :octagonal_sign: **Offline**`,
                         color: 5145560
                     }
                 })

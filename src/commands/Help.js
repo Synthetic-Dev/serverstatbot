@@ -23,7 +23,7 @@ class Command extends ICommand {
         Util.sendMessage(message, {
             embed: {
                 title: "Commands",
-                description: desc + "\n" + commandliststring,
+                description: `${desc}\n${commandliststring}`,
                 color: 5145560,
                 footer: Util.getFooter(this.client)
             }
@@ -83,7 +83,7 @@ class Command extends ICommand {
                     fields: [
                         {
                             name: "Add your server ip",
-                            value: `Do **${prefix}setip** ` + "``" + "<your ip here>" + "``",
+                            value: `Do **${prefix}setip** \`\`<your ip here>\`\``,
                             inline: true
                         },
                         {

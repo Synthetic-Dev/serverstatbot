@@ -5,7 +5,7 @@ class Command extends ICommand {
     constructor(client) {
         super(client, {
             name: "devrepeat",
-            desc: "",
+            desc: "Repeat the passed message as the bot",
             aliases: [
                 "drepeat",
                 "dre"

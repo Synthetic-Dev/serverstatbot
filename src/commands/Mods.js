@@ -45,17 +45,6 @@ class Command extends ICommand {
                 }
             })
 
-            pages.forEach((page, index) => {
-                page.embed.footer = {
-                    text: `Page ${index + 1}/${pages.length}`,
-                    icon_url: message.author.avatarURL({
-                        size: 32,
-                        dynamic: true,
-                        format: "png"
-                    })
-                }
-            })
-
             Util.sendPages(message, pages)
         }).catch(error => {
             try {

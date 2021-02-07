@@ -22,7 +22,7 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
  * Server Logs
  */
 async function serverLogs() {
-    //if (process.env.ISDEV == "TRUE") return;
+    if (process.env.ISDEV == "TRUE") return;
 
     const {createCanvas, loadImage} = require("canvas")
 
@@ -290,28 +290,20 @@ client.on("guildDelete", guild => {
  */
 function commandHelp(message, command, prefix) {
     let scommand = [`${prefix}${command.name()}`]
-    let fields = []
+    let args = ""
 
     if (command.numOfArguments() > 0) {
         command.arguments().forEach(arg => {
             scommand.push(`\`\`<${arg.name}>\`\``)
 
-            fields.push({
-                inline: true,
-                name: "<" + arg.name + ">",
-                value: "*" + (arg.desc ? arg.desc : "No description") + "*"
-            })
+            args += `**<${arg.name}>** - *${arg.desc ? arg.desc : "No description"}*\n`
         })
     }
 
     let embed = {
         title: scommand.join(" "),
-        color: 12333616,
-        fields: fields
-    }
-
-    if (command.aliases().length > 0) {
-        embed.description = `**Aliases:** ${command.aliases().join(", ")}`
+        description: (command.aliases().length > 0 ? `**Aliases:** ${command.aliases().join(", ")}\n` : "") + args.trim(),
+        color: 12333616
     }
 
     Util.replyMessage(message, {

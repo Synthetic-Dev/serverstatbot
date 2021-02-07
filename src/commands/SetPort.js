@@ -11,7 +11,7 @@ class Command extends ICommand {
             ],
             args: [{
                 name: "port",
-                desc: "The port"
+                desc: "The port that your server is served from e.g. ``25565``"
             }],
             perms: [
                 "ADMINISTRATOR"
