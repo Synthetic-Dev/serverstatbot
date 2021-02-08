@@ -294,10 +294,13 @@ function commandHelp(message, command, prefix) {
 
     if (command.numOfArguments() > 0) {
         command.arguments().forEach(arg => {
-            scommand.push(`\`\`<${arg.name}>\`\``)
-
-            if (arg.optional) args += `**[${arg.name}]** - *${arg.desc ? arg.desc : "No description"}*\n`;
-            else args += `**<${arg.name}>** - *${arg.desc ? arg.desc : "No description"}*\n`
+            if (arg.optional) {
+                scommand.push(`\`\`[${arg.name}]\`\``)
+                args += `**[${arg.name}]** - *${arg.desc ? arg.desc : "No description"}*\n`
+            } else {
+                scommand.push(`\`\`<${arg.name}>\`\``)
+                args += `**<${arg.name}>** - *${arg.desc ? arg.desc : "No description"}*\n`
+            }
         })
     }
 
