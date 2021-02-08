@@ -24,33 +24,42 @@ class Command extends ICommand {
         let channel = message.channel
 
         let maxCount = 500
-        let count = Number(inputs[0])
+        let count = Number(inputs[0] ? inputs[0] : 1)
         if (typeof(count) != "number" || count == null || isNaN(count)) return Util.replyError(message, "Count must be a number");
 
         count = Math.abs(count)
         if (count > maxCount) return Util.replyError(message, `Count cannot exceed ${maxCount}`)
 
         Util.getRecentMessageFrom(channel, this.client.user, count).then(async messages => {
-            messages.forEach(msg => {
-                msg.createdAt = new Date()
-                msg.createdTimestamp = msg.createdAt.getTime()
-            })
-            let botMessage = await Util.sendMessage(channel, `Found ${messages.length} message(s)`)
+            (await Util.sendMessage(channel, `Found ${messages.length} message(s)`)).then(botMessage => {
+                botMessage.delete({
+                    timeout: 5000
+                })
+            }).catch(error => {})
+
             channel.bulkDelete(messages).then(deleted => {
-                Util.sendMessage(channel, `Deleted ${deleted.size} message(s)`).then(botMessage2 => {
-                    botMessage2.delete({
+                Util.sendMessage(channel, `Bulk deleted ${deleted.size} message(s)`).then(botMessage => {
+                    botMessage.delete({
                         timeout: 10000
                     })
                 }).catch(error => {})
             }).catch(error => {})
-            botMessage.delete({
-                timeout: 1000
-            })
-        }).catch(error => {})
 
-        try {
-            message.delete()
-        } catch(e) {}
+            messages.forEach(msg => {
+                if (!msg.deleted) {
+                    try {
+                        msg.delete()
+                    } catch(e) {}
+                }
+            })
+
+            Util.sendMessage(channel, `Deleted ${messages.length} message(s)`).then(botMessage => {
+                botMessage.delete({
+                    timeout: 10000
+                })
+            }).catch(error => {})
+
+        }).catch(error => {})
     }
 }
 
