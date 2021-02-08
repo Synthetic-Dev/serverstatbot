@@ -34,6 +34,10 @@ class Command extends ICommand {
         botMessage.delete({
             timeout: 10000
         })
+
+        try {
+            message.delete()
+        } catch(e) {}
     }
 }
 
