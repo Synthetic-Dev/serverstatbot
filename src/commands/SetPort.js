@@ -23,7 +23,7 @@ class Command extends ICommand {
         const settings = this.client.settings[message.guild.id]
 
         let maxPort = 32768
-        port = Number(port)
+        let port = Number(inputs[0])
         if (typeof(port) != "number" || port == null || isNaN(port)) return Util.replyError(message, "Port must be a number");
 
         port = Math.abs(port)
