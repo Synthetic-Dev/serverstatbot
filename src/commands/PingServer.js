@@ -87,7 +87,7 @@ class Command extends ICommand {
                     }
                 })
             } else if (error.code == "ENOTFOUND") {
-                return Util.replyError(message, "An invalid ip or port is set");
+                return Util.replyError(message, "Invalid server address");
             }
 
             Util.replyError(message, `An error occured, please contact the developer\n\nYou can join our support server here: https://discord.gg/uqVp2XzUP8`)
