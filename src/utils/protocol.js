@@ -66,6 +66,8 @@ class protocol {
                 const data = JSON.parse(packet.response)
                 const start = Date.now()
 
+                data.request = pingData
+
                 const maxTime = setTimeout(() => {
                     clearTimeout(closeTimer)
 

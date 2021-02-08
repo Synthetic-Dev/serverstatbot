@@ -139,6 +139,7 @@ class util {
      * Replies to the message with the given text, includes error handling
      * @param {Discord.Message} message 
      * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
+     * @returns {Promise<Discord.Message?>}
      */
     static replyMessage(message, content) {
         if (!(message.channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
@@ -175,8 +176,9 @@ class util {
      * Sends a message in the given channel, includes error handling
      * @param {Discord.TextChannel | Discord.DMChannel | Discord.Message} object 
      * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
+     * @returns {Promise<Discord.Message?>}
      */
-    static sendMessage(object, ...content) {
+    static async sendMessage(object, ...content) {
         let channel = object instanceof Discord.Message ? object.channel : object
 
         if (object instanceof Discord.Message && !(channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])) {
@@ -671,6 +673,50 @@ class util {
             console.error(e)
         }
         return msg
+    }
+
+    /**
+     * Checks if one of the provided strings is equal to a recent message in the channel
+     * @param {Discord.TextChannel} channel 
+     * @param {Discord.User} user 
+     * @param {number} count
+     * @returns {Promise<Array<Discord.Message>>}
+     */
+    static async getRecentMessageFrom(channel, user, count = 1) {
+        let messages = []
+
+        try {
+            let cycle = 0
+            let leastMessage
+            while (messages.length < count) {
+                let msgs = await channel.messages.fetch({
+                    before: cycle > 0 ? leastMessage : null
+                })
+
+                if (!msgs || msgs.size == 0) break;
+
+                if (msgs instanceof Discord.Message) {
+                    message = msgs
+                    msgs = new Discord.Collection()
+                    msgs.set(message.id, message)
+                }
+
+                msgs.forEach(message => {
+                    if (messages.length >= count) return;
+                    leastMessage = message.id
+
+                    if (message.author.id == user.id) {
+                        messages.push(message)
+                    }
+                })
+
+                cycle++
+            }
+        } catch(e) {
+            console.error(e)
+        }
+
+        return messages
     }
 
     /**
