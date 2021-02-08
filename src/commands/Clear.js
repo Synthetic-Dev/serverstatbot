@@ -21,6 +21,8 @@ class Command extends ICommand {
     }
 
     async execute(message, inputs) {
+        let channel = message.channel
+
         let maxCount = 500
         let count = Number(inputs[0])
         if (typeof(count) != "number" || count == null || isNaN(count)) return Util.replyError(message, "Count must be a number");
@@ -28,13 +30,18 @@ class Command extends ICommand {
         count = Math.abs(count)
         if (count > maxCount) return Util.replyError(message, `Count cannot exceed ${maxCount}`)
 
-        let messages = await Util.getRecentMessageFrom(message.channel, this.client.user, count)
-        message.channel.bulkDelete(messages).then(deleted => {
-            Util.sendMessage(message, `Deleted ${deleted.size} message(s)`).then(botMessage => {
-                botMessage.delete({
-                    timeout: 10000
-                })
+        Util.getRecentMessageFrom(channel, this.client.user, count).then(messages => {
+            let botMessage = await Util.sendMessage(channel, `Found ${messages.length} message(s)`)
+            channel.bulkDelete(messages).then(deleted => {
+                Util.sendMessage(channel, `Deleted ${deleted.size} message(s)`).then(botMessage2 => {
+                    botMessage2.delete({
+                        timeout: 10000
+                    })
+                }).catch(error => {})
             }).catch(error => {})
+            botMessage.delete({
+                timeout: 1000
+            })
         }).catch(error => {})
 
         try {
