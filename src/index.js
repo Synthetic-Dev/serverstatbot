@@ -176,7 +176,7 @@ async function serverLogs() {
 
                     return
                 } else if (error.code == "ENOTFOUND") {
-                    let text = ":warning: An invalid ip or port is set, cannot get server info"
+                    let text = ":warning: Could not find server, check that a valid ip and port is set, and is the server running a supported version?"
                     let message = await Util.getRecentMessage(channel, text)
 
                     if (!message) {
