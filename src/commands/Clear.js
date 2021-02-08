@@ -30,7 +30,7 @@ class Command extends ICommand {
         count = Math.abs(count)
         if (count > maxCount) return Util.replyError(message, `Count cannot exceed ${maxCount}`)
 
-        Util.getRecentMessageFrom(channel, this.client.user, count).then(messages => {
+        Util.getRecentMessageFrom(channel, this.client.user, count).then(async messages => {
             let botMessage = await Util.sendMessage(channel, `Found ${messages.length} message(s)`)
             channel.bulkDelete(messages).then(deleted => {
                 Util.sendMessage(channel, `Deleted ${deleted.size} message(s)`).then(botMessage2 => {
