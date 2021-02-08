@@ -1,3 +1,4 @@
+const Canvas = require("canvas")
 const Util = require("../utils/util.js")
 const Protocol = require("../utils/protocol.js")
 const ICommand = require("../interfaces/ICommand.js")
@@ -14,6 +15,11 @@ class Command extends ICommand {
                 {
                     name: "address",
                     desc: "The address of the server e.g. ``mc.hypixel.net``, ``play.hivemc.net:25565`` or ``172.16.254.1:25665``"
+                },
+                {
+                    name: "version",
+                    desc: "The minecraft version to attempt to connect to the server with",
+                    optional: true
                 }
             ]
         })
@@ -23,11 +29,20 @@ class Command extends ICommand {
         let [ip, port] = inputs[0].split(":")
         port = port ? port : 25565
 
+        let maxPort = 32768
+        port = Number(port)
+        if (typeof(port) != "number" || port == null || isNaN(port)) return Util.replyError(message, "Port must be a number");
+
+        port = Math.abs(port)
+        if (port > maxPort) return Util.replyError(message, `Port cannot exceed ${maxPort}`)
+
+        let version = inputs[1]
+
         let promise = Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...")
         if (!promise) return;
         let botMessage = await promise
 
-        Protocol.ping(ip, port).then(data => {
+        Protocol.ping(ip, port, version).then(data => {
             try {
                 botMessage.delete()
             } catch(e) {console.error(e)}

@@ -1,5 +1,4 @@
 const Minecraft = require("minecraft-protocol")
-const Versions = require("minecraft-protocol/src/version.js")
 const DNS = require("minecraft-protocol/src/client/tcp_dns.js")
 const Forge = require("minecraft-protocol-forge")
 const MinecraftData = require("minecraft-data")
@@ -7,6 +6,14 @@ const MinecraftData = require("minecraft-data")
 class protocol {
     constructor() {
         console.error(`The ${this.constructor.name} class cannot be constructed.`);
+    }
+
+    /**
+     * Get primary supported minecraft versions
+     * @returns {Array}
+     */
+    static getDefaultVersion() {
+        return "1.16.5"
     }
 
     /**
@@ -22,7 +29,7 @@ class protocol {
      * @returns {Array}
      */
     static getSupportedVersions() {
-        return ["1.7.10", "1.8.8", "1.9 15w40b", "1.9", "1.9.1-pre2", "1.9.2", "1.9.4", "1.10 16w20a", "1.10-pre1", "1.10", "1.10.1", "1.10.2", "1.11 16w35a", "1.11", "1.11.2", "1.12 17w15a", "1.12 17w18b", "1.12-pre4", "1.12", "1.12.1", "1.12.2", "1.13 17w50a", "1.13", "1.13.1", "1.13.2-pre1", "1.13.2-pre2", "1.13.2", "1.14", "1.14.1", "1.14.3", "1.14.4" , "1.15", "1.15.1", "1.15.2", "1.16 20w13b", "1.16 20w14a", "1.16-rc1", "1.16", "1.16.1", "1.16.2", "1.16.3", "1.16.4"]
+        return ["1.7.10", "1.8.8", "1.9 15w40b", "1.9", "1.9.1-pre2", "1.9.2", "1.9.4", "1.10 16w20a", "1.10-pre1", "1.10", "1.10.1", "1.10.2", "1.11 16w35a", "1.11", "1.11.2", "1.12 17w15a", "1.12 17w18b", "1.12-pre4", "1.12", "1.12.1", "1.12.2", "1.13 17w50a", "1.13", "1.13.1", "1.13.2-pre1", "1.13.2-pre2", "1.13.2", "1.14", "1.14.1", "1.14.3", "1.14.4" , "1.15", "1.15.1", "1.15.2", "1.16 20w13b", "1.16 20w14a", "1.16-rc1", "1.16", "1.16.1", "1.16.2", "1.16.3", "1.16.4", "1.16.5"]
     }
 
     /**
@@ -31,14 +38,14 @@ class protocol {
      * @param {number} port 
      * @returns {Promise<Object>}
      */
-    static ping(ip, port) {
+    static ping(ip, port, gameVersion = this.getDefaultVersion()) {
         return new Promise((resolve, reject) => {
             const pingData = {
                 host: ip ? ip : "localhost",
                 port: port ? port : 25565,
             }
 
-            const mcData = MinecraftData(Versions.defaultVersion)
+            const mcData = MinecraftData(gameVersion)
             const version = mcData.version
 
             pingData.majorVersion = version.majorVersion

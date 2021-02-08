@@ -48,7 +48,8 @@ class Command extends ICommand {
     
                 if (command.numOfArguments() > 0) {
                     command.arguments().forEach(arg => {
-                        scommand.push(`\`\`<${arg.name}>\`\``)
+                        if (arg.optional) scommand.push(`\`\`[${arg.name}]\`\``);
+                        else scommand.push(`\`\`<${arg.name}>\`\``)
                     })
                 }
     

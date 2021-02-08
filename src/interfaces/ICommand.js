@@ -1,9 +1,9 @@
-const discord = require("discord.js")
+const Discord = require("discord.js")
 
 class ICommand {
     /**
      * Constructor
-     * @param {discord.Client} client 
+     * @param {Discord.Client} client 
      * @param {Object} data 
      */
     constructor(client, data) {
@@ -16,6 +16,14 @@ class ICommand {
          * All the data about the command
          */
         this.data = data;
+
+        if (data.args) {
+            let optional = false
+            data.args.forEach(arg => {
+                if (arg.optional) optional = true;
+                else if (optional) throw new Error("Optional argument appeared before required argument")
+            })
+        }
 
         /**
          * The description of the command
@@ -48,19 +56,38 @@ class ICommand {
     }
 
     /**
-     * Gets the number of arguments that the command takes
-     * @return {number}
-     */
-    numOfArguments() {
-        return (this.data.args || []).length
-    }
-
-    /**
      * Gets the raw arguments that the command takes
      * @return {Array}
      */
     arguments() {
         return this.data.args || []
+    }
+
+    /**
+     * Gets the raw number of arguments that the command takes
+     * @return {number}
+     */
+    numOfArguments() {
+        return this.arguments().length
+    }
+
+    /**
+     * Gets the required arguments that the command takes
+     */
+    requiredArguments() {
+        let args = []
+        this.arguments().forEach(arg => {
+            if (!arg.optional) args.push(arg);
+        })
+        return args
+    }
+
+    /**
+     * Gets the number of required arguments that the command takes
+     * @return {number}
+     */
+    numOfRequiredArguments() {
+        return this.requiredArguments().length
     }
 
     /**
@@ -74,7 +101,7 @@ class ICommand {
     /**
      * The method that is executed when the command is ran
      * @param {string[]} inputs 
-     * @param {discord.Message} message 
+     * @param {Discord.Message} message 
      */
     async execute(inputs, message) {}
 }

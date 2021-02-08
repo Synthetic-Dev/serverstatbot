@@ -4,14 +4,14 @@ const ICommand = require("../interfaces/ICommand.js")
 class Command extends ICommand {
     constructor(client) {
         super(client, {
-            name: "setport",
-            desc: "Sets the server port used by the bot, default is 25565",
+            name: "setaddress",
+            desc: "Sets the server address used by the bot, alternative to using ``setip`` and ``setport``",
             aliases: [
-                "port"
+                "address"
             ],
             args: [{
-                name: "port",
-                desc: "The port that your server is served from e.g. ``25565``"
+                name: "address",
+                desc: "The address of the server e.g. ``mc.hypixel.net``, ``play.hivemc.net:25565`` or ``172.16.254.1:25665``"
             }],
             perms: [
                 "ADMINISTRATOR"
@@ -21,6 +21,8 @@ class Command extends ICommand {
 
     async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
+        let [ip, port] = inputs[0].split(":")
+        port = port ? port : 25565
 
         let maxPort = 32768
         port = Number(port)
@@ -29,8 +31,10 @@ class Command extends ICommand {
         port = Math.abs(port)
         if (port > maxPort) return Util.replyError(message, `Port cannot exceed ${maxPort}`)
 
+        settings.setSetting("ip", ip)
         settings.setSetting("port", port)
-        Util.replyMessage(message, `Port set to \`\`${port}\`\``)
+
+        Util.replyMessage(message, `Ip set to \`\`${ip}\`\` and Port set to \`\`${port}\`\``)
     }
 }
 

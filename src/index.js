@@ -296,7 +296,8 @@ function commandHelp(message, command, prefix) {
         command.arguments().forEach(arg => {
             scommand.push(`\`\`<${arg.name}>\`\``)
 
-            args += `**<${arg.name}>** - *${arg.desc ? arg.desc : "No description"}*\n`
+            if (arg.optional) args += `**[${arg.name}]** - *${arg.desc ? arg.desc : "No description"}*\n`;
+            else args += `**<${arg.name}>** - *${arg.desc ? arg.desc : "No description"}*\n`
         })
     }
 
@@ -348,18 +349,18 @@ async function parseCommand(message) {
             return command.secret ? null : Util.replyWarning(message, "You don't have permission to do that")
         }
 
-        const arguments = command.numOfArguments()
-        if (inputs.length < arguments) {
+        if (inputs.length < command.numOfRequiredArguments()) {
             if (inputs.length == 0) {
                 return command.secret ? null : commandHelp(message, command, prefix)
             } else {
-                return command.secret ? null : Util.replyError(message, `'${commandName.toLowerCase()}' expects ${arguments} argument(s), got ${inputs.length}`);
+                return command.secret ? null : Util.replyError(message, `'${commandName.toLowerCase()}' expects ${command.numOfRequiredArguments()} argument(s), got ${inputs.length}`);
             }
         }
 
-        let end = inputs.slice(arguments - 1).join(" ")
-        inputs = inputs.slice(0, arguments - 1)
-        inputs[arguments - 1] = end
+        let argumentCount = Math.min(inputs.length, command.numOfArguments())
+        let end = inputs.slice(argumentCount - 1).join(" ")
+        inputs = inputs.slice(0, argumentCount - 1)
+        inputs[argumentCount - 1] = end
 
         try {
             command.execute(message, inputs)
