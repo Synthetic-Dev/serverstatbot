@@ -103,6 +103,8 @@ class Command extends ICommand {
                 })
             } else if (error.code == "ENOTFOUND") {
                 return Util.replyError(message, "Could not find server, check the server address, and is the server running a supported version?");
+            } else if (error.code == "EVERSREFUSED") {
+                return Util.replyError(message, "Supplied version is not a valid minecraft version");
             }
 
             Util.replyError(message, `An error occured, please contact the developer\n\nYou can join our support server here: https://discord.gg/uqVp2XzUP8`)

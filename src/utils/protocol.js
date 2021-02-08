@@ -46,6 +46,11 @@ class protocol {
             }
 
             const mcData = MinecraftData(gameVersion)
+            if (!mcData) {
+                let error = new Error("Invalid game version")
+                error.code = "EVERSREFUSED"
+                reject(error)
+            }
             const version = mcData.version
 
             pingData.majorVersion = version.majorVersion
