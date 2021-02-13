@@ -97,9 +97,9 @@ async function serverLogs() {
                 server.online = true
 
                 let old = server.players
-                let current = data.players.sample ? data.players.sample : []
+                let current = data.players ? (data.players.sample ? data.players.sample : []) : []
 
-                if (!data.players.sample && data.players.online > 0) {
+                if (data.players && !data.players.sample && data.players.online > 0) {
                     let text = ":warning: Server has too many players online to log activity"
                     let message = await Util.getRecentMessage(channel, text)
 
@@ -189,6 +189,8 @@ async function serverLogs() {
                 if (!(await Util.getRecentMessage(channel, text))) {
                     Util.sendMessage(channel, text)
                 }
+
+                if (error.code == "ECONNRESET") return;
 
                 console.error(error)
             }).finally(() => {

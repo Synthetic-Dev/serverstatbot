@@ -51,7 +51,7 @@ class Command extends ICommand {
                 botMessage.delete()
             } catch(e) {console.error(e)}
 
-            if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH") {
+            if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNRESET") {
                 return Util.replyMessage(message, "Server is not online")
             } else if (error.code == "ECONNREFUSED") {
                 return Util.replyWarning(message, "Server refused connection, is the server online and is ``enable-query=true``?")

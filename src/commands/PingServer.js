@@ -93,7 +93,7 @@ class Command extends ICommand {
                 botMessage.delete()
             } catch(e) {console.error(e)}
 
-            if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+            if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED" || error.code == "ECONNRESET") {
                 return Util.sendMessage(message, {
                     embed: {
                         title: "Server Info",

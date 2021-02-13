@@ -31,6 +31,7 @@ class Command extends ICommand {
             } catch(e) {console.error(e)}
 
             if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online");
+            if (!data.players) return Util.replyWarning("Unable to get players in server, please try again.")
             if (!data.players.sample || data.players.sample.length == 0) return Util.sendMessage(message, `There is ${data.players.online}/${data.players.max} players in the server.\nThis server has too many players to display a playerlist.`);
 
             const maxInList = 30
@@ -81,7 +82,7 @@ class Command extends ICommand {
                 botMessage.delete()
             } catch(e) {console.error(e)}
 
-            if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH") {
+            if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNRESET") {
                 return Util.replyMessage(message, "Server is not online")
             } else if (error.code == "ECONNREFUSED") {
                 return Util.replyWarning(message, "Server refused connection, is the server online and is ``enable-query=true``?")
