@@ -3,7 +3,7 @@ const DNS = require("minecraft-protocol/src/client/tcp_dns.js")
 const Forge = require("minecraft-protocol-forge")
 const MinecraftData = require("minecraft-data")
 
-class protocol {
+class Protocol {
     constructor() {
         console.error(`The ${this.constructor.name} class cannot be constructed.`);
     }
@@ -166,4 +166,4 @@ class protocol {
     }
 }
 
-module.exports = protocol
+module.exports = Protocol

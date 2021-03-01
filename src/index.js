@@ -71,17 +71,17 @@ async function serverLogs() {
                 }
             } 
 
-            let onlinetext = ":white_check_mark: Server is online"
-            let offlinetext = ":octagonal_sign: Server is offline"
+            let onlineText = ":white_check_mark: Server is online"
+            let offlineText = ":octagonal_sign: Server is offline"
+            let restartText = ":arrows_counterclockwise: Server restarted"
 
-            let onlineMessage = await Util.getRecentMessage(channel, onlinetext)
-            let offlineMessage = await Util.getRecentMessage(channel, offlinetext)
+            let onlineMessage = await Util.getRecentMessage(channel, onlineText)
+            if (!onlineMessage) onlineMessage = await Util.getRecentMessage(channel, restartText)
+            let offlineMessage = await Util.getRecentMessage(channel, offlineText)
 
             Protocol.ping(ip, port).then(async data => {
                 if (!server.online) {
                     if ((!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(offlineMessage, onlineMessage))) {
-                        Util.sendMessage(channel, onlinetext)
-
                         if (server.start) {
                             Util.sendMessage(channel, {
                                 embed: {
@@ -91,6 +91,10 @@ async function serverLogs() {
                                 }
                             })
                         }
+
+                        if (!server.start && offlineMessage && offlineMessage.member == guild.me && (new Date()).getTime() - offlineMessage.createdAt.getTime() < 120*1000) {
+                            offlineMessage.edit(restartText)
+                        } else Util.sendMessage(channel, onlineText);
                     }
                 }
 
@@ -170,7 +174,7 @@ async function serverLogs() {
                 if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                     if (wasOnline || server.start) {
                         if ((!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
-                            Util.sendMessage(channel, offlinetext)
+                            Util.sendMessage(channel, offlineText)
                         }
                     }
 

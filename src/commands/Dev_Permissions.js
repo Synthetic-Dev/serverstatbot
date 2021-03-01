@@ -21,7 +21,7 @@ class Command extends ICommand {
         Util.sendMessage(message, {
             embed: {
                 title: "PERMISSIONS",
-                description: "``" + message.guild.me.permissions.FLAGS.keys().join("``, ``") + "``"
+                description: "``" + message.guild.me.permissions.toArray().join("``, ``") + "``"
             }
         })
     }

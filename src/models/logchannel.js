@@ -1,6 +1,6 @@
-const mongoose = require("mongoose")
+const Mongoose = require("mongoose")
 
-const Schema = new mongoose.Schema({
+const Schema = new Mongoose.Schema({
     Value: {
         type: String,
         default: "0"
@@ -11,4 +11,4 @@ const Schema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model("logchannels", Schema)
+module.exports = Mongoose.model("logchannels", Schema)

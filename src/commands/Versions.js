@@ -23,7 +23,7 @@ class Command extends ICommand {
         Util.sendMessage(message, {
             embed: {
                 title: "Supported Versions",
-                description: `A list of all supported minecraft versions:\n${versions.trim()}`,
+                description: `**Disclaimer: Modded versions using forge are supported, however versions 1.16+ may not work as intended.**\n\nA list of all supported minecraft versions:\n${versions.trim()}\n\n`,
                 color: 5145560,
                 footer: Util.getFooter(this.client)
             }

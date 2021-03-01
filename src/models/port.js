@@ -1,6 +1,6 @@
-const mongoose = require("mongoose")
+const Mongoose = require("mongoose")
 
-const Schema = new mongoose.Schema({
+const Schema = new Mongoose.Schema({
     Value: {
         type: Number,
         default: 25565
@@ -11,4 +11,4 @@ const Schema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model("ports", Schema)
+module.exports = Mongoose.model("ports", Schema)

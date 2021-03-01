@@ -70,7 +70,7 @@ class Command extends ICommand {
         })
 
         let prefix = await settings.getSetting("prefix")
-        this.postCommands(message, `**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\n\nRequires a minecraft server running a supported version with \`\`enable-query=true\`\`\n__Prefix:__ \`\`${prefix}\`\``, commandliststring)
+        this.postCommands(message, `**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\n\nRequires a minecraft server running a supported version with \`\`enable-query=true\`\`, to see supported versions do \`\`${prefix}versions\`\`\n**Prefix: \`\`${prefix}\`\`**`, commandliststring)
 
         // Setup help message
         let ip = await settings.getSetting("ip")

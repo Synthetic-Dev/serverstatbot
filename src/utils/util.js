@@ -4,10 +4,9 @@ const HTTP = require("http")
 const FileSystem = require("fs");
 
 const unicodeEmojis = require("./unicodeEmojis.json");
-const { Collection } = require("mongoose");
 const DevId = "255733848162304002"
 
-class util {
+class Util {
     constructor() {
         console.error(`The ${this.constructor.name} class cannot be constructed.`);
     }
@@ -19,7 +18,7 @@ class util {
      */
     static ping(message) {
         const date = new Date();
-        return date.getUTCMilliseconds() - message.createdAt.getUTCMilliseconds()
+        return date.getTime() - message.createdAt.getTime()
     }
 
     /**
@@ -33,12 +32,12 @@ class util {
 
     /**
      * Sends a request to the given request options
-     * @param {string | Object} options The request options
+     * @param {string | HTTP.RequestOptions | HTTPS.RequestOptions} options The request options
      * @param {Function} callback A function that is called when a response is received
      */
     static request(options, callback) {
         const isUrl = typeof options == "string"
-        const method = isUrl ? (options.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : HTTPS
+        const method = isUrl ? (options.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : (options.protocol == "HTTP" ? HTTP : HTTPS)
 
         let handler = response => {
             let data = ""
@@ -68,13 +67,13 @@ class util {
 
     /**
      * Sends a request to the given request options
-     * @param {string | Object} options The request options
+     * @param {string | HTTP.RequestOptions | HTTPS.RequestOptions} options The request options
      * @returns {Promise<string>} A promise that resolves with the response
      */
     static requestAsync(options) {
         return new Promise((resolve, reject) => {
             const isUrl = typeof options == "string"
-            const method = isUrl ? (url.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : HTTPS
+            const method = isUrl ? (options.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : (options.protocol == "HTTP" ? HTTP : HTTPS)
 
             let handler = response => {
                 let data = ""
@@ -107,7 +106,7 @@ class util {
      * Loads .js files from the given directory
      * @param {string} dir Directory to the folder that holds all the modules to be loaded
      * @param {Function} register A function that is called that registers the modules into the Collection
-     * @returns {Collection} A collection that contains all of the loaded modules
+     * @returns {Discord.Collection} A collection that contains all of the loaded modules
      */
     static loadmodules(dir, register) {
         const modules = new Discord.Collection()
@@ -846,4 +845,4 @@ class util {
     }
 }
 
-module.exports = util
+module.exports = Util
