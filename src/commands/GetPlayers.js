@@ -25,7 +25,7 @@ class Command extends ICommand {
         if (!promise) return;
         let botMessage = await promise
 
-        Protocol.ping(ip, port).then(data => {
+        Protocol.ping(ip, port).then(async data => {
             try {
                 botMessage.delete()
             } catch(e) {console.error(e)}
@@ -35,47 +35,64 @@ class Command extends ICommand {
             if (!data.players.sample || data.players.sample.length == 0) return Util.sendMessage(message, `There is ${data.players.online}/${data.players.max} players in the server.\nThis server has too many players to display a playerlist.`);
 
             const maxInList = 30
+            const length = Math.min(maxInList + 1, data.players.sample.length)
 
-            let image = createCanvas(16 * 20 + 26, Math.min(maxInList + 1, data.players.online) * 28)
+            let image = createCanvas(1000, length * 28)
             let context = image.getContext("2d")
 
             context.font = "20px 'Pixel Font'"
             context.textBaseline = "top"
             context.textAlign = "left"
-            context.fillStyle = "#fff"
 
-            let promises = []
-            data.players.sample.forEach((player, i) => {
-                if (i >= maxInList) {
-                    if (i == maxInList) {
-                        context.fillText(`and ${data.players.online - maxInList} more...`, 2, i * 28 - 2)
-                    }
-                    return
-                } else {
-                    promises.push(loadImage(`https://mc-heads.net/avatar/${player.name}/22.png`))
-                    context.fillText(player.name, 32, i * 28 - 2)
-                }
+            let longest = length > maxInList ? context.measureText(`and ${data.players.online - maxInList} more...`) : 0
+            data.players.sample.forEach(player => {
+                let size = context.measureText(player.name)
+                if (size.width > longest) longest = size.width;
             })
 
-            Promise.all(promises).then(heads => {
-                heads.forEach((head, i) => {
-                    context.drawImage(head, 2, 2 + i * 28)
-                })
+            image = createCanvas(32 + longest, length * 28)
+            context = image.getContext("2d")
 
-                Util.sendMessage(message, {
-                    files: [{
-                        attachment: image.toBuffer("image/png"),
-                        name: "playerlist.png"
-                    }],
-                    embed: {
-                        title: "Playerlist",
-                        description: `There is ${data.players.online}/${data.players.max} players in the server.`,
-                        color: 5145560,
-                        image: {
-                            url: "attachment://playerlist.png"
+            context.imageSmoothingEnabled = false
+            context.font = "20px 'Pixel Font'"
+            context.textBaseline = "top"
+            context.textAlign = "left"
+            context.fillStyle = "#fff"
+
+            await new Promise((resolve, reject) => {
+                let done = 0
+                data.players.sample.forEach((player, i) => {
+                    if (i >= maxInList) {
+                        if (i == maxInList) {
+                            context.fillText(`and ${data.players.online - maxInList} more...`, 2, i * 28 - 2)
                         }
+
+                        if (done >= length) resolve();
+                    } else {
+                        loadImage(`https://mc-heads.net/avatar/${player.id}/22`).then(head => {
+                            context.drawImage(head, 2, 2 + i * 28, 22, 22)
+                        }).catch(e => {}).finally(() => {
+                            context.fillText(player.name, 32, i * 28 - 2)
+                            done++
+                            if (done >= length) resolve();
+                        })
                     }
                 })
+            })
+
+            Util.sendMessage(message, {
+                files: [{
+                    attachment: image.toBuffer("image/png"),
+                    name: "playerlist.png"
+                }],
+                embed: {
+                    title: "Playerlist",
+                    description: `There is ${data.players.online}/${data.players.max} players in the server.`,
+                    color: 5145560,
+                    image: {
+                        url: "attachment://playerlist.png"
+                    }
+                }
             })
         }).catch(error => {
             try {

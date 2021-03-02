@@ -134,6 +134,20 @@ class Util {
         return modules
     }
 
+    static fillMixedText(context, splitText, x, y) {
+        let defaultFillStyle = context.fillStyle
+        let defaultFont = context.font
+        context.save()
+
+        splitText.forEach(({text, fillStyle, font}) => {
+            context.fillStyle = fillStyle || defaultFillStyle;
+            context.font = font || defaultFont;
+            context.fillText(text, x, y);
+            x += context.measureText(text).width;
+        });
+        ctx.restore();
+      };
+
     /**
      * Replies to the message with the given text, includes error handling
      * @param {Discord.Message} message 

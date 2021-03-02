@@ -130,6 +130,12 @@ class Protocol {
                     data.forgeData.mods = data.forgeData.mods.filter(mod => mod.modId.toLowerCase() != "minecraft")
                 }
 
+                if (data.players && data.players.sample) {
+                    data.players.sample.forEach(player => {
+                        player.name = player.name.replace(/§./g, "").trim()
+                    })
+                }
+
                 client.write("ping", {
                     time: [0, 0]
                 })

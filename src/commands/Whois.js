@@ -83,7 +83,7 @@ class Command extends ICommand {
             embed: {
                 author: {
                     name: nameHistory.current,
-                    icon_url: `https://mc-heads.net/avatar/${nameHistory.current}/100`
+                    icon_url: `https://mc-heads.net/avatar/${uuid}/100`
                 },
                 description: `UUID: \`\`${uuid}\`\``,
                 color: decimalColor,
