@@ -5,7 +5,7 @@ class Command extends ICommand {
     constructor(client) {
         super(client, {
             name: "devpermissions",
-            desc: "",
+            desc: "Get bot permissions in current guild",
             aliases: [
                 "dpermissions",
                 "dperms"
