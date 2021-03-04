@@ -170,6 +170,7 @@ async function serverLogs() {
             }).catch(async error => {
                 let wasOnline = server.online
                 server.online = false
+                server.players = []
 
                 if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                     if (wasOnline || server.start) {
