@@ -110,7 +110,7 @@ class Command extends ICommand {
                 needSearch: false,
                 check: async (guild) => {
                     let logchannel = await this.client.settings[guild.id].getSetting("logchannel")
-                    return logchannel == "0"
+                    return logchannel != "0"
                 }
             },
             hasserver: {
@@ -121,14 +121,29 @@ class Command extends ICommand {
                 }
             },
         }
+        let amplifiers = {
+            "!": (bool) => {
+                return !bool
+            }
+        }
+
         let check
         if (inputs[0]) {
             inputs[0] = inputs[0].toLowerCase();
+            let amplifier = amplifiers[inputs[0].substr(0, 1)]
+            if (amplifier) inputs[0] = inputs[0].substr(1);
+
             let property = propertyChecks[inputs[0]]
             if (!property) return Util.sendError(message.channel, `Invalid property, properties: \`\`${Object.keys(propertyChecks).join("``, ``")}\`\``);
+
             if (property.needSearch && !inputs[1]) return Util.sendError(message.channel, "Search argument required");
             if (inputs[1]) inputs[1] = inputs[1].toLowerCase().trim();
-            check = property.check;
+
+            if (amplifier) {
+                check = async (guild) => {
+                    return amplifier(await Promise.resolve(property.check(guild)))
+                }
+            } else check = property.check;
         }
 
         let promise = Util.sendMessage(message.channel, ":arrows_counterclockwise: Getting servers...")
