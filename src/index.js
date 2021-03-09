@@ -144,7 +144,7 @@ function serverLogs() {
                                 })
                             }
 
-                            if (!server.start && server.statusMessage.message && server.statusMessage.message.member == guild.me && Date.now() - offlineMessage.createdTimestamp < 120*1000) {
+                            if (!server.start && server.statusMessage.message && server.statusMessage.message.member == guild.me && Date.now() - server.statusMessage.message.createdTimestamp < 120*1000) {
                                 server.statusMessage.message.edit(statusContents.restart)
                             } else {
                                 Util.sendMessage(channel, statusContents.online).then(message => {
