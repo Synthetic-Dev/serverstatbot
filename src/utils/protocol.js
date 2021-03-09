@@ -30,7 +30,7 @@ class Protocol {
     static async sendRequest(ip, port = 25565, verify = true) {
         let cachedData = this.requestCache[ip + ":" + port]
         if (cachedData && cachedData.expires > Date.now()) {
-            return cachedData.value
+            return [true, cachedData.value]
         }
 
         let bulkData = new Promise((resolve, reject) => {
@@ -181,7 +181,7 @@ class Protocol {
             expires: Date.now() + 10*1000,
             value: result
         }
-        
+
         return [true, result]
     }
 
