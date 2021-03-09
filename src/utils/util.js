@@ -268,7 +268,7 @@ class Util {
      * @param {boolean} inObject
      */
     static couldNotFind(message, type, input, inObject) {
-        this.replyError(message, `Could not find ${type.toLowerCase()} '${input}'` + (inObject ? `in this ${inObject}` : ""))
+        this.replyError(message, `Could not find ${type.toLowerCase()} '${input}'` + (inObject ? ` in this ${inObject}` : ""))
     }
 
     /**
