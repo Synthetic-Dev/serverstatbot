@@ -22,7 +22,7 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
  * Server Logs
  */
 function serverLogs() {
-    //if (process.env.ISDEV == "TRUE") return;
+    if (process.env.ISDEV == "TRUE") return;
 
     const statusContents = {
         online: "<:green_circle_with_tick:818512512500105249> Server is online",

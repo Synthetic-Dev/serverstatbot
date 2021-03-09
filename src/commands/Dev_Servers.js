@@ -146,28 +146,26 @@ class Command extends ICommand {
             } else check = property.check;
         }
 
-        let promise = Util.sendMessage(message.channel, ":arrows_counterclockwise: Getting servers...")
-        if (!promise) return;
-        let botMessage = await promise
+        Util.sendMessage(message.channel, ":arrows_counterclockwise: Getting servers...").then(botMessage => {
+            let promises = []
+            cache.forEach(guild => {
+                promises.push(this.getServer(message.guild, guild, check))
+            })
 
-        let promises = []
-        cache.forEach(guild => {
-            promises.push(this.getServer(message.guild, guild, check))
-        })
+            Promise.all(promises).then(pages => {
+                try {
+                    botMessage.delete()
+                } catch(e) {console.error(e)}
 
-        Promise.all(promises).then(pages => {
-            try {
-                botMessage.delete()
-            } catch(e) {console.error(e)}
+                pages = pages.filter(value => value != null)
 
-            pages = pages.filter(value => value != null)
+                if (pages.length == 0) {
+                    return Util.sendWarning(message.channel, "No servers found")
+                }
 
-            if (pages.length == 0) {
-                return Util.sendWarning(message.channel, "No servers found")
-            }
-
-            Util.sendPages(message, pages)
-        })
+                Util.sendPages(message, pages)
+            })
+        }).catch(e=>{})
     }
 }
 
