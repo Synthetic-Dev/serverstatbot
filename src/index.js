@@ -45,6 +45,7 @@ function serverLogs() {
         }
     ]
 
+    /* Clean up code
     client.guilds.cache.forEach(async guild => {
         let settings = client.settings[guild.id]
 
@@ -61,7 +62,7 @@ function serverLogs() {
                 })
             })
         }).catch(e => {})
-    })
+    })*/
 
     client.servers = []
     client.setInterval(async () => {
