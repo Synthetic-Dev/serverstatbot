@@ -45,7 +45,7 @@ class Protocol {
             }
 
             MinecraftUtil.status(...args).then(query).catch(e => {
-                if (!e) e = new Error("Unknown error")
+                if (!e) e = "Unknown error"
                 if (e == "Failed to retrieve the status of the server within time") {
                     MinecraftUtil.statusFE01(...args).then(query).catch(e => {resolve([false, e])})
                 } else if (e.code == "ECONNREFUSED") {
