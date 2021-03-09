@@ -68,11 +68,9 @@ class Protocol {
         if (!success) return [false, result];
 
         result.latency = -1
-        if (result.description && result.description.descriptionText != null) {
-            result.description = {
-                text: result.description.descriptionText,
-                ansi: null
-            }
+        result.description = {
+            text: result.description ? result.description.descriptionText : "",
+            ansi: null
         }
         if (result.bedrock || !verify) {
             this.requestCache[ip + ":" + port] = {
@@ -196,7 +194,7 @@ class Protocol {
         let [success, result] = await this.sendRequest(ip, port, verify)
 
         if (success) {
-            let desc = result.description.text ? result.description.text : "A Minecraft Server"
+            let desc = result.description.text && result.description.text != "" ? result.description.text : "A Minecraft Server"
             if (typeof desc != "string") desc = "A Minecraft Server";
 
             let final = {
