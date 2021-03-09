@@ -336,6 +336,26 @@ client.on("ready", () => {
         }
     })
 
+    if (process.env.ISDEV != "TRUE") {
+        Util.requestAsync({
+            hostname: "top.gg",
+            path: "/api/bots/759415210628087841/stats",
+            protocol: "HTTPS",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": process.env.TOPGGTOKEN
+            },
+            data: JSON.stringify({
+                server_count: client.guilds.cache.size
+            })
+        }).then(() => {
+            console.log("Stats update sent to top.gg")
+        }).catch(error => {
+            console.error(error)
+        })
+    }
+
     console.log("Bot started successfully")
 
     serverLogs()

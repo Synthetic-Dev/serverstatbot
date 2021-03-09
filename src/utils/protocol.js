@@ -40,7 +40,7 @@ class Protocol {
 
             function query(statusResponse) {
                 statusResponse.bedrock = statusResponse.bedrock ? true : false
-                args[1].timeout = 5000
+                args[1].timeout = 6000
                 MinecraftUtil.queryFull(...args).then(queryResponse => {
                     queryResponse.bedrock = statusResponse.bedrock;
                     queryResponse.query = true;
@@ -56,6 +56,7 @@ class Protocol {
             }
 
             function attemptQuery() {
+                args[1].timeout = 6000
                 MinecraftUtil.queryFull(...args).then(queryResponse => {
                     queryResponse.bedrock = queryResponse.levelName != null;
                     queryResponse.ping = false

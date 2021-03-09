@@ -61,7 +61,10 @@ class Util {
             callback(false, error)
         })
 
-        if (!isUrl) req.end();
+        if (!isUrl) {
+            if (options.data) req.write(options.data);
+            req.end()
+        };
     }
 
     /**
@@ -73,6 +76,7 @@ class Util {
         return new Promise((resolve, reject) => {
             const isUrl = typeof options == "string"
             const method = isUrl ? (options.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : (options.protocol == "HTTP" ? HTTP : HTTPS)
+            delete options.protocol
 
             let handler = response => {
                 let data = ""
@@ -97,7 +101,10 @@ class Util {
                 reject(error)
             })
 
-            if (!isUrl) req.end();
+            if (!isUrl) {
+                if (options.data) req.write(options.data);
+                req.end()
+            };
         })
     }
 
