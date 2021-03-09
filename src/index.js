@@ -47,15 +47,19 @@ function serverLogs() {
 
     client.guilds.cache.forEach(async guild => {
         let settings = client.settings[guild.id]
-        
+
         let channelId = await settings.getSetting("logchannel")
         let channel = Util.getChannelById(guild, channelId)
         if (!channel) return;
 
-        Util.getRecentMessagesAfter(channel, client.user, 1615260133000, (message) => {
-            return message.content == ":stop_sign: An error occured when trying to get server info"
+        Util.getRecentMessagesAfter(channel, client.user, 1615252933*1000, (message) => {
+            return message.content.includes(":stop_sign: An error occured when trying to get server info")
         }).then(messages => {
-            channel.bulkDelete(messages).then(() => {}).catch(e => {})
+            channel.bulkDelete(messages).then(() => {}).catch(e => {
+                messages.forEach(async message => {
+                    message.delete().then(() => {}).catch(e => {})
+                })
+            })
         }).catch(e => {})
     })
 
