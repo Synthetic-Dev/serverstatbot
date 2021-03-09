@@ -13,7 +13,7 @@ class Command extends ICommand {
     }
 
     async execute(message) {
-        const onlineFor = Math.abs(((new Date()).getTime() - this.client.startTime.getTime()) / 1000)
+        const onlineFor = Math.abs((Date.now() - this.client.startTime) / 1000)
         Util.replyMessage(message, `I have been online for ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s`)
     }
 }

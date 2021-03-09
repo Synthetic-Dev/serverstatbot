@@ -17,8 +17,7 @@ class Util {
      * @return {number}
      */
     static ping(message) {
-        const date = new Date();
-        return date.getTime() - message.createdAt.getTime()
+        return Date.now() - message.createdTimestamp
     }
 
     /**
@@ -547,7 +546,7 @@ class Util {
      * Gets a message from a channel by id
      * @param {Discord.TextChannel} channel
      * @param {string} id
-     * @returns {Promise<Discord.Message>?} 
+     * @returns {Promise<Discord.Message>} 
      */
     static async getMessageInChannel(channel, id) {
         try {
@@ -563,7 +562,7 @@ class Util {
      * Gets the message before the provided message id
      * @param {Discord.TextChannel} channel
      * @param {string} id
-     * @returns {Promise<Discord.Message>?} 
+     * @returns {Promise<Discord.Message>} 
      */
     static async getPreviousMessage(channel, id) {
         try {
@@ -584,25 +583,22 @@ class Util {
      * @param  {...string} text 
      * @returns {Promise<Discord.Message>}
      */
-    static async getRecentMessage(channel, ...text) {
-        let msg
-
-        try {
-            let messages = await channel.messages.fetch({limit: 5})
-            let recency = 0
-            messages.forEach(message => {
-                if (msg) return;
-                if (text.includes(message.content)) {
-                    msg = message
-                    msg.recency = recency
-                }
-
-                recency++
-            })
-        } catch(e) {
-            console.error(e)
-        }
-        return msg
+    static getRecentMessage(channel, ...text) {
+        return new Promise((resolve, reject) => {
+            channel.messages.fetch({limit: 5}).then((messages) => {
+                let find
+                let recency = 0
+                messages.each(message => {
+                    if (find) return;
+                    if (text.includes(message.content)) {
+                        find = message
+                        find.recency = recency
+                    }
+                    recency++
+                })
+                resolve(find)
+            }).catch(reject)
+        })
     }
 
     /**
@@ -611,28 +607,26 @@ class Util {
      * @param  {...string} text 
      * @returns {Promise<Discord.Message>}
      */
-    static async getRecentMessageContaining(channel, ...text) {
-        let msg
+    static getRecentMessageContaining(channel, ...text) {
+        return new Promise((resolve, reject) => {
+            channel.messages.fetch({limit: 5}).then(messages => {
+                let find
+                let recency = 0
+                messages.each(message => {
+                    if (find) return;
+                    text.forEach(string => {
+                        if (find) return;
+                        if (message.content.includes(string)) {
+                            find = message
+                            find.recency = recency
+                        }
+                    })
 
-        try {
-            let messages = await channel.messages.fetch({limit: 5})
-            let recency = 0
-            messages.forEach(message => {
-                if (msg) return;
-                text.forEach(string => {
-                    if (msg) return;
-                    if (message.content.includes(string)) {
-                        msg = message
-                        msg.recency = recency
-                    }
+                    recency++
                 })
-
-                recency++
-            })
-        } catch(e) {
-            console.error(e)
-        }
-        return msg
+                resolve(find)
+            }).catch(reject)
+        })
     }
 
     /**
@@ -640,43 +634,90 @@ class Util {
      * @param {Discord.TextChannel} channel 
      * @param {Discord.User} user 
      * @param {number} count
-     * @returns {Promise<Array<Discord.Message>>}
+     * @param {function?} check
+     * @returns {Promise<Discord.Message[]>}
      */
-    static async getRecentMessageFrom(channel, user, count = 1) {
-        let messages = []
-
-        try {
+    static getRecentMessagesFrom(channel, user, count = 1, check) {
+        return new Promise(async (resolve, reject) => {
+            let messages = []
             let cycle = 0
             let leastMessage
             while (messages.length < count) {
                 let msgs = await channel.messages.fetch({
-                    before: cycle > 0 ? leastMessage : null
+                    before: cycle > 0 ? leastMessage.id : null
                 })
 
                 if (!msgs || msgs.size == 0) break;
 
                 if (msgs instanceof Discord.Message) {
-                    message = msgs
+                    let message = msgs
                     msgs = new Discord.Collection()
                     msgs.set(message.id, message)
                 }
 
-                msgs.forEach(message => {
+                msgs.each(message => {
                     if (messages.length >= count) return;
-                    leastMessage = message.id
+                    if (!leastMessage || message.createdTimestamp < leastMessage.createdTimestamp) {
+                        leastMessage = message
+                    }
 
-                    if (message.author.id == user.id) {
+                    if (message.author.id == user.id && (!check || (check && check(message)))) {
                         messages.push(message)
                     }
                 })
 
                 cycle++
             }
-        } catch(e) {
-            console.error(e)
-        }
+            resolve(messages)
+        })
+    }
 
-        return messages
+    /**
+     * Checks if one of the provided strings is equal to a recent message in the channel
+     * @param {Discord.TextChannel} channel 
+     * @param {Discord.User} user 
+     * @param {number} timestamp
+     * @param {function?} check
+     * @returns {Promise<Discord.Message[]>}
+     */
+     static getRecentMessagesAfter(channel, user, timestamp, check) {
+        return new Promise(async (resolve, reject) => {
+            let messages = []
+            let cycle = 0
+            let leastMessage
+            while (true) {
+                let msgs = await channel.messages.fetch({
+                    before: cycle > 0 ? leastMessage.id : null
+                })
+
+                if (!msgs || msgs.size == 0) break;
+
+                if (msgs instanceof Discord.Message) {
+                    let message = msgs
+                    msgs = new Discord.Collection()
+                    msgs.set(message.id, message)
+                }
+
+                let flag = false
+                msgs.each(message => {
+                    if (message.createdTimestamp < timestamp) {
+                        flag = true
+                        return
+                    }
+                    if (!leastMessage || message.createdTimestamp < leastMessage.createdTimestamp) {
+                        leastMessage = message
+                    }
+
+                    if (message.author.id == user.id && (!check || (check && check(message)))) {
+                        messages.push(message)
+                    }
+                })
+                if (flag) break;
+
+                cycle++
+            }
+            resolve(messages)
+        })
     }
 
     /**
@@ -686,7 +727,7 @@ class Util {
      * @returns {boolean}
      */
     static isMessageMoreRecent(message1, message2) {
-        return message1.createdAt.getTime() - message2.createdAt.getTime() > 0
+        return message1.createdTimestamp - message2.createdTimestamp > 0
     }
 
     /**
@@ -695,7 +736,7 @@ class Util {
      * @returns {Object}
      */
     static getFooter(client) {
-        const onlineFor = Math.abs(((new Date()).getTime() - client.startTime.getTime()) / 1000)
+        const onlineFor = (Date.now() - client.startTime) / 1000
 
         return {
             text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
@@ -712,7 +753,7 @@ class Util {
         try {
             let find
             let roles = await guild.roles.fetch()
-            roles.cache.forEach(role => {
+            roles.cache.each(role => {
                 if (!find && role.name == name) find = role;
             })
             return find

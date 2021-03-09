@@ -30,20 +30,20 @@ class Command extends ICommand {
         count = Math.abs(count)
         if (count > maxCount) return Util.replyError(message, `Count cannot exceed ${maxCount}`)
 
-        Util.getRecentMessageFrom(channel, this.client.user, count).then(async messages => {
+        Util.getRecentMessagesFrom(channel, this.client.user, count).then(async messages => {
             (await Util.sendMessage(channel, `Found ${messages.length} message(s)`)).then(botMessage => {
                 botMessage.delete({
                     timeout: 5000
                 })
-            }).catch(error => {})
+            }).catch(e => {})
 
             channel.bulkDelete(messages).then(deleted => {
                 Util.sendMessage(channel, `Bulk deleted ${deleted.size} message(s)`).then(botMessage => {
                     botMessage.delete({
                         timeout: 10000
                     })
-                }).catch(error => {})
-            }).catch(error => {})
+                }).catch(e => {})
+            }).catch(e => {})
 
             messages.forEach(msg => {
                 if (!msg.deleted) {
@@ -57,9 +57,9 @@ class Command extends ICommand {
                 botMessage.delete({
                     timeout: 10000
                 })
-            }).catch(error => {})
+            }).catch(e => {})
 
-        }).catch(error => {})
+        }).catch(e => {})
     }
 }
 

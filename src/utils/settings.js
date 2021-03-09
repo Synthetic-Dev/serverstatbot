@@ -1,37 +1,45 @@
 const Discord = require("discord.js")
 const FileSystem = require("fs")
 
+const models = {}
+
 class Settings {
     constructor(path, queryFilter = () => {return {}}, optionsFilter = (n, v) => {return v}) {
+        if (!models[path]) {
+            models[path] = {
+                collection: new Discord.Collection(),
+                loaded: false
+            }
+            FileSystem.readdir(`${__dirname}/../${path}`, (error, files) => {
+                if (error) return console.error(error);
+
+                const jsfiles = files.filter(file => file.split(".").pop() == "js")
+                if (jsfiles.length == 0) return;
+
+                jsfiles.forEach(file => {
+                    let name = file.split(".").shift().toLowerCase()
+                    let setting = require(`..${path}/${file}`)
+                    models[path].collection.set(name, setting)
+                })
+
+                models[path].loaded = true
+            })
+        }
+
         this.queryFilter = queryFilter
         this.optionsFilter = optionsFilter
 
-        this.settings = new Discord.Collection()
+        this.models = models[path]
+        this.settings = models[path].collection
         this.cache = new Discord.Collection()
-        this.loading = true
-
-        FileSystem.readdir(`${__dirname}/../${path}`, (error, files) => {
-            if (error) return console.error(error);
-
-            const jsfiles = files.filter(file => file.split(".").pop() == "js")
-            if (jsfiles.length == 0) return;
-
-            jsfiles.forEach(file => {
-                let name = file.split(".").shift().toLowerCase()
-                let setting = require(`..${path}/${file}`)
-                this.settings.set(name, setting)
-            })
-        })
-
-        this.loading = false
     }
 
     /**
      * Checks if a setting exists
      * @param {string} name 
      */
-    isSetting(name) {
-        while (this.loading) {}
+    async isSetting(name) {
+        while (!this.models.loaded) await new Promise(resolve => setTimeout(resolve, 1000));
         if (!this.settings.has(name)) throw new Error(`No setting model called '${name}' exists`);
     }
 
@@ -41,7 +49,7 @@ class Settings {
      * @returns {*}
      */
     async getSetting(name) {
-        this.isSetting(name)
+        await this.isSetting(name)
 
         if (process.env.ISDEV == "TRUE") {
             if (name == "prefix") return "--";
@@ -67,8 +75,8 @@ class Settings {
      * @param {string} name 
      * @param {*} value 
      */
-    setSetting(name, value) {
-        this.isSetting(name)
+    async setSetting(name, value) {
+        await this.isSetting(name)
         this.cache.set(name, value)
 
         const setting = this.settings.get(name)
@@ -90,8 +98,8 @@ class Settings {
      * @param {string} name 
      * @param {Function} transform 
      */
-    editSetting(name, transform) {
-        this.isSetting(name)
+    async editSetting(name, transform) {
+        await this.isSetting(name)
 
         this.getSetting(name).then(oldValue => {
             Promise.resolve(transform(oldValue)).then(newValue => {

@@ -9,6 +9,8 @@ class Protocol {
         console.error(`The ${this.constructor.name} class cannot be constructed.`);
     }
 
+    static requestCache = {}
+
     /**
      * The minimum minecraft version that the statusFE01() handshake supports
      * @returns {string}
@@ -26,6 +28,11 @@ class Protocol {
      * @returns {Promise<boolean, Object<string, any> | Error | string>}
      */
     static async sendRequest(ip, port = 25565, verify = true) {
+        let cachedData = this.requestCache[ip + ":" + port]
+        if (cachedData && cachedData.expires > Date.now()) {
+            return cachedData.value
+        }
+
         let bulkData = new Promise((resolve, reject) => {
             let args = [ip, {port: port, timeout: 3000}]
 
@@ -67,7 +74,13 @@ class Protocol {
                 ansi: null
             }
         }
-        if (result.bedrock || !verify) return [true, result];
+        if (result.bedrock || !verify) {
+            this.requestCache[ip + ":" + port] = {
+                expires: Date.now() + 10*1000,
+                value: result
+            }
+            return [true, result]
+        }
 
         let verifyData = new Promise((resolve, reject) => {
             const dataVersion = result.version.match(/(\d+\.)?(\d+\.)?(\d)/g).filter(match => match.length > 0)[0] || "1.16.5"
@@ -95,7 +108,7 @@ class Protocol {
                     serverPort: pingData.port,
                     nextState: 1
                 })
-                Forge.autoVersionForge(client)
+                if (!result.modInfo) Forge.autoVersionForge(client);
                 client.state = Minecraft.states.STATUS
             })
 
@@ -163,6 +176,12 @@ class Protocol {
                 }
             }
         }
+
+        this.requestCache[ip + ":" + port] = {
+            expires: Date.now() + 10*1000,
+            value: result
+        }
+        
         return [true, result]
     }
 

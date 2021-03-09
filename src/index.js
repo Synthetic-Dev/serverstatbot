@@ -45,6 +45,20 @@ function serverLogs() {
         }
     ]
 
+    client.guilds.cache.forEach(async guild => {
+        let settings = client.settings[guild.id]
+        
+        let channelId = await settings.getSetting("logchannel")
+        let channel = Util.getChannelById(guild, channelId)
+        if (!channel) return;
+
+        Util.getRecentMessagesAfter(channel, client.user, 1615260133000, (message) => {
+            return message.content == ":stop_sign: An error occured when trying to get server info"
+        }).then(messages => {
+            channel.bulkDelete(messages).then(() => {}).catch(e => {})
+        }).catch(e => {})
+    })
+
     client.servers = []
     client.setInterval(async () => {
         if (await client.globalSettings.getSetting("maintenance")) return;
@@ -93,16 +107,20 @@ function serverLogs() {
 
             await new Promise((resolve, reject) => {
                 if (!server.statusMessage.message) {
-                    statuses.forEach(async (status, index) => {
-                        let message = await Util.getRecentMessage(channel, status.content)
-                        if (message) {
-                            if (server.statusMessage.message && Util.isMessageMoreRecent(message, server.statusMessage.message)) {
-                                server.statusMessage.message = message
-                                server.statusMessage.type = status.type
+                    let done = 0
+                    statuses.forEach((status, index) => {
+                        Util.getRecentMessage(channel, status.content).then(message => {
+                            if (message) {
+                                if (server.statusMessage.message && Util.isMessageMoreRecent(message, server.statusMessage.message)) {
+                                    server.statusMessage.message = message
+                                    server.statusMessage.type = status.type
+                                }
                             }
-                        }
 
-                        if (index == statuses.length - 1) resolve();
+                            done++
+                        }).catch(e => {}).finally(() => {
+                            if (done == statuses.length) resolve();
+                        })
                     })
                 }
             })
@@ -115,13 +133,13 @@ function serverLogs() {
                                 Util.sendMessage(channel, {
                                     embed: {
                                         title: "Server",
-                                        description: (((new Date()).getTime() - client.startTime.getTime()) < 30000 ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
+                                        description: (Date.now() - client.startTime < 30000 ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
                                         color: 5145560
                                     }
                                 })
                             }
 
-                            if (!server.start && server.statusMessage.message && server.statusMessage.message.member == guild.me && (new Date()).getTime() - offlineMessage.createdAt.getTime() < 120*1000) {
+                            if (!server.start && server.statusMessage.message && server.statusMessage.message.member == guild.me && Date.now() - offlineMessage.createdTimestamp < 120*1000) {
                                 server.statusMessage.message.edit(statusContents.restart)
                             } else Util.sendMessage(channel, statusContents.online);
                         }
@@ -134,10 +152,14 @@ function serverLogs() {
 
                     if (!data.players.sample && data.players.online > 0) {
                         let text = ":warning: Server has too many players online to log activity"
-                        if (!(await Util.getRecentMessage(channel, text))) Util.sendMessage(channel, text);
+                        Util.getRecentMessage(channel, text).then(message => {
+                            if (!message) Util.sendMessage(channel, text)
+                        }).catch(e => {})
                     } else if (!data.query) {
                         let text = ":warning: ``enable-query=true`` is required for join logs"
-                        if (!(await Util.getRecentMessage(channel, text))) Util.sendMessage(channel, text);
+                        Util.getRecentMessage(channel, text).then(message => {
+                            if (!message) Util.sendMessage(channel, text)
+                        }).catch(e => {})
                     } else {
                         if (!server.start) {
                             function playerMessage(player, text) {
@@ -195,12 +217,16 @@ function serverLogs() {
                         return
                     } else if (error.code == "ENOTFOUND") {
                         let text = ":warning: Could not find server, check that a valid ip and port is set, and is the server running a supported version?"
-                        if (!(await Util.getRecentMessage(channel, text))) Util.sendMessage(channel, text);
+                        Util.getRecentMessage(channel, text).then(message => {
+                            if (!message) Util.sendMessage(channel, text)
+                        }).catch(e => {})
                         return
                     }
                     
                     let text = ":stop_sign: An error occured when trying to get server info"
-                    if (!(await Util.getRecentMessage(channel, text))) Util.sendMessage(channel, text);
+                    Util.getRecentMessage(channel, text).then(message => {
+                        if (!message) Util.sendMessage(channel, text)
+                    }).catch(e => {})
 
                     console.error(error)
                 }
@@ -271,7 +297,7 @@ function activityDisplay() {
  * Startup
  */
 client.on("ready", () => {
-    client.startTime = new Date()
+    client.startTime = Date.now()
 
     client.globalSettings = new Settings.Global();
     console.log(`Loaded global settings`)
