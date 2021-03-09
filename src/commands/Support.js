@@ -17,7 +17,6 @@ class Command extends ICommand {
     async execute(message) {
         Util.sendMessage(message, {
             embed: {
-                title: "Support",
                 author: {
                     name: this.client.user.username,
                     icon_url: this.client.user.avatarURL({
@@ -40,7 +39,7 @@ class Command extends ICommand {
                     },
                     {
                         name: "Supported Minecraft Versions",
-                        value: `${Protocol.getMinSupportedVersion()}+`
+                        value: `Java ${Protocol.getMinSupportedVersion()}+ and all official Bedrock versions`
                     }
                 ],
                 footer: Util.getFooter(this.client)

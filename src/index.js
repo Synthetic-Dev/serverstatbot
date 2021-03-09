@@ -146,7 +146,12 @@ function serverLogs() {
 
                             if (!server.start && server.statusMessage.message && server.statusMessage.message.member == guild.me && Date.now() - offlineMessage.createdTimestamp < 120*1000) {
                                 server.statusMessage.message.edit(statusContents.restart)
-                            } else Util.sendMessage(channel, statusContents.online);
+                            } else {
+                                Util.sendMessage(channel, statusContents.online).then(message => {
+                                    server.statusMessage.message = message
+                                    server.statusMessage.type = "online"
+                                }).catch(e => {})
+                            }
                         }
                     }
 
@@ -162,6 +167,11 @@ function serverLogs() {
                         }).catch(e => {})
                     } else if (!data.query) {
                         let text = ":warning: ``enable-query=true`` is required for join logs"
+                        Util.getRecentMessage(channel, text).then(message => {
+                            if (!message) Util.sendMessage(channel, text)
+                        }).catch(e => {})
+                    } else if (data.bedrock) {
+                        let text = ":warning: Join logs are not supported for bedrock servers"
                         Util.getRecentMessage(channel, text).then(message => {
                             if (!message) Util.sendMessage(channel, text)
                         }).catch(e => {})
@@ -213,10 +223,13 @@ function serverLogs() {
                     server.players = []
                     let error = data.error
 
-                    if (error == "Unknown error" || error == "Failed to retrieve the status of the server within time" || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+                    if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.toString()) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                         if (wasOnline || server.start) {
                             if (["none", "online"].includes(server.statusMessage.type)) {
-                                Util.sendMessage(channel, statusContents.offline)
+                                Util.sendMessage(channel, statusContents.offline).then(message => {
+                                    server.statusMessage.message = message
+                                    server.statusMessage.type = "offline"
+                                }).catch(e => {})
                             }
                         }
                         return
@@ -243,7 +256,7 @@ function serverLogs() {
                 client.servers[guild.id] = server
             })
         })
-    }, 20000)
+    }, 30000)
 }
 
 

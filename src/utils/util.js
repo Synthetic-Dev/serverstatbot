@@ -156,8 +156,10 @@ class Util {
     static dmUser(user, content) {
         return new Promise((resolve, reject) => {
             user.createDM().then(dmChannel => {
-                resolve(this.sendMessage(dmChannel, content))
-            }).catch(e => {})
+                this.sendMessage(dmChannel, content).then(message => {
+                    resolve(message)
+                }).catch(reject)
+            }).catch(reject)
         })
     }
 
@@ -165,22 +167,20 @@ class Util {
      * Replies to the message with the given text, includes error handling
      * @param {Discord.Message} message 
      * @param {Discord.APIMessageContentResolvable | Discord.MessageAdditions | (Discord.MessageOptions & {split?: false;})} content 
-     * @returns {Promise<Discord.Message?>}
+     * @returns {Promise<Discord.Message>}
      */
     static replyMessage(message, content) {
         return new Promise((resolve, reject) => {
             if (!(message.channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
-                return resolve(this.dmUser(message.author, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`))
+                return this.dmUser(message.author, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`).then(resolve).catch(reject)
             }
     
             const stringAble = ["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)
             if (stringAble) content = "\n" + content;
     
-            message.reply(content).then(resolve).catch(e => {
-                console.error(e)
-    
+            message.reply(content).then(resolve).catch(() => {
                 if (!(message.channel instanceof Discord.DMChannel)) {
-                    resolve(this.dmUser(message.author, ":stop_sign: Failed to reply with message in guild." + (stringAble ? content : null), !stringAble ? content : null))
+                    this.dmUser(message.author, ":stop_sign: Failed to reply with message in guild." + (stringAble ? content : null), !stringAble ? content : null).then(resolve).catch(reject)
                 }
             })
         })
@@ -190,20 +190,17 @@ class Util {
      * Sends a message in the given channel, includes error handling
      * @param {Discord.TextChannel | Discord.DMChannel | Discord.Message} object 
      * @param {Discord.APIMessageContentResolvable | Discord.MessageAdditions | (Discord.MessageOptions & {split?: false;})} content 
-     * @returns {Promise<Discord.Message?>}
+     * @returns {Promise<Discord.Message>}
      */
     static async sendMessage(object, ...content) {
         return new Promise((resolve, reject) => {
             let channel = object instanceof Discord.Message ? object.channel : object
 
             if (object instanceof Discord.Message && !(channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])) {
-                return resolve(this.dmUser(object.author, `:stop_sign: I don't have permission to send messages in <#${object.channel.id}>!`))
+                return this.dmUser(object.author, `:stop_sign: I don't have permission to send messages in <#${object.channel.id}>!`).then(resolve).catch(reject)
             }
 
-            channel.send(...content).then(resolve).catch(e => {
-                console.error(e)
-                resolve()
-            })
+            channel.send(...content).then(resolve).catch(reject)
         })
     }
 
@@ -218,7 +215,7 @@ class Util {
             botMessage.client.setTimeout(() => {
                 botMessage.delete()
             }, 15000)
-        })
+        }).catch(e=>{})
     }
 
     /**
@@ -232,7 +229,7 @@ class Util {
             botMessage.client.setTimeout(() => {
                 botMessage.delete()
             }, 15000)
-        })
+        }).catch(e=>{})
     }
 
     /**
@@ -246,7 +243,7 @@ class Util {
             botMessage.client.setTimeout(() => {
                 botMessage.delete()
             }, 15000)
-        })
+        }).catch(e=>{})
     }
 
     /**
@@ -260,7 +257,7 @@ class Util {
             botMessage.client.setTimeout(() => {
                 botMessage.delete()
             }, 15000)
-        })
+        }).catch(e=>{})
     }
 
     /**
@@ -337,7 +334,7 @@ class Util {
             collector.on("end", () => {
                 botMessage.reactions.removeAll()
             })
-        })
+        }).catch(e=>{})
     }
 
     /**

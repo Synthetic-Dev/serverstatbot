@@ -22,7 +22,10 @@ class Command extends ICommand {
     async execute(message, inputs) {
         let identifier = inputs[0]
 
-        let promise = Util.sendMessage(message.channel, ":arrows_counterclockwise: Fetching info...")
+        let promise
+        try {
+            promise = Util.sendMessage(message.channel, ":arrows_counterclockwise: Fetching info...")
+        } catch(e) {}
         if (!promise) return;
         let botMessage = await promise
 

@@ -7,6 +7,7 @@ class Command extends ICommand {
             name: "setaddress",
             desc: "Sets the server address used by the bot, alternative to using ``setip`` and ``setport``",
             aliases: [
+                "setaddr",
                 "address"
             ],
             args: [{

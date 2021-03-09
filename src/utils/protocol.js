@@ -9,7 +9,8 @@ class Protocol {
         console.error(`The ${this.constructor.name} class cannot be constructed.`);
     }
 
-    static requestCache = {}
+    static requestCache = {};
+    static cacheTime = 15*1000;
 
     /**
      * The minimum minecraft version that the statusFE01() handshake supports
@@ -30,6 +31,7 @@ class Protocol {
     static async sendRequest(ip, port = 25565, verify = true) {
         let cachedData = this.requestCache[ip + ":" + port]
         if (cachedData && cachedData.expires > Date.now()) {
+            cachedData.value.cached = true;
             return [true, cachedData.value]
         }
 
@@ -42,24 +44,38 @@ class Protocol {
                 MinecraftUtil.queryFull(...args).then(queryResponse => {
                     queryResponse.bedrock = statusResponse.bedrock;
                     queryResponse.query = true;
+                    queryResponse.ping = true;
                     queryResponse.modInfo = queryResponse.modInfo ? queryResponse.modInfo : statusResponse.modInfo ? statusResponse.modInfo : null
                     queryResponse.favicon = queryResponse.favicon ? queryResponse.favicon : statusResponse.favicon ? statusResponse.favicon : null
                     resolve([true, queryResponse])
                 }).catch(e => {
                     statusResponse.query = false;
+                    statusResponse.ping = true;
                     resolve([true, statusResponse])
                 })
             }
 
+            function attemptQuery() {
+                MinecraftUtil.queryFull(...args).then(queryResponse => {
+                    queryResponse.bedrock = queryResponse.levelName != null;
+                    queryResponse.ping = false
+                    queryResponse.query = true;
+                    resolve([true, queryResponse])
+                }).catch(e1 => {
+                    resolve([false, e1])
+                })
+            }
+
             MinecraftUtil.status(...args).then(query).catch(e => {
-                if (!e) e = "Unknown error"
-                if (e == "Failed to retrieve the status of the server within time") {
-                    MinecraftUtil.statusFE01(...args).then(query).catch(e => {resolve([false, e])})
+                if (!e) {
+                    attemptQuery()
+                } else if (e == "Failed to retrieve the status of the server within time") {
+                    MinecraftUtil.statusFE01(...args).then(query).catch(attemptQuery)
                 } else if (e.code == "ECONNREFUSED") {
                     MinecraftUtil.statusBedrock(...args).then(response => {
                         response.bedrock = true;
                         query(response)
-                    }).catch(e => {resolve([false, e])})
+                    }).catch(attemptQuery)
                 } else resolve([false, e]);
             })
         })
@@ -67,14 +83,15 @@ class Protocol {
         let [success, result] = await bulkData
         if (!success) return [false, result];
 
-        result.latency = -1
+        result.cached = false;
+        result.latency = -1;
         result.description = {
             text: result.description ? result.description.descriptionText : "",
             ansi: null
         }
         if (result.bedrock || !verify) {
             this.requestCache[ip + ":" + port] = {
-                expires: Date.now() + 10*1000,
+                expires: Date.now() + this.cacheTime,
                 value: result
             }
             return [true, result]
@@ -176,7 +193,7 @@ class Protocol {
         }
 
         this.requestCache[ip + ":" + port] = {
-            expires: Date.now() + 15*1000,
+            expires: Date.now() + this.cacheTime,
             value: result
         }
 
@@ -188,7 +205,7 @@ class Protocol {
      * @param {string} ip 
      * @param {number} port 
      * @param {boolean} verify
-     * @returns {Promise<{ip: string, port: number, online: boolean, error?: Error | string, latency?: number, query?: boolean, bedrock?: boolean, modded?: boolean, srvRecord?: {host: string, port: number}, version?: {minecraft: string, gamemode?: string, protocol?: number}, players?: {online: number, max: number, sample: {id: string?, name: {raw: string, clean: string}}[], all: boolean}, motd?: {raw: string, clean: string, ansi: Object[]?}, favicon?: string, plugins?: {name: string, version: string}[], modInfo?: {type: string, modlist: Object[]}}>}
+     * @returns {Promise<{ip: string, port: number, online: boolean, error?: Error | string, latency?: number, ping?: boolean, query?: boolean, cached?: boolean, bedrock?: boolean, modded?: boolean, srvRecord?: {host: string, port: number}, version?: {minecraft: string, gamemode?: string, protocol?: number}, players?: {online: number, max: number, sample: {id: string?, name: {raw: string, clean: string}}[], all: boolean}, motd?: {raw: string, clean: string, ansi: Object[]?}, favicon?: string, plugins?: {name: string, version: string}[], modInfo?: {type: string, modlist: Object[]}}>}
      */
     static async getInfo(ip, port = 25565, verify = true) {
         let [success, result] = await this.sendRequest(ip, port, verify)
@@ -202,7 +219,9 @@ class Protocol {
                 port: result.port,
                 latency: result.latency,
                 online: true,
+                ping: result.ping,
                 query: result.query,
+                cached: result.cached,
                 bedrock: result.bedrock,
                 modded: result.modInfo != null && result.modInfo.modList != null && result.modInfo.modList.length > 0,
                 srvRecord: result.srvRecord,
@@ -231,50 +250,52 @@ class Protocol {
                 delete final.favicon
             }
 
-            if (final.players.sample) {
-                final.players.sample.forEach((player, index) => {
-                    if (typeof player == "string") {
-                        final.players.sample[index] = {
-                            id: null,
-                            name: {
-                                raw: player,
-                                clean: player.replace(/§./g, "").trim()
+            if (!final.cached) {
+                if (final.players.sample) {
+                    final.players.sample.forEach((player, index) => {
+                        if (typeof player == "string") {
+                            final.players.sample[index] = {
+                                id: null,
+                                name: {
+                                    raw: player,
+                                    clean: player.replace(/§./g, "").trim()
+                                }
+                            } 
+                        } else {
+                            const name = player.name
+                            player.name = {
+                                raw: name,
+                                clean: name.replace(/§./g, "").trim()
                             }
-                        } 
-                    } else {
-                        const name = player.name
-                        player.name = {
-                            raw: name,
-                            clean: name.replace(/§./g, "").trim()
                         }
-                    }
-                })
-            }
+                    })
+                }
 
-            if (final.mods) {
-                final.mods.modList.forEach(mod => {
-                    if (mod.modmarker) {
-                        mod.version = mod.modmarker
-                        delete mod.modmarker
-                    }
+                if (final.mods) {
+                    final.mods.modList.forEach(mod => {
+                        if (mod.modmarker) {
+                            mod.version = mod.modmarker
+                            delete mod.modmarker
+                        }
 
-                    if (mod.modid) {
-                        mod.modId = mod.modid
-                        delete mod.modid
-                    }
-                })
+                        if (mod.modid) {
+                            mod.modId = mod.modid
+                            delete mod.modid
+                        }
+                    })
 
-                final.mods.modList = final.mods.modList.filter(mod => !(["minecraft", "fml", "mcp", "forge"].includes(mod.modId.toLowerCase())))
-            }
+                    final.mods.modList = final.mods.modList.filter(mod => !(["minecraft", "fml", "mcp", "forge"].includes(mod.modId.toLowerCase())))
+                }
 
-            if (final.plugins) {
-                final.plugins.forEach((plugin, index) => {
-                    let full = plugin.trim()
-                    final.plugins[index] = {
-                        name: full.split(" ").shift(),
-                        version: full.split(" ").splice(1).join(" ")
-                    }
-                })
+                if (final.plugins) {
+                    final.plugins.forEach((plugin, index) => {
+                        let full = plugin.toString().trim()
+                        final.plugins[index] = {
+                            name: full.split(" ").shift(),
+                            version: full.split(" ").splice(1).join(" ")
+                        }
+                    })
+                }
             }
 
             return final

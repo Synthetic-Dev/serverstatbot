@@ -15,7 +15,10 @@ class Command extends ICommand {
     }
 
     async displayInfo(message, ip, port) {
-        let promise = Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...")
+        let promise
+        try {
+            promise = Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...")
+        } catch(e) {}
         if (!promise) return;
         let botMessage = await promise
 
@@ -25,56 +28,63 @@ class Command extends ICommand {
             } catch(e) {console.error(e)}
 
             if (data.online) {
-                let image = Canvas.createCanvas(64, 64)
-                let context = image.getContext("2d")
-
-                let favicon = new Canvas.Image()
-                favicon.onload = () => {
-                    context.drawImage(favicon, 0, 0)
-
-                    let fields = [
-                        {
-                            name: "MOTD:",
-                            value: data.motd.clean
-                        },
-                        {
-                            name: "Minecraft Version:",
-                            value: data.version.minecraft
-                        },
-                    ]
-
-                    if (!data.bedrock) {
-                        fields.push({
-                            name: "Minecraft Type:",
-                            value: (data.modded ? `Modded (${data.mods.modList.length} mods)` : "Vanilla") + (data.plugins && data.plugins.length > 0 ? ` (${data.plugins.length} plugins)` : "")
-                        })
+                let fields = [
+                    {
+                        name: "MOTD:",
+                        value: data.motd.clean
+                    },
+                    {
+                        name: "Minecraft Version:",
+                        value: data.version.minecraft
+                    },
+                    {
+                        name: "Minecraft Type:",
+                        value: (data.bedrock ? "Bedrock" : (data.modded ? `Modded (${data.mods.modList.length} mods)` : "Vanilla")) + (data.plugins && data.plugins.length > 0 ? ` (${data.plugins.length} plugins)` : "")
                     }
+                ]
 
-                    Util.sendMessage(message, {
-                        files: [{
+                let content = {
+                    embed: {
+                        title: "Server Info " + (data.bedrock ? "(Bedrock)" : "(Java)"),
+                        description: `Address: **${ip}${port != 25565 ? `:${port}` : ""}**\nStatus: <:green_circle_with_tick:818512512500105249> **Online**${data.latency > 0 ? `\nLatency: **${data.latency}ms**` : ""}\nPlayers: **${data.players.online}/${data.players.max}**`,
+                        color: 5145560,
+                        thumbnail: {
+                            url: "attachment://favicon.png"
+                        },
+                        fields: fields
+                    }
+                }
+
+                if (data.favicon) {
+                    let image = Canvas.createCanvas(64, 64)
+                    let context = image.getContext("2d")
+
+                    let favicon = new Canvas.Image()
+                    favicon.onload = () => {
+                        context.drawImage(favicon, 0, 0)
+
+                        content.files = [{
                             attachment: image.toBuffer("image/png"),
                             name: "favicon.png"
-                        }],
-                        embed: {
-                            title: "Server Info " + (data.bedrock ? "(Bedrock)" : "(Java)"),
-                            description: `Address: **${ip}${port != 25565 ? `:${port}` : ""}**\nStatus: <:green_circle_with_tick:818512512500105249> **Online**${data.latency > 0 ? `\nLatency: **${data.latency}ms**` : ""}\nPlayers: **${data.players.online}/${data.players.max}**`,
-                            color: 5145560,
-                            thumbnail: {
-                                url: "attachment://favicon.png"
-                            },
-                            fields: fields
+                        }]
+                        content.embed.thumbnail = {
+                            url: "attachment://favicon.png"
                         }
-                    })
+
+                        Util.sendMessage(message, content)
+                    }
+                    favicon.src = data.favicon
+                } else {
+                    Util.sendMessage(message, content)
                 }
-                favicon.src = data.favicon
             } else {
                 let error = data.error
 
-                if (error == "Unknown error" || error == "Failed to retrieve the status of the server within time" || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+                if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.toString()) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                     return Util.sendMessage(message, {
                         embed: {
                             title: "Server Info",
-                            description: `Address: **${ip}:${port}**\nStatus: <:red_circle_with_cross:818512512764084265> **Offline**`,
+                            description: `Address: **${ip}:${port}**\nStatus: <:red_circle_with_cross:818512512764084265> **Offline**${error == "Failed to query server within time" ? "\nIf the server is online is ``enable-status=true`` or ``enabled-query=true``" : ""}`,
                             color: 5145560
                         }
                     })

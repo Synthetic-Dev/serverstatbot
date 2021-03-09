@@ -36,7 +36,7 @@ class Command extends ICommand {
                     return Util.sendMessage(message, {
                         embed: {
                             title: "Playerlist",
-                            description: `**${data.players.online}/${data.players.max} players**\nThere is too many players online or the server does not have ``enable-query=true``.`,
+                            description: `**${data.players.online}/${data.players.max} players**\n${data.bedrock ? "Cannot get all players from a bedrock server." : "There is too many players online or the server does not have \`\`enable-query=true\`\`."}`,
                             color: 5145560
                         }
                     })
@@ -90,7 +90,7 @@ class Command extends ICommand {
                     }],
                     embed: {
                         title: "Playerlist",
-                        description: `**${data.players.online}/${data.players.max} players**` + (!data.query ? "\nThis may not be all the players set ``enable-query=true`` to get all players." : ""),
+                        description: `**${data.players.online}/${data.players.max} players**` + (!data.query ? "\nThis may not be all the players set ``enable-query=true`` to get all players." : "") + (data.bedrock ? "\nCannot get all players from a bedrock server." : ""),
                         color: 5145560,
                         image: {
                             url: "attachment://playerlist.png"
@@ -100,7 +100,7 @@ class Command extends ICommand {
             } else {
                 let error = data.error
 
-                if (error == "Unknown error" || error == "Failed to retrieve the status of the server within time" || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+                if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.toString()) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                     return Util.replyMessage(message, "Server is not online")
                 } else if (error.code == "ENOTFOUND") {
                     return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
