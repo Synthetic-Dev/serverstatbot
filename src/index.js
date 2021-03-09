@@ -110,8 +110,8 @@ function serverLogs() {
                 server.start = true;
             }
 
-            await new Promise((resolve, reject) => {
-                if (!server.statusMessage.message) {
+            if (!server.statusMessage.message) {
+                await new Promise((resolve, reject) => {
                     let done = 0
                     statuses.forEach((status, index) => {
                         Util.getRecentMessage(channel, status.content).then(message => {
@@ -127,8 +127,8 @@ function serverLogs() {
                             if (done == statuses.length) resolve();
                         })
                     })
-                }
-            })
+                })
+            }
 
             Protocol.getInfo(ip, port, false).then(async data => {
                 if (data.online) {
@@ -203,13 +203,13 @@ function serverLogs() {
                             }
 
                             current.forEach(player => {
-                                if (old.filter(plr => plr.name.clean == player.name.clean).length == 0) {
+                                if (old.filter(plr => (plr.id && player.id && plr.id == player.id) || plr.name.clean == player.name.clean).length == 0) {
                                     playerMessage(player.name.clean, "has joined the game.")
                                 }
                             })
 
                             old.forEach(async (player) => {
-                                if (current.filter(plr => plr.name.clean == player.name.clean).length == 0) {
+                                if (current.filter(plr => (plr.id && player.id && plr.id == player.id) || plr.name.clean == player.name.clean).length == 0) {
                                     playerMessage(player.name.clean, "has left the game.")
                                 }
                             })
@@ -248,9 +248,7 @@ function serverLogs() {
 
                     console.error(error)
                 }
-            }).catch(async error => {
-                console.error(error)
-            }).finally(() => {
+            }).catch(console.error).finally(() => {
                 server.start = false
 
                 client.servers[guild.id] = server
