@@ -2,6 +2,7 @@ const Minecraft = require("minecraft-protocol")
 const DNS = require("minecraft-protocol/src/client/tcp_dns.js")
 const Forge = require("minecraft-protocol-forge")
 const MinecraftData = require("minecraft-data")
+const MinecraftUtil = require("minecraft-server-util")
 
 class Protocol {
     constructor() {
@@ -9,8 +10,271 @@ class Protocol {
     }
 
     /**
+     * The minimum minecraft version that the statusFE01() handshake supports
+     * @returns {string}
+     */
+     static getMinSupportedVersion() {
+        return "1.4.2"
+    }
+
+    /**
+     * Send requests to server to get all available information
+     * @private Use getInfo() for formatted data
+     * @param {string} ip 
+     * @param {number} port 
+     * @param {boolean} verify
+     * @returns {Promise<boolean, Object<string, any> | Error | string>}
+     */
+    static async sendRequest(ip, port = 25565, verify = true) {
+        let bulkData = new Promise((resolve, reject) => {
+            let args = [ip, {port: port, timeout: 3000}]
+
+            function query(statusResponse) {
+                statusResponse.bedrock = statusResponse.bedrock ? true : false
+                args[1].timeout = 5000
+                MinecraftUtil.queryFull(...args).then(queryResponse => {
+                    queryResponse.bedrock = statusResponse.bedrock;
+                    queryResponse.query = true;
+                    queryResponse.modInfo = queryResponse.modInfo ? queryResponse.modInfo : statusResponse.modInfo ? statusResponse.modInfo : null
+                    queryResponse.favicon = queryResponse.favicon ? queryResponse.favicon : statusResponse.favicon ? statusResponse.favicon : null
+                    resolve([true, queryResponse])
+                }).catch(e => {
+                    statusResponse.query = false;
+                    resolve([true, statusResponse])
+                })
+            }
+
+            MinecraftUtil.status(...args).then(query).catch(e => {
+                if (!e) e = new Error("Unknown error")
+                if (e == "Failed to retrieve the status of the server within time") {
+                    MinecraftUtil.statusFE01(...args).then(query).catch(e => {resolve([false, e])})
+                } else if (e.code == "ECONNREFUSED") {
+                    MinecraftUtil.statusBedrock(...args).then(response => {
+                        response.bedrock = true;
+                        query(response)
+                    }).catch(e => {resolve([false, e])})
+                } else resolve([false, e]);
+            })
+        })
+
+        let [success, result] = await bulkData
+        if (!success) return [false, result];
+
+        result.latency = -1
+        if (result.description && result.description.descriptionText != null) {
+            result.description = {
+                text: result.description.descriptionText,
+                ansi: null
+            }
+        }
+        if (result.bedrock || !verify) return [true, result];
+
+        let verifyData = new Promise((resolve, reject) => {
+            const dataVersion = result.version.match(/(\d+\.)?(\d+\.)?(\d)/g).filter(match => match.length > 0)[0] || "1.16.5"
+            const mcData = MinecraftData(dataVersion)
+            const version = mcData.version
+
+            const pingData = {
+                host: ip,
+                port: port,
+                majorVersion: version.majorVersion,
+                protocolVersion: version.version,
+                closeTimeout: 5000,
+                responseTimeout: 2000
+            }
+
+            const client = new Minecraft.Client(false, version.minecraftVersion)
+
+            let closeTimer  
+            client.on("error", () => {clearTimeout(closeTimer); resolve([false])})
+            client.on("state", newState => {if (newState === Minecraft.states.STATUS) client.write("ping_start", {})})
+            client.on("connect", () => {
+                client.write("set_protocol", {
+                    protocolVersion: pingData.protocolVersion,
+                    serverHost: pingData.host,
+                    serverPort: pingData.port,
+                    nextState: 1
+                })
+                Forge.autoVersionForge(client)
+                client.state = Minecraft.states.STATUS
+            })
+
+            client.once("server_info", packet => {
+                const data = JSON.parse(packet.response)
+                const start = Date.now()
+
+                data.request = pingData
+
+                const maxTime = setTimeout(() => {
+                    clearTimeout(closeTimer)
+                    resolve([true, data])
+                    client.end()
+                }, pingData.responseTimeout)
+
+                client.once("ping", () => {
+                    data.latency = Date.now() - start
+
+                    clearTimeout(maxTime)
+                    clearTimeout(closeTimer)
+                    resolve([true, data])
+                    client.end()
+                })
+
+                client.write("ping", {
+                    time: [0, 0]
+                })
+            })
+
+            closeTimer = setTimeout(() => {
+                client.end()
+                resolve([false])
+            }, pingData.closeTimeout)
+
+            DNS(client, pingData)
+            pingData.connect(client)
+        })
+
+        let [vSuccess, vResult] = await verifyData
+        if (vSuccess) {
+            result.latency = vResult.latency
+            result.protocolVersion = result.protocolVersion ? result.protocolVersion : vResult.request.protocolVersion
+            if (!result.favicon) result.favicon = vResult.favicon;
+            if ((result.description.text == "") && vResult.description) {
+                if (typeof vResult.description == "string") {
+                    result.description.text = vResult.description
+                } else {
+                    let description = vResult.description.text
+                    if (vResult.description.extra) {
+                        vResult.description.extra.forEach(extra => {
+                            description += extra.text
+                        })
+                    }
+                    result.description.text = description
+                    result.description.ansi = vResult.description.extra
+                }
+            }
+            if (!result.modInfo) {
+                if (vResult.modinfo || vResult.modInfo) result.modInfo = vResult.modinfo ? vResult.modinfo : vResult.modInfo;
+                else if (vResult.forgeData) {
+                    result.modInfo = {
+                        type: "FML",
+                        modList: vResult.forgeData.mods
+                    }
+                }
+            }
+        }
+        return [true, result]
+    }
+
+    /**
+     * Ping a minecraft server to get its details
+     * @param {string} ip 
+     * @param {number} port 
+     * @param {boolean} verify
+     * @returns {Promise<{ip: string, port: number, online: boolean, error?: Error | string, latency?: number, query?: boolean, bedrock?: boolean, modded?: boolean, srvRecord?: {host: string, port: number}, version?: {minecraft: string, gamemode?: string, protocol?: number}, players?: {online: number, max: number, sample: {id: string?, name: {raw: string, clean: string}}[], all: boolean}, motd?: {raw: string, clean: string, ansi: Object[]?}, favicon?: string, plugins?: {name: string, version: string}[], modInfo?: {type: string, modlist: Object[]}}>}
+     */
+    static async getInfo(ip, port = 25565, verify = true) {
+        let [success, result] = await this.sendRequest(ip, port, verify)
+
+        if (success) {
+            let desc = result.description.text ? result.description.text : "A Minecraft Server"
+            if (typeof desc != "string") desc = "A Minecraft Server";
+
+            let final = {
+                ip: result.host,
+                port: result.port,
+                latency: result.latency,
+                online: true,
+                query: result.query,
+                bedrock: result.bedrock,
+                modded: result.modInfo != null && result.modInfo.modList != null && result.modInfo.modList.length > 0,
+                srvRecord: result.srvRecord,
+                version: {
+                    minecraft: result.version + (result.software ? ` (${result.software})` : ""),
+                    gamemode: result.gameType ? result.gameType : null,
+                    protocol: result.protocolVersion ? result.protocolVersion : null
+                },
+                players: {
+                    online: result.onlinePlayers,
+                    max: result.maxPlayers,
+                    sample: result.players ? result.players : result.samplePlayers ? result.samplePlayers : []
+                },
+                motd: {
+                    raw: desc,
+                    clean: desc.replace(/§./g, "").trim(),
+                    ansi: result.description.ansi
+                },
+                favicon: result.favicon,
+                plugins: result.plugins ? result.plugins : null,
+                mods: result.modInfo ? result.modInfo : null
+            }
+
+            if (final.bedrock) {
+                delete final.mods
+                delete final.favicon
+            }
+
+            if (final.players.sample) {
+                final.players.sample.forEach((player, index) => {
+                    if (typeof player == "string") {
+                        final.players.sample[index] = {
+                            id: null,
+                            name: {
+                                raw: player,
+                                clean: player.replace(/§./g, "").trim()
+                            }
+                        } 
+                    } else {
+                        const name = player.name
+                        player.name = {
+                            raw: name,
+                            clean: name.replace(/§./g, "").trim()
+                        }
+                    }
+                })
+            }
+
+            if (final.mods) {
+                final.mods.modList.forEach(mod => {
+                    if (mod.modmarker) {
+                        mod.version = mod.modmarker
+                        delete mod.modmarker
+                    }
+
+                    if (mod.modid) {
+                        mod.modId = mod.modid
+                        delete mod.modid
+                    }
+                })
+
+                final.mods.modList = final.mods.modList.filter(mod => !(["minecraft", "fml", "mcp", "forge"].includes(mod.modId.toLowerCase())))
+            }
+
+            if (final.plugins) {
+                final.plugins.forEach((plugin, index) => {
+                    let full = plugin.trim()
+                    final.plugins[index] = {
+                        name: full.split(" ").shift(),
+                        version: full.split(" ").splice(1).join(" ")
+                    }
+                })
+            }
+
+            return final
+        } else {
+            return {
+                ip: ip,
+                port: port,
+                online: false,
+                error: result
+            }
+        }
+    }
+
+    /**
      * Get primary supported minecraft versions
-     * @returns {Array}
+     * @deprecated Use getMinSupportedVersion() instead
+     * @returns {string}
      */
     static getDefaultVersion() {
         return "1.16.5"
@@ -18,6 +282,7 @@ class Protocol {
 
     /**
      * Get primary supported minecraft versions
+     * @deprecated Use getMinSupportedVersion() instead
      * @returns {Array}
      */
     static getPrimarySupportedVersions() {
@@ -26,14 +291,16 @@ class Protocol {
 
     /**
      * Get supported minecraft versions
+     * @deprecated Use getMinSupportedVersion() instead
      * @returns {Array}
      */
     static getSupportedVersions() {
         return ["1.7.10", "1.8.8", "1.9 15w40b", "1.9", "1.9.1-pre2", "1.9.2", "1.9.4", "1.10 16w20a", "1.10-pre1", "1.10", "1.10.1", "1.10.2", "1.11 16w35a", "1.11", "1.11.2", "1.12 17w15a", "1.12 17w18b", "1.12-pre4", "1.12", "1.12.1", "1.12.2", "1.13 17w50a", "1.13", "1.13.1", "1.13.2-pre1", "1.13.2-pre2", "1.13.2", "1.14", "1.14.1", "1.14.3", "1.14.4" , "1.15", "1.15.1", "1.15.2", "1.16 20w13b", "1.16 20w14a", "1.16-rc1", "1.16", "1.16.1", "1.16.2", "1.16.3", "1.16.4", "1.16.5"]
     }
-
+    
     /**
      * Ping a minecraft server to get its details
+     * @deprecated Use getInfo() instead
      * @param {string} ip 
      * @param {number} port 
      * @returns {Promise<Object>}
@@ -56,7 +323,7 @@ class Protocol {
             pingData.majorVersion = version.majorVersion
             pingData.protocolVersion = version.version
             pingData.closeTimeout = 10 * 1000
-            pingData.responseTimeout = 2 * 1000
+            pingData.responseTimeout = 5 * 1000
 
             const client = new Minecraft.Client(false, version.minecraftVersion)
 

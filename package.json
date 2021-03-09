@@ -1,11 +1,11 @@
 {
   "name": "serverstat",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "",
   "main": "index.js",
   "engines": {
-    "node": "14.x",
-    "nodemon": "2.x"
+    "node": "^14.x",
+    "nodemon": "^2.x"
   },
   "scripts": {
     "start": "node ./src/index.js",
@@ -19,8 +19,9 @@
     "discord.js": "^12.3.1",
     "dotenv": "^8.2.0",
     "fast-average-color-node": "^1.0.3",
-    "minecraft-protocol": "^1.23.0",
+    "minecraft-protocol": "^1.23.2",
     "minecraft-protocol-forge": "^1.0.0",
+    "minecraft-server-util": "^3.4.3",
     "mongoose": "^5.10.7"
   }
 }

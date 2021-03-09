@@ -1,8 +1,8 @@
 const Discord = require("discord.js")
 const Canvas = require("canvas")
 const Mongoose = require("mongoose")
-const Settings = require("./settings.js")
 const Util = require("./utils/util.js")
+const Settings = require("./utils/settings.js")
 const Protocol = require("./utils/protocol.js")
 
 /**
@@ -21,16 +21,34 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
 /**
  * Server Logs
  */
-async function serverLogs() {
-    if (process.env.ISDEV == "TRUE") return;
+function serverLogs() {
+    //if (process.env.ISDEV == "TRUE") return;
 
-    const {createCanvas, loadImage} = require("canvas")
+    const statusContents = {
+        online: "<:green_circle_with_tick:818512512500105249> Server is online",
+        offline: "<:red_circle_with_cross:818512512764084265> Server is offline",
+        restart: ":arrows_counterclockwise: Server restarted"
+    }
 
-    await Util.sleep(1000)
+    const statuses = [
+        {
+            content: statusContents.online,
+            type: "online"
+        },
+        {
+            content: statusContents.restart,
+            type: "online"
+        },
+        {
+            content: statusContents.offline,
+            type: "offline"
+        }
+    ]
 
-    let restarted = true
+    client.servers = []
+    client.setInterval(async () => {
+        if (await client.globalSettings.getSetting("maintenance")) return;
 
-    while (true) {
         client.guilds.cache.forEach(async guild => {
             let settings = client.settings[guild.id]
 
@@ -41,8 +59,8 @@ async function serverLogs() {
             if (!Util.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"])) {
                 settings.setSetting("logchannel", "0")
 
-                let priorityChannel = Util.getPriorityChannel(guild)
-                if (priorityChannel && Util.doesMemberHavePermissionsInChannel(guild.me, priorityChannel, ["SEND_MESSAGES"])) {
+                let priorityChannel = Util.getPriorityChannel(guild, channel => Util.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"]))
+                if (priorityChannel) {
                     Util.sendError(priorityChannel, "I do not have permission to send messages in the log channel! Log channel has been removed.")
                 } else {
                     console.log(`Did not have permissions to send messages in (${guild.id}) ${guild.name}'s log channel and could not find/send message in priority channel.`)
@@ -58,145 +76,135 @@ async function serverLogs() {
                 port: port,
                 players: [],
                 online: false,
-                start: true
+                start: true,
+                statusMessage: {
+                    message: null,
+                    type: "none"
+                }
             }
 
             if (server.ip != ip || server.port != port) {
-                server = {
-                    ip: ip,
-                    port: port,
-                    players: [],
-                    online: false,
-                    start: true
+                server.ip = ip;
+                server.port = port;
+                server.players = [];
+                server.online = false;
+                server.start = true;
+            }
+
+            await new Promise((resolve, reject) => {
+                if (!server.statusMessage.message) {
+                    statuses.forEach(async (status, index) => {
+                        let message = await Util.getRecentMessage(channel, status.content)
+                        if (message) {
+                            if (server.statusMessage.message && Util.isMessageMoreRecent(message, server.statusMessage.message)) {
+                                server.statusMessage.message = message
+                                server.statusMessage.type = status.type
+                            }
+                        }
+
+                        if (index == statuses.length - 1) resolve();
+                    })
                 }
-            } 
+            })
 
-            let onlineText = ":white_check_mark: Server is online"
-            let offlineText = ":octagonal_sign: Server is offline"
-            let restartText = ":arrows_counterclockwise: Server restarted"
+            Protocol.getInfo(ip, port, false).then(async data => {
+                if (data.online) {
+                    if (!server.online) {
+                        if (["none", "offline"].includes(server.statusMessage.type)) {
+                            if (server.start) {
+                                Util.sendMessage(channel, {
+                                    embed: {
+                                        title: "Server",
+                                        description: (((new Date()).getTime() - client.startTime.getTime()) < 30000 ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
+                                        color: 5145560
+                                    }
+                                })
+                            }
 
-            let onlineMessage = await Util.getRecentMessage(channel, onlineText)
-            if (!onlineMessage) onlineMessage = await Util.getRecentMessage(channel, restartText)
-            let offlineMessage = await Util.getRecentMessage(channel, offlineText)
+                            if (!server.start && server.statusMessage.message && server.statusMessage.message.member == guild.me && (new Date()).getTime() - offlineMessage.createdAt.getTime() < 120*1000) {
+                                server.statusMessage.message.edit(statusContents.restart)
+                            } else Util.sendMessage(channel, statusContents.online);
+                        }
+                    }
 
-            Protocol.ping(ip, port).then(async data => {
-                if (!server.online) {
-                    if ((!onlineMessage && !offlineMessage) || (!onlineMessage && offlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(offlineMessage, onlineMessage))) {
-                        if (server.start) {
-                            Util.sendMessage(channel, {
-                                embed: {
-                                    title: "Server",
-                                    description: (restarted ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
-                                    color: 5145560
+                    server.online = true
+
+                    let old = server.players
+                    let current = data.players.sample ? data.players.sample : []
+
+                    if (!data.players.sample && data.players.online > 0) {
+                        let text = ":warning: Server has too many players online to log activity"
+                        if (!(await Util.getRecentMessage(channel, text))) Util.sendMessage(channel, text);
+                    } else if (!data.query) {
+                        let text = ":warning: ``enable-query=true`` is required for join logs"
+                        if (!(await Util.getRecentMessage(channel, text))) Util.sendMessage(channel, text);
+                    } else {
+                        if (!server.start) {
+                            function playerMessage(player, text) {
+                                let image = Canvas.createCanvas((16 + 21) * 13 + 26, 28)
+                                let context = image.getContext("2d")
+
+                                context.imageSmoothingEnabled = false
+                                context.font = "17px 'Pixel Font'"
+                                context.textBaseline = "top"
+                                context.textAlign = "left"
+                                context.fillStyle = "#fff"
+
+                                Canvas.loadImage(`https://mc-heads.net/avatar/${player}/100`).then(head => {
+                                    context.drawImage(head, 2, 2, 22, 22)
+                                    context.fillText(`${player} ${text}`, 32, 2)
+
+                                    Util.sendMessage(channel, {
+                                        files: [{
+                                            attachment: image.toBuffer("image/png"),
+                                            name: "playeraction.png"
+                                        }]
+                                    })
+                                }).catch(error => {
+                                    Util.sendMessage(channel, `[Failed to load image] ${player} ${text}`)
+                                })
+                            }
+
+                            current.forEach(player => {
+                                if (old.filter(plr => plr.name.clean == player.name.clean).length == 0) {
+                                    playerMessage(player.name.clean, "has joined the game.")
+                                }
+                            })
+
+                            old.forEach(async (player) => {
+                                if (current.filter(plr => plr.name.clean == player.name.clean).length == 0) {
+                                    playerMessage(player.name.clean, "has left the game.")
                                 }
                             })
                         }
-
-                        if (!server.start && offlineMessage && offlineMessage.member == guild.me && (new Date()).getTime() - offlineMessage.createdAt.getTime() < 120*1000) {
-                            offlineMessage.edit(restartText)
-                        } else Util.sendMessage(channel, onlineText);
                     }
-                }
 
-                server.online = true
-
-                let old = server.players
-                let current = data.players ? (data.players.sample ? data.players.sample : []) : []
-
-                if (data.players && !data.players.sample && data.players.online > 0) {
-                    let text = ":warning: Server has too many players online to log activity"
-                    let message = await Util.getRecentMessage(channel, text)
-
-                    if (!message) {
-                        Util.sendMessage(channel, text)
-                    }
+                    server.players = current
                 } else {
-                    if (!server.start) {
-                        current.forEach(async (player) => {
-                            if (old.filter(plr => plr.id == player.id).length == 0) {
-                                let image = createCanvas((16 + 21) * 13 + 26, 28)
-                                let context = image.getContext("2d")
+                    let wasOnline = server.online
+                    server.online = false
+                    server.players = []
+                    let error = data.error
 
-                                context.font = "17px 'Pixel Font'"
-                                context.textBaseline = "top"
-                                context.textAlign = "left"
-                                context.fillStyle = "#fff"
-
-                                loadImage(`https://mc-heads.net/avatar/${player.name}/22.png`).then(head => {
-                                    context.drawImage(head, 2, 2)
-                                    context.fillText(`${player.name} has joined the game.`, 32, 2)
-
-                                    Util.sendMessage(channel, {
-                                        files: [{
-                                            attachment: image.toBuffer("image/png"),
-                                            name: "playeraction.png"
-                                        }]
-                                    })
-                                }).catch(error => {
-                                    Util.sendMessage(channel, `${player.name} has joined the game.`)
-                                })
+                    if (error == "Unknown error" || error == "Failed to retrieve the status of the server within time" || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+                        if (wasOnline || server.start) {
+                            if (["none", "online"].includes(server.statusMessage.type)) {
+                                Util.sendMessage(channel, statusContents.offline)
                             }
-                        })
-
-                        old.forEach(async (player) => {
-                            if (current.filter(plr => plr.id == player.id).length == 0) {
-                                let image = createCanvas((16 + 19) * 13 + 26, 28)
-                                let context = image.getContext("2d")
-
-                                context.font = "17px 'Pixel Font'"
-                                context.textBaseline = "top"
-                                context.textAlign = "left"
-                                context.fillStyle = "#fff"
-
-                                loadImage(`https://mc-heads.net/avatar/${player.name}/22.png`).then(head => {
-                                    context.drawImage(head, 2, 2)
-                                    context.fillText(`${player.name} has left the game.`, 32, 2)
-
-                                    Util.sendMessage(channel, {
-                                        files: [{
-                                            attachment: image.toBuffer("image/png"),
-                                            name: "playeraction.png"
-                                        }]
-                                    })
-                                }).catch(error => {
-                                    Util.sendMessage(channel, `${player.name} has left the game.`)
-                                })
-                            }
-                        })
-                    }
-                }
-
-                server.players = current
-            }).catch(async error => {
-                let wasOnline = server.online
-                server.online = false
-                server.players = []
-
-                if (error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                    if (wasOnline || server.start) {
-                        if ((!onlineMessage && !offlineMessage) || (!offlineMessage && onlineMessage) || (onlineMessage && offlineMessage && Util.isMessageMoreRecent(onlineMessage, offlineMessage))) {
-                            Util.sendMessage(channel, offlineText)
                         }
+                        return
+                    } else if (error.code == "ENOTFOUND") {
+                        let text = ":warning: Could not find server, check that a valid ip and port is set, and is the server running a supported version?"
+                        if (!(await Util.getRecentMessage(channel, text))) Util.sendMessage(channel, text);
+                        return
                     }
+                    
+                    let text = ":stop_sign: An error occured when trying to get server info"
+                    if (!(await Util.getRecentMessage(channel, text))) Util.sendMessage(channel, text);
 
-                    return
-                } else if (error.code == "ENOTFOUND") {
-                    let text = ":warning: Could not find server, check that a valid ip and port is set, and is the server running a supported version?"
-                    let message = await Util.getRecentMessage(channel, text)
-
-                    if (!message) {
-                        Util.sendMessage(channel, text)
-                    }
-                    return
+                    console.error(error)
                 }
-                
-                let text = ":stop_sign: An error occured when trying to get server info"
-                if (!(await Util.getRecentMessage(channel, text))) {
-                    Util.sendMessage(channel, text)
-                }
-
-                if (error.code == "ECONNRESET") return;
-
+            }).catch(async error => {
                 console.error(error)
             }).finally(() => {
                 server.start = false
@@ -204,18 +212,14 @@ async function serverLogs() {
                 client.servers[guild.id] = server
             })
         })
-
-        await Util.sleep(20000)
-
-        restarted = false
-    }
+    }, 20000)
 }
 
 
 /**
  * Activity displays
  */
-async function activityDisplay() {
+function activityDisplay() {
     const activities = [
         {
             text: "commands | .help",
@@ -233,15 +237,33 @@ async function activityDisplay() {
         }
     ]
 
-    while (true) {
-        for (activity of activities) {
-            client.user.setActivity(typeof activity.text == "function" ? activity.text() : activity.text, {
-                type: activity.type
+    client.activityIndex = 0;
+    client.setInterval(() => {
+        client.globalSettings.getSetting("maintenance").then(async maintenance => {
+            if (maintenance) {
+                client.user.setPresence({
+                    status: "dnd",
+                    activity: {
+                        name: "Maintenance mode",
+                        type: "PLAYING"
+                    }
+                })
+                return
+            }
+
+            let activity = activities[client.activityIndex]
+            client.user.setPresence({
+                status: "online",
+                activity: {
+                    name: typeof activity.text == "function" ? activity.text() : activity.text,
+                    type: activity.type
+                }
             })
-    
-            await Util.sleep(10000)
-        }
-    }
+
+            client.activityIndex++
+            if (client.activityIndex == activities.length) client.activityIndex = 0;
+        })
+    }, 10000)
 }
 
 
@@ -250,12 +272,15 @@ async function activityDisplay() {
  */
 client.on("ready", () => {
     client.startTime = new Date()
-    client.settings = []
-    client.servers = []
 
+    client.globalSettings = new Settings.Global();
+    console.log(`Loaded global settings`)
+
+    client.settings = {}
     client.guilds.cache.forEach(guild => {
-        client.settings[guild.id] = new Settings(guild);
+        client.settings[guild.id] = new Settings.Guild(guild);
     })
+    console.log(`Loaded settings for ${Object.values(client.settings).length} guild(s)`)
 
     client.commands = Util.loadmodules("commands", (command, commands) => {
         command = new command(client)
@@ -277,16 +302,20 @@ client.on("ready", () => {
 
 
 /**
- * Guild creation
+ * Guild joining and leaving
  */
 client.on("guildCreate", guild => {
     if (!client.settings) client.settings = [];
-
-    client.settings[guild.id] = new Settings(guild);
+    client.settings[guild.id] = new Settings.Guild(guild);
 })
 
 client.on("guildDelete", guild => {
+    if (process.env.ISDEV == "TRUE") return;
+
     if (client.settings) {
+        let settings = client.settings[guild.id]
+        settings.clear()
+
         client.settings[guild.id] = null;
     }
 })
@@ -327,34 +356,29 @@ function commandHelp(message, command, prefix) {
  * Command Parser
  */
 async function parseCommand(message) {
-    const settings = client.settings[message.guild.id]
-    const prefix = await settings.getSetting("prefix")
-
+    const guild = message.guild
     const content = message.content
+
+    const settings = client.settings[guild.id]
+    const prefix = await settings.getSetting("prefix")
 
     const isCommand = content.startsWith(prefix)
     let command, commandName, inputs
 
     if (isCommand) {
-        [commandName, ...inputs] = content
-            .trim()
-            .substring(prefix.length)
-            .split(" ");
-
+        [commandName, ...inputs] = content.trim().substring(prefix.length).split(" ");
         if (!commandName || commandName.length == 0) return;
     
         if (!client.commands) return console.error("Commands not loaded");
 
         command = client.commands.get(commandName.toLowerCase())
-
         if (!command) return Util.couldNotFind(message, "command", commandName);
-    }
 
-    message.command = command
+        if (!command.private && await client.globalSettings.getSetting("maintenance")) return Util.replyWarning(message, "Maintenance mode is currently enabled");
 
-    if (isCommand) {
+        message.command = command
+
         const permissions = command.permissions()
-
         if (!Util.doesMemberHavePermission(message.member, permissions)) {
             return command.secret ? null : Util.replyWarning(message, "You don't have permission to do that")
         }
@@ -372,12 +396,12 @@ async function parseCommand(message) {
         inputs = inputs.slice(0, argumentCount - 1)
         inputs[argumentCount - 1] = end
 
-        try {
-            command.execute(message, inputs)
-        } catch(e) {
-            Util.replyError(message, "An error occured while trying to execute that command, please report this to the developer!")
-            console.error(e)
-        }
+        client.setImmediate(() => {
+            Promise.resolve(command.execute(message, inputs)).catch(e => {
+                Util.replyError(message, "An error occured while trying to execute that command, please report this to the developer!")
+                console.error(e)
+            })
+        })
     }
 }
 

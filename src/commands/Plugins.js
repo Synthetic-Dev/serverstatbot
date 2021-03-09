@@ -5,8 +5,8 @@ const ICommand = require("../interfaces/ICommand.js")
 class Command extends ICommand {
     constructor(client) {
         super(client, {
-            name: "mods",
-            desc: "Displays the mods that are on the server"
+            name: "plugins",
+            desc: "Displays the plugins that are on the server"
         })
     }
 
@@ -26,23 +26,23 @@ class Command extends ICommand {
             } catch(e) {console.error(e)}
 
             if (data.online) {
-                if (!data.modded) return Util.replyMessage(message, "The server does not have any mods")
+                if (!data.plugins || data.plugins.length == 0) return Util.replyMessage(message, "The server does not have any plugins")
 
                 let pages = []
-                let modstring = ""
-                data.mods.modList.forEach((mod, index) => {
-                    modstring += `• **[${mod.modId}](https://www.curseforge.com/minecraft/mc-mods/search?search=${mod.modId})** - ${mod.version}\n`
+                let pluginstring = ""
+                data.plugins.forEach((plugin, index) => {
+                    pluginstring += `• **[${plugin.name}](https://dev.bukkit.org/search?search=${plugin.name})** - ${plugin.version}\n`
 
-                    if ((index % 19 == 0 && index != 0) || index + 1 == data.mods.modList.length) {
+                    if ((index % 19 == 0 && index != 0) || index + 1 == data.plugins.length) {
                         pages.push({
                             embed: {
-                                title: "Server Mods",
-                                description: `**${data.mods.modList.length} mods**${data.mods.type ? ` using ${data.mods.type}` : ""}\n` + modstring.trim(),
+                                title: "Server Plugins",
+                                description: `**${data.plugins.length} plugins**\n` + pluginstring.trim(),
                                 color: 5145560
                             }
                         })
 
-                        modstring = ""
+                        pluginstring = ""
                     }
                 })
 

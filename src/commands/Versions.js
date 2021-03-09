@@ -14,16 +14,11 @@ class Command extends ICommand {
     }
 
     async execute(message) {
-        let versions = ""
-
-        Protocol.getPrimarySupportedVersions().forEach(version => {
-            versions += `• ${Protocol.getSupportedVersions().filter(subversion => subversion.includes(version)).join(", ")}\n`
-        })
 
         Util.sendMessage(message, {
             embed: {
                 title: "Supported Versions",
-                description: `**Disclaimer: Modded versions using forge are supported, however versions 1.16+ may not work as intended.**\n\nA list of all supported minecraft versions:\n${versions.trim()}\n\n`,
+                description: `**Disclaimer: Modded versions using forge are supported, however some versions of forge may not work as intended.**\n\nMinecraft versions ${Protocol.getMinSupportedVersion()}+ are now supported.`,
                 color: 5145560,
                 footer: Util.getFooter(this.client)
             }

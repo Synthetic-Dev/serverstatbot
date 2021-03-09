@@ -146,68 +146,66 @@ class Util {
             x += context.measureText(text).width;
         });
         ctx.restore();
-      };
+    };
+
+    /**
+     * DMs a user with the given text
+     * @param {Discord.User} user
+     * @param {Discord.APIMessageContentResolvable | Discord.MessageAdditions | (Discord.MessageOptions & {split?: false;})} content 
+     * @returns {Promise<Discord.Message?>}
+     */
+    static dmUser(user, content) {
+        return new Promise((resolve, reject) => {
+            user.createDM().then(dmChannel => {
+                resolve(this.sendMessage(dmChannel, content))
+            }).catch(e => {})
+        })
+    }
 
     /**
      * Replies to the message with the given text, includes error handling
      * @param {Discord.Message} message 
-     * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
+     * @param {Discord.APIMessageContentResolvable | Discord.MessageAdditions | (Discord.MessageOptions & {split?: false;})} content 
      * @returns {Promise<Discord.Message?>}
      */
     static replyMessage(message, content) {
-        if (!(message.channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
-            message.author.createDM().then(dmChannel => {
-                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`)
-            }).catch(e => {
+        return new Promise((resolve, reject) => {
+            if (!(message.channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
+                return resolve(this.dmUser(message.author, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`))
+            }
+    
+            const stringAble = ["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)
+            if (stringAble) content = "\n" + content;
+    
+            message.reply(content).then(resolve).catch(e => {
                 console.error(e)
+    
+                if (!(message.channel instanceof Discord.DMChannel)) {
+                    resolve(this.dmUser(message.author, ":stop_sign: Failed to reply with message in guild." + (stringAble ? content : null), !stringAble ? content : null))
+                }
             })
-            return 
-        }
-
-        try {
-            if (["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)) {
-                return message.reply("\n" + content)
-            } else {
-                return message.reply(content)
-            }
-        } catch(e) {
-            console.error(e)
-
-            if (!(message.channel instanceof Discord.DMChannel)) {
-                message.author.createDM().then(dmChannel => {
-                    if (["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)) {
-                        this.sendMessage(dmChannel, ":stop_sign: Failed to reply with message in guild.\n" + content)
-                    } else {
-                        this.sendMessage(dmChannel, ":stop_sign: Failed to reply with message in guild.", content)
-                    }
-                })
-            }
-        }
+        })
     }
 
     /**
      * Sends a message in the given channel, includes error handling
      * @param {Discord.TextChannel | Discord.DMChannel | Discord.Message} object 
-     * @param {string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[]} content 
+     * @param {Discord.APIMessageContentResolvable | Discord.MessageAdditions | (Discord.MessageOptions & {split?: false;})} content 
      * @returns {Promise<Discord.Message?>}
      */
     static async sendMessage(object, ...content) {
-        let channel = object instanceof Discord.Message ? object.channel : object
+        return new Promise((resolve, reject) => {
+            let channel = object instanceof Discord.Message ? object.channel : object
 
-        if (object instanceof Discord.Message && !(channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])) {
-            object.author.createDM().then(dmChannel => {
-                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`)
-            }).catch(e => {
+            if (object instanceof Discord.Message && !(channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])) {
+                return resolve(this.dmUser(object.author, `:stop_sign: I don't have permission to send messages in <#${object.channel.id}>!`))
+            }
+
+            channel.send(...content).then(resolve).catch(e => {
                 console.error(e)
+                resolve()
             })
-            return 
-        }
-
-        try {
-            return channel.send(...content)
-        } catch(e) {
-            console.error(e)
-        }
+        })
     }
 
     /**
@@ -215,32 +213,13 @@ class Util {
      * @param {Discord.Message} message 
      * @param {string} warning 
      */
-    static async replyWarning(message, warning) {
-        if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
-            message.author.createDM().then(dmChannel => {
-                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`)
-            }).catch(e => {
-                console.error(e)
-            })
-            return 
-        }
-
-        try {
-            let botMessage = await message.reply("\n:warning: " + warning)
-            botMessage.delete({
-                timeout: 15000
-            })
-        } catch(e) {
-            console.error(e)
-            
-            if (message.channel != message.author.dmChannel) {
-                message.author.createDM().then(dmChannel => {
-                    this.sendMessage(dmChannel, ":stop_sign: Failed to reply with warning in guild.\n:warning: " + warning)
-                }).catch(e => {
-                    console.error(e)
-                })
-            }
-        }
+    static replyWarning(message, warning) {
+        this.replyMessage(message, ":warning: " + warning).then(botMessage => {
+            if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
+            botMessage.client.setTimeout(() => {
+                botMessage.delete()
+            }, 15000)
+        })
     }
 
     /**
@@ -248,15 +227,13 @@ class Util {
      * @param {Discord.TextChannel | Discord.DMChannel} channel 
      * @param {string} warning 
      */
-    static async sendWarning(channel, warning) {
-        try {
-            let botMessage = await channel.send(":warning: " + warning)
-            botMessage.delete({
-                timeout: 15000
-            })
-        } catch(e) {
-            console.error(e)
-        }
+    static sendWarning(channel, warning) {
+        this.sendMessage(channel, ":warning: " + warning).then(botMessage => {
+            if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
+            botMessage.client.setTimeout(() => {
+                botMessage.delete()
+            }, 15000)
+        })
     }
 
     /**
@@ -265,31 +242,12 @@ class Util {
      * @param {string} error 
      */
     static async replyError(message, error) {
-        if (message.channel != message.author.dmChannel && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
-            message.author.createDM().then(dmChannel => {
-                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`)
-            }).catch(e => {
-                console.error(e)
-            })
-            return 
-        }
-
-        try {
-            let botMessage = await message.reply("\n:stop_sign: " + error)
-            botMessage.delete({
-                timeout: 15000
-            })
-        } catch(e) {
-            console.error(e)
-            
-            if (message.channel != message.author.dmChannel) {
-                message.author.createDM().then(dmChannel => {
-                    this.sendMessage(dmChannel, ":stop_sign: Failed to reply with error in guild.\n:stop_sign: " + error)
-                }).catch(e => {
-                    console.error(e)
-                })
-            }
-        }
+        this.replyMessage(message, ":stop_sign: " + error).then(botMessage => {
+            if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
+            botMessage.client.setTimeout(() => {
+                botMessage.delete()
+            }, 15000)
+        })
     }
 
     /**
@@ -298,14 +256,12 @@ class Util {
      * @param {string} error 
      */
     static async sendError(channel, error) {
-        try {
-            let botMessage = await channel.send(":stop_sign: " + error)
-            botMessage.delete({
-                timeout: 15000
-            })
-        } catch(e) {
-            console.error(e)
-        }
+        this.sendMessage(channel, ":stop_sign: " + error).then(botMessage => {
+            if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
+            botMessage.client.setTimeout(() => {
+                botMessage.delete()
+            }, 15000)
+        })
     }
 
     /**
@@ -322,39 +278,30 @@ class Util {
     /**
      * Sends a "pages" message in the given channel
      * @param {Discord.Message} message
-     * @param {(string | number | bigint | boolean | symbol | readonly any[] | (Discord.MessageOptions & {split?: false;}) | Discord.MessageEmbed | Discord.MessageAttachment | (Discord.MessageEmbed | Discord.MessageAttachment)[])[]} pages
+     * @param {(Discord.APIMessageContentResolvable | Discord.MessageAdditions | (Discord.MessageOptions & {split?: false;}))[]} pages
      * @param {number} startPage
      */
-    static async sendPages(message, pages, startPage = 0) {
+    static sendPages(message, pages, startPage = 0) {
         let channel = message.channel
         let author = message.author
         let guild = message.guild
-        if (channel != author.dmChannel && !this.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"])) {
-            author.createDM().then(dmChannel => {
-                this.sendMessage(dmChannel, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`)
-            }).catch(e => {
-                console.error(e)
-            })
-            return 
-        }
 
-        try {
-            pages.forEach((page, index) => {
-                if (!page.embed) return;
+        pages.forEach((page, index) => {
+            if (!page.embed) return;
 
-                page.embed.footer = {
-                    text: `Page ${index + 1}/${pages.length}`,
-                    icon_url: author.avatarURL({
-                        size: 32,
-                        dynamic: true,
-                        format: "png"
-                    })
-                }
-            })
+            page.embed.footer = {
+                text: `Page ${index + 1}/${pages.length}`,
+                icon_url: author.avatarURL({
+                    size: 32,
+                    dynamic: true,
+                    format: "png"
+                })
+            }
+        })
 
-            let page = startPage
-            let botMessage = await channel.send(pages[page])
-            if (pages.length == 1) return;
+        let page = startPage
+        this.sendMessage(channel, pages[page]).then(botMessage => {
+            if (!botMessage || pages.length == 1) return;
 
             let emojis = ["arrow_backward", "arrow_forward", "previous_track", "next_track"]
             emojis.forEach((name, index) => {
@@ -363,7 +310,7 @@ class Util {
                 botMessage.react(emoji)
             })
 
-            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: 120000, idle: 30000, dispose: true})
+            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: 300000, idle: 30000, dispose: true})
 
             collector.on("collect", (reaction, user) => {
                 reaction.users.remove(user)
@@ -391,9 +338,7 @@ class Util {
             collector.on("end", () => {
                 botMessage.reactions.removeAll()
             })
-        } catch(e) {
-            console.error(e)
-        }
+        })
     }
 
     /**
@@ -580,15 +525,17 @@ class Util {
      * @param {Discord.Guild} guild
      * @returns {Discord.GuildChannel?} 
      */
-    static getPriorityChannel(guild) {
+    static getPriorityChannel(guild, check) {
         try {
-            let channel = guild.systemChannel
-            if (channel.viewable) return channel;
+            let channel = this.getChannelById(guild, guild.systemChannelID)
+            if (channel && channel.viewable && ((check && check(channel)) || !check)) return channel;
             channel = null
             
-            ["general", "commons", "announcements", "commands", "bot-cmds", "bot-commands"].forEach(name => {
+            let attemptNames = ["general", "chat", "commons", "discussion", "off-topic", "off-topic-general", "commands", "bot-cmds", "bot-commands", "announcements"]
+            attemptNames.forEach(name => {
                 if (channel) return;
                 channel = this.getChannel(guild, name, "text")
+                if (!channel.viewable || (check && !check(channel))) channel = null;
             })
             return channel
         } catch(e) {

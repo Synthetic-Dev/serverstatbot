@@ -40,7 +40,7 @@ class Command extends ICommand {
                     },
                     {
                         name: "Supported Minecraft Versions",
-                        value: Protocol.getPrimarySupportedVersions().join(", ")
+                        value: `${Protocol.getMinSupportedVersion()}+`
                     }
                 ],
                 footer: Util.getFooter(this.client)
