@@ -32,7 +32,15 @@ class Command extends ICommand {
 
             if (data.online) {
                 if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online");
-                if (!data.players.sample || data.players.sample.length == 0) return Util.sendMessage(message, `There is ${data.players.online}/${data.players.max} players in the server.\nThis server has too many players to display a playerlist.`);
+                if (!data.players.sample || data.players.sample.length == 0) {
+                    Util.sendMessage(message, {
+                        embed: {
+                            title: "Playerlist",
+                            description: `**${data.players.online}/${data.players.max} players**\nThere is too many players online or the server does not have ``enable-query=true``.`,
+                            color: 5145560
+                        }
+                    })
+                }
 
                 const columns = 4
                 const maxInList = 80

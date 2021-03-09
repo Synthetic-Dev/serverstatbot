@@ -138,7 +138,7 @@ function serverLogs() {
                                 Util.sendMessage(channel, {
                                     embed: {
                                         title: "Server",
-                                        description: (Date.now() - client.startTime < 30000 ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
+                                        description: (Date.now() - client.startTime < 60000 ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
                                         color: 5145560
                                     }
                                 })
