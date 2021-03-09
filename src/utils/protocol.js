@@ -176,7 +176,7 @@ class Protocol {
         }
 
         this.requestCache[ip + ":" + port] = {
-            expires: Date.now() + 10*1000,
+            expires: Date.now() + 15*1000,
             value: result
         }
 
