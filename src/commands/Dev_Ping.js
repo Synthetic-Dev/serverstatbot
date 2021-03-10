@@ -16,7 +16,11 @@ class Command extends ICommand {
                     name: "address",
                     desc: "The address of the server e.g. ``mc.hypixel.net``, ``play.hivemc.net:25565`` or ``172.16.254.1:25665``"
                 }
-            ]
+            ],
+            perms: [
+                "DEV"
+            ],
+            private: true
         })
     }
 
