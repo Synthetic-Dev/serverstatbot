@@ -364,7 +364,7 @@ client.on("ready", () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": process.env.TOPGGTOKEN
+                    "Authorization": process.env.BOTLISTTOKEN
                 },
                 data: JSON.stringify({
                     guilds: client.guilds.cache.size
