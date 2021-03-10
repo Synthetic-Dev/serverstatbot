@@ -165,7 +165,7 @@ function serverLogs() {
                         Util.getRecentMessage(channel, text).then(message => {
                             if (!message) Util.sendMessage(channel, text)
                         }).catch(e => {})
-                    } else if (!data.query) {
+                    } else if (server.start && !data.query) {
                         let text = ":warning: ``enable-query=true`` is required for join logs"
                         Util.getRecentMessage(channel, text).then(message => {
                             if (!message) Util.sendMessage(channel, text)
@@ -175,7 +175,7 @@ function serverLogs() {
                         Util.getRecentMessage(channel, text).then(message => {
                             if (!message) Util.sendMessage(channel, text)
                         }).catch(e => {})
-                    } else {
+                    } else if (data.query) {
                         if (!server.start) {
                             function playerMessage(player, text) {
                                 let image = Canvas.createCanvas((16 + 21) * 13 + 26, 28)
@@ -214,9 +214,10 @@ function serverLogs() {
                                 }
                             })
                         }
-                    }
 
-                    server.players = current
+                        server.players = current
+                    }
+                    
                 } else {
                     let wasOnline = server.online
                     server.online = false
