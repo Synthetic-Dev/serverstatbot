@@ -338,23 +338,64 @@ client.on("ready", () => {
     })
 
     if (process.env.ISDEV != "TRUE") {
-        Util.requestAsync({
-            hostname: "top.gg",
-            path: "/api/bots/759415210628087841/stats",
-            protocol: "HTTPS",
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": process.env.TOPGGTOKEN
-            },
-            data: JSON.stringify({
-                server_count: client.guilds.cache.size
+        function updateStats() {
+            Util.requestAsync({
+                hostname: "top.gg",
+                path: "/api/bots/759415210628087841/stats",
+                protocol: "HTTPS",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": process.env.TOPGGTOKEN
+                },
+                data: JSON.stringify({
+                    server_count: client.guilds.cache.size
+                })
+            }).then(() => {
+                console.log("Stats update sent to top.gg")
+            }).catch(error => {
+                console.error(error)
             })
-        }).then(() => {
-            console.log("Stats update sent to top.gg")
-        }).catch(error => {
-            console.error(error)
-        })
+
+            Util.requestAsync({
+                hostname: "discordbotlist.com",
+                path: "/api/v1/bots/759415210628087841/stats",
+                protocol: "HTTPS",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": process.env.TOPGGTOKEN
+                },
+                data: JSON.stringify({
+                    guilds: client.guilds.cache.size
+                })
+            }).then(() => {
+                console.log("Stats update sent to discordbotlist.com")
+            }).catch(error => {
+                console.error(error)
+            })
+
+            Util.requestAsync({
+                hostname: "discord.bots.gg",
+                path: "/api/v1/bots/759415210628087841/stats",
+                protocol: "HTTPS",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": process.env.BOTSGGTOKEN
+                },
+                data: JSON.stringify({
+                    guildCount: client.guilds.cache.size
+                })
+            }).then(() => {
+                console.log("Stats update sent to discord.bots.gg")
+            }).catch(error => {
+                console.error(error)
+            })
+        }
+
+        updateStats()
+        client.setInterval(updateStats, 60*60*1000)
     }
 
     console.log("Bot started successfully")
