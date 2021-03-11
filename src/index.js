@@ -1,3 +1,6 @@
+const HTTPS = require("https")
+const HTTP = require("http")
+
 const Discord = require("discord.js")
 const Canvas = require("canvas")
 const Mongoose = require("mongoose")
@@ -8,6 +11,10 @@ const Protocol = require("./utils/protocol.js")
 /**
  * Startup
  */
+const maxSockets = 40;
+HTTPS.globalAgent.maxSockets = maxSockets;
+HTTP.globalAgent.maxSockets = maxSockets;
+
 require("dotenv").config()
 Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
 const client = new Discord.Client();
@@ -22,7 +29,7 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
  * Server Logs
  */
 function serverLogs() {
-    if (process.env.ISDEV == "TRUE") return;
+    //if (process.env.ISDEV == "TRUE") return;
 
     const statusContents = {
         online: "<:green_circle_with_tick:818512512500105249> Server is online",
@@ -171,11 +178,11 @@ function serverLogs() {
                             if (!message) Util.sendMessage(channel, text)
                         }).catch(e => {})
                     } else if (data.bedrock) {
-                        let text = ":warning: Join logs are not supported for bedrock servers"
+                        let text = ":warning: Bedrock servers do not return all players online."
                         Util.getRecentMessage(channel, text).then(message => {
                             if (!message) Util.sendMessage(channel, text)
                         }).catch(e => {})
-                    } else if (data.query) {
+                    } else if (data.query && current.length == data.players.online) {
                         if (!server.start) {
                             function playerMessage(player, text) {
                                 let image = Canvas.createCanvas((16 + 21) * 13 + 26, 28)
@@ -255,7 +262,7 @@ function serverLogs() {
                 client.servers[guild.id] = server
             })
         })
-    }, 30000)
+    }, 60000)
 }
 
 

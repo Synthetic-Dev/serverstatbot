@@ -5,13 +5,15 @@ const ICommand = require("../interfaces/ICommand.js")
 class Command extends ICommand {
     constructor(client) {
         super(client, {
-            name: "plugins",
-            desc: "Displays the plugins that are on the server",
+            name: "find",
+            desc: "Checks if a player is in the connected server",
+            aliases: [
+                "getplayer"
+            ],
             args: [
                 {
-                    name: "page",
-                    desc: "The starting page to display",
-                    optional: true
+                    name: "username | uuid",
+                    desc: "The username or uuid of the player you want to find"
                 }
             ]
         })
@@ -23,39 +25,28 @@ class Command extends ICommand {
         const ip = await settings.getSetting("ip")
         const port = await settings.getSetting("port")
 
-        const itemsPerPage = 20
-
-        let startPage = inputs[0] ? Number(inputs[0]) : 1
-        if (typeof(startPage) != "number" || startPage == null || isNaN(startPage)) return Util.replyError(message, "Page must be a number");
-
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
-            Protocol.getInfo(ip, port).then(data => {
+            Protocol.getInfo(ip, port).then(async data => {
                 try {
                     botMessage.delete()
                 } catch(e) {console.error(e)}
     
                 if (data.online) {
-                    if (!data.plugins || data.plugins.length == 0) return Util.replyMessage(message, "The server does not have any plugins")
+                    if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online");
+                    if (!data.players.sample || data.players.sample.length == 0) {
+                        return Util.sendWarning(message, "There is too many players online or the server does not have ``enable-query=true``.")
+                    }
     
-                    let pages = []
-                    let pluginstring = ""
-                    data.plugins.forEach((plugin, index) => {
-                        pluginstring += `• **[${plugin.name}](https://dev.bukkit.org/search?search=${plugin.name})** - ${plugin.version}\n`
-    
-                        if ((index % (itemsPerPage - 1) == 0 && index != 0) || index + 1 == data.plugins.length) {
-                            pages.push({
-                                embed: {
-                                    title: "Server Plugins",
-                                    description: `**${data.plugins.length} plugins**\n` + pluginstring.trim(),
-                                    color: 5145560
-                                }
-                            })
-    
-                            pluginstring = ""
+                    let finds = []
+                    data.players.sample.forEach(player => {
+                        if (find) return;
+                        if ([player.name.clean.toLowerCase().substr(0, inputs[0].length), player.name.raw.toLowerCase().substr(0, inputs[0].length), player.id ? player.id.toLowerCase().substr(0, inputs[0].length) : ""].includes(inputs[0].toLowerCase())) {
+                            find = player
                         }
                     })
     
-                    Util.sendPages(message, pages, Math.max(1, Math.min(pages.length, startPage)) - 1)
+                    if (find) Util.sendMessage(message, `${find.name.clean} is in the server.`);
+                    else Util.sendMessage(message, `Could not find ${inputs[0]} in the server.`);
                 } else {
                     let error = data.error
     

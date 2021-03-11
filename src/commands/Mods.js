@@ -6,17 +6,27 @@ class Command extends ICommand {
     constructor(client) {
         super(client, {
             name: "mods",
-            desc: "Displays the mods that are on the server"
+            desc: "Displays the mods that are on the server",
+            args: [
+                {
+                    name: "page",
+                    desc: "The starting page to display",
+                    optional: true
+                }
+            ]
         })
     }
 
-    async execute(message) {
+    async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
 
         const ip = await settings.getSetting("ip")
         const port = await settings.getSetting("port")
 
         const itemsPerPage = 16
+
+        let startPage = inputs[0] ? Number(inputs[0]) : 1
+        if (typeof(startPage) != "number" || startPage == null || isNaN(startPage)) return Util.replyError(message, "Page must be a number");
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(data => {
@@ -45,7 +55,7 @@ class Command extends ICommand {
                         }
                     })
     
-                    Util.sendPages(message, pages)
+                    Util.sendPages(message, pages, Math.max(1, Math.min(pages.length, startPage)) - 1)
                 } else {
                     let error = data.error
     

@@ -10,7 +10,7 @@ class Protocol {
     }
 
     static requestCache = {};
-    static cacheTime = 15*1000;
+    static cacheTime = 30*1000;
 
     /**
      * The minimum minecraft version that the statusFE01() handshake supports
@@ -29,8 +29,15 @@ class Protocol {
      * @returns {Promise<boolean, Object<string, any> | Error | string>}
      */
     static async sendRequest(ip, port = 25565, verify = true) {
+        Object.keys(this.requestCache).forEach((address) => {
+            let data = this.requestCache[address]
+            if (data && data.expires < Date.now()) {
+                delete this.requestCache[address];
+            }
+        })
+
         let cachedData = this.requestCache[ip + ":" + port]
-        if (cachedData && cachedData.expires > Date.now()) {
+        if (cachedData) {
             cachedData.value.cached = true;
             return [true, cachedData.value]
         }

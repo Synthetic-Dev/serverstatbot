@@ -33,20 +33,20 @@ class Command extends ICommand {
                         return Util.sendMessage(message, {
                             embed: {
                                 title: "Playerlist",
-                                description: `**${data.players.online}/${data.players.max} players**\n${data.bedrock ? "Cannot get all players from a bedrock server." : "There is too many players online or the server does not have \`\`enable-query=true\`\`."}`,
+                                description: `**${data.players.online}/${data.players.max} players**\nThere is too many players online or the server does not have \`\`enable-query=true\`\`.`,
                                 color: 5145560
                             }
                         })
                     }
     
-                    const columns = 4
-                    const maxInList = 80
-                    const breakpoint = Math.ceil(maxInList / columns)
+                    const columns = 7
+                    const breakpoint = 30
+                    const maxInList = (breakpoint * columns) - 1
                     const amountInList = Math.min(maxInList, data.players.sample.length)
-                    const height = Math.min(breakpoint, data.players.sample.length)
+                    const height = Math.min(breakpoint, amountInList)
     
                     const maxWidth = 256
-                    const columnCount = Math.ceil(data.players.sample.length / breakpoint)
+                    const columnCount = Math.ceil(amountInList / breakpoint)
     
                     let image = createCanvas((32 + maxWidth) * columnCount + (5 * (columnCount - 1)), height * 28)
                     let context = image.getContext("2d")
@@ -64,7 +64,7 @@ class Command extends ICommand {
     
                             if (i >= maxInList) {
                                 if (i == maxInList) {
-                                    context.fillText(`and ${data.players.online - maxInList} more...`, 2 + (maxWidth * column) + (5 * column), (i - breakpoint * column) * 28 - 2, maxWidth - 2)
+                                    context.fillText(`and ${data.players.sample.length - maxInList} more...`, 2 + (maxWidth * column) + (5 * column), (i - breakpoint * column) * 28 - 2, maxWidth - 2)
                                 }
     
                                 if (done >= amountInList) resolve();
@@ -87,7 +87,7 @@ class Command extends ICommand {
                         }],
                         embed: {
                             title: "Playerlist",
-                            description: `**${data.players.online}/${data.players.max} players**` + (!data.query ? "\nThis may not be all the players set ``enable-query=true`` to get all players." : "") + (data.bedrock ? "\nCannot get all players from a bedrock server." : ""),
+                            description: `**${data.players.online}/${data.players.max} players**` + (!data.query ? "\nThis may not be all the players set ``enable-query=true`` to get all players." : "") + (data.bedrock ? "\nBedrock servers do not return all players online." : ""),
                             color: 5145560,
                             image: {
                                 url: "attachment://playerlist.png"

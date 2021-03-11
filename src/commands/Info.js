@@ -14,7 +14,7 @@ class Command extends ICommand {
         })
     }
 
-    displayInfo(message, ip, port) {
+    displayInfo(message, ip, port, additionals) {
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(data => {
                 try {
@@ -36,6 +36,10 @@ class Command extends ICommand {
                             value: (data.bedrock ? "Bedrock" : (data.modded ? `Modded (${data.mods.modList.length} mods)` : "Vanilla")) + (data.plugins && data.plugins.length > 0 ? ` (${data.plugins.length} plugins)` : "")
                         }
                     ]
+
+                    if (additionals) {
+                        additionals(data, fields)
+                    }
     
                     let content = {
                         embed: {
@@ -49,27 +53,29 @@ class Command extends ICommand {
                         }
                     }
     
-                    if (data.favicon) {
-                        let image = Canvas.createCanvas(64, 64)
-                        let context = image.getContext("2d")
-    
-                        let favicon = new Canvas.Image()
-                        favicon.onload = () => {
-                            context.drawImage(favicon, 0, 0)
-    
-                            content.files = [{
-                                attachment: image.toBuffer("image/png"),
-                                name: "favicon.png"
-                            }]
-                            content.embed.thumbnail = {
-                                url: "attachment://favicon.png"
-                            }
-    
-                            Util.sendMessage(message, content)
+                    let image = Canvas.createCanvas(64, 64)
+                    let context = image.getContext("2d")
+                    context.imageSmoothingEnabled = false
+
+                    let favicon = new Canvas.Image()
+                    favicon.onload = () => {
+                        context.drawImage(favicon, 0, 0, 64, 64)
+
+                        content.files = [{
+                            attachment: image.toBuffer("image/png"),
+                            name: "favicon.png"
+                        }]
+                        content.embed.thumbnail = {
+                            url: "attachment://favicon.png"
                         }
+
+                        Util.sendMessage(message, content)
+                    }
+                    if (data.favicon) {
                         favicon.src = data.favicon
                     } else {
-                        Util.sendMessage(message, content)
+                        if (data.bedrock) favicon.src = `${__dirname}/../../assets/textures/bedrock.png`;
+                        else favicon.src = `${__dirname}/../../assets/textures/grass.png`
                     }
                 } else {
                     let error = data.error
@@ -78,7 +84,7 @@ class Command extends ICommand {
                         return Util.sendMessage(message, {
                             embed: {
                                 title: "Server Info",
-                                description: `Address: **${ip}:${port}**\nStatus: <:red_circle_with_cross:818512512764084265> **Offline**${error == "Failed to query server within time" ? "\nIf the server is online is ``enable-status=true`` or ``enabled-query=true``" : ""}`,
+                                description: `Address: **${ip}:${port}**\nStatus: <:red_circle_with_cross:818512512764084265> **Offline**${error == "Failed to query server within time" ? "\nIf the server is online, check that ``enable-status=true`` or ``enabled-query=true``" : ""}`,
                                 color: 5145560
                             }
                         })

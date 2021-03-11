@@ -1,30 +1,33 @@
 const Discord = require("discord.js")
 const FileSystem = require("fs")
 
+const modelPaths = ["/models/global", "/models/guild"]
 const models = {}
+
+modelPaths.forEach(path => {
+    models[path] = {
+        collection: new Discord.Collection(),
+        loaded: false
+    }
+
+    FileSystem.readdir(`${__dirname}/../${path}`, (error, files) => {
+        if (error) return console.error(error);
+
+        const jsfiles = files.filter(file => file.split(".").pop() == "js")
+        if (jsfiles.length == 0) return;
+
+        jsfiles.forEach(file => {
+            let name = file.split(".").shift().toLowerCase()
+            let setting = require(`..${path}/${file}`)
+            models[path].collection.set(name, setting)
+        })
+
+        models[path].loaded = true
+    })
+})
 
 class Settings {
     constructor(path, queryFilter = () => {return {}}, optionsFilter = (n, v) => {return v}) {
-        if (!models[path]) {
-            models[path] = {
-                collection: new Discord.Collection(),
-                loaded: false
-            }
-            FileSystem.readdir(`${__dirname}/../${path}`, (error, files) => {
-                if (error) return console.error(error);
-
-                const jsfiles = files.filter(file => file.split(".").pop() == "js")
-                if (jsfiles.length == 0) return;
-
-                jsfiles.forEach(file => {
-                    let name = file.split(".").shift().toLowerCase()
-                    let setting = require(`..${path}/${file}`)
-                    models[path].collection.set(name, setting)
-                })
-
-                models[path].loaded = true
-            })
-        }
 
         this.queryFilter = queryFilter
         this.optionsFilter = optionsFilter
