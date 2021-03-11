@@ -46,46 +46,47 @@ class Protocol {
             let args = [ip, {port: port, timeout: 3000}]
 
             function query(statusResponse) {
-                statusResponse.bedrock = statusResponse.bedrock ? true : false
-                args[1].timeout = 6000
+                if (statusResponse) statusResponse.bedrock = statusResponse.bedrock ? true : false;
+
+                args[1].timeout = 5000
                 MinecraftUtil.queryFull(...args).then(queryResponse => {
-                    queryResponse.bedrock = statusResponse.bedrock;
                     queryResponse.query = true;
-                    queryResponse.ping = true;
-                    queryResponse.modInfo = queryResponse.modInfo ? queryResponse.modInfo : statusResponse.modInfo ? statusResponse.modInfo : null
-                    queryResponse.favicon = queryResponse.favicon ? queryResponse.favicon : statusResponse.favicon ? statusResponse.favicon : null
+                    queryResponse.ping = statusResponse != null;
+
+                    if (statusResponse) {
+                        queryResponse.bedrock = statusResponse.bedrock;
+                        queryResponse.modInfo = queryResponse.modInfo ? queryResponse.modInfo : statusResponse.modInfo ? statusResponse.modInfo : null
+                        queryResponse.favicon = queryResponse.favicon ? queryResponse.favicon : statusResponse.favicon ? statusResponse.favicon : null
+                    } else {
+                        queryResponse.bedrock = queryResponse.levelName != null
+                    }
                     resolve([true, queryResponse])
                 }).catch(e => {
-                    statusResponse.query = false;
-                    statusResponse.ping = true;
-                    resolve([true, statusResponse])
+                    if (statusResponse) {
+                        statusResponse.query = false;
+                        statusResponse.ping = true;
+                        resolve([true, statusResponse])
+                    } else resolve([false, e1]);
                 })
             }
 
-            function attemptQuery() {
-                args[1].timeout = 6000
-                MinecraftUtil.queryFull(...args).then(queryResponse => {
-                    queryResponse.bedrock = queryResponse.levelName != null;
-                    queryResponse.ping = false
-                    queryResponse.query = true;
-                    resolve([true, queryResponse])
-                }).catch(e1 => {
-                    resolve([false, e1])
-                })
+            function attemptBedrock() {
+                MinecraftUtil.statusBedrock(...args).then(response => {
+                    response.bedrock = true;
+                    query(response)
+                }).catch(() => {query()})
             }
 
-            MinecraftUtil.status(...args).then(query).catch(e => {
-                if (!e) {
-                    attemptQuery()
-                } else if (e == "Failed to retrieve the status of the server within time") {
-                    MinecraftUtil.statusFE01(...args).then(query).catch(attemptQuery)
-                } else if (e.code == "ECONNREFUSED") {
-                    MinecraftUtil.statusBedrock(...args).then(response => {
-                        response.bedrock = true;
-                        query(response)
-                    }).catch(attemptQuery)
-                } else resolve([false, e]);
-            })
+            if (port == 19132) attemptBedrock()
+            else {
+                MinecraftUtil.status(...args).then(query).catch(e => {
+                    if (!e) query()
+                    else if (e == "Failed to retrieve the status of the server within time") {
+                        MinecraftUtil.statusFE01(...args).then(query).catch(() => {query()})
+                    } else if (e.code == "ECONNREFUSED" && port != 25565) attemptBedrock()
+                    else resolve([false, e]);
+                })
+            }
         })
 
         let [success, result] = await bulkData
