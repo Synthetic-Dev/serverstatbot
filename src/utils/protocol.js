@@ -66,7 +66,7 @@ class Protocol {
                         statusResponse.query = false;
                         statusResponse.ping = true;
                         resolve([true, statusResponse])
-                    } else resolve([false, e1]);
+                    } else resolve([false, e]);
                 })
             }
 
