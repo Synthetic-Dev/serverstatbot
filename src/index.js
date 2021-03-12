@@ -11,7 +11,7 @@ const Protocol = require("./utils/protocol.js")
 /**
  * Startup
  */
-const maxSockets = 40;
+const maxSockets = 30;
 HTTPS.globalAgent.maxSockets = maxSockets;
 HTTP.globalAgent.maxSockets = maxSockets;
 
@@ -402,7 +402,7 @@ client.on("ready", () => {
         }
 
         updateStats()
-        client.setInterval(updateStats, 60*60*1000)
+        client.setInterval(updateStats, 120*60*1000)
     }
 
     console.log("Bot started successfully")
