@@ -11,7 +11,7 @@ const Protocol = require("./utils/protocol.js")
 /**
  * Startup
  */
-const maxSockets = 30;
+const maxSockets = 35;
 HTTPS.globalAgent.maxSockets = maxSockets;
 HTTP.globalAgent.maxSockets = maxSockets;
 
@@ -51,25 +51,6 @@ function serverLogs() {
             type: "offline"
         }
     ]
-
-    /* Clean up code
-    client.guilds.cache.forEach(async guild => {
-        let settings = client.settings[guild.id]
-
-        let channelId = await settings.getSetting("logchannel")
-        let channel = Util.getChannelById(guild, channelId)
-        if (!channel) return;
-
-        Util.getRecentMessagesAfter(channel, client.user, 1615252933*1000, (message) => {
-            return message.content.includes(":stop_sign: An error occured when trying to get server info")
-        }).then(messages => {
-            channel.bulkDelete(messages).then(() => {}).catch(e => {
-                messages.forEach(async message => {
-                    message.delete().then(() => {}).catch(e => {})
-                })
-            })
-        }).catch(e => {})
-    })*/
 
     client.servers = []
     client.setInterval(async () => {
