@@ -47,8 +47,8 @@ class Command extends ICommand {
                         inline: true
                     },
                     {
-                        name: "Invite",
-                        value: `[Invite the bot](https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&scope=bot%20identify%20guilds&permissions=1275587792)`,
+                        name: "Library",
+                        value: `[discord.js](https://discord.js.org/)`,
                         inline: true
                     },
                     {

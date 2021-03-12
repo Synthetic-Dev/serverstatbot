@@ -5,14 +5,14 @@ class Command extends ICommand {
     constructor(client) {
         super(client, {
             name: "invite",
-            desc: "Invite link for the bot"
+            desc: "Get invite links for the bot"
         })
     }
 
     async execute(message) {
         Util.sendMessage(message, {
             embed: {
-                description: `[Click here to invite the bot](https://discord.com/oauth2/authorize?client_id=${message.client.user.id}&scope=bot%20identify%20guilds&permissions=1275587792)`,
+                description: `**You can invite the bot from one of these sites:**\n• [top.gg](https://top.gg/bot/759415210628087841)\n• [bots.gg](https://discord.bots.gg/bots/759415210628087841)\n• [discordbotlist.com](https://discordbotlist.com/bots/server-stat)\n\n*Upvoting on these sites helps to support the bot*`,
                 author: {
                     name: this.client.user.username,
                     icon_url: this.client.user.avatarURL({
