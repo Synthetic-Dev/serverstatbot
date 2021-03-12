@@ -11,7 +11,7 @@ const Protocol = require("./utils/protocol.js")
 /**
  * Startup
  */
-const maxSockets = 35;
+const maxSockets = 50;
 HTTPS.globalAgent.maxSockets = maxSockets;
 HTTP.globalAgent.maxSockets = maxSockets;
 
@@ -51,6 +51,8 @@ function serverLogs() {
             type: "offline"
         }
     ]
+
+    const intervalTime = 60*1000
 
     client.servers = []
     client.setInterval(async () => {
@@ -126,7 +128,7 @@ function serverLogs() {
                                 Util.sendMessage(channel, {
                                     embed: {
                                         title: "Server",
-                                        description: (Date.now() - client.startTime < 60000 ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
+                                        description: (Date.now() - client.startTime < (intervalTime * 1.5) ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
                                         color: 5145560
                                     }
                                 })
@@ -243,7 +245,7 @@ function serverLogs() {
                 client.servers[guild.id] = server
             })
         })
-    }, 60000)
+    }, intervalTime)
 }
 
 
