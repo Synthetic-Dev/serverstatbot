@@ -1,10 +1,9 @@
-const Util = require("../utils/util.js")
 const ICommand = require("../interfaces/ICommand.js")
 
 class Command extends ICommand {
     constructor(client) {
         super(client, {
-            name: "logout",
+            name: "stop",
             desc: "Takes the bot offline",
             perms: [
                 "DEV"

@@ -1,6 +1,7 @@
 const HTTPS = require("https")
 const HTTP = require("http")
 
+const Heroku = require('heroku-client')
 const Discord = require("discord.js")
 const Canvas = require("canvas")
 const Mongoose = require("mongoose")
@@ -18,6 +19,9 @@ HTTP.globalAgent.maxSockets = maxSockets;
 require("dotenv").config()
 Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
 const client = new Discord.Client();
+if (process.env.HEROKUAPIKEY) {
+    client.heroku = new Heroku({token: process.env.HEROKUAPIKEY})
+}
 
 Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${process.env.DBCLUSTER}.${process.env.DBDOMAIN}.mongodb.net/data`, {
     useNewUrlParser: true,
@@ -29,7 +33,7 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
  * Server Logs
  */
 function serverLogs() {
-    //if (process.env.ISDEV == "TRUE") return;
+    if (process.env.ISDEV == "TRUE") return;
 
     const statusContents = {
         online: "<:green_circle_with_tick:818512512500105249> Server is online",

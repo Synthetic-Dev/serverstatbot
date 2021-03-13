@@ -310,6 +310,11 @@ class Protocol {
 
             return final
         } else {
+            if (result.code == "EMFILE") {
+                const restart = await this.client.commands.get("restart")
+                restart.restart()
+            }
+
             return {
                 ip: ip,
                 port: port,

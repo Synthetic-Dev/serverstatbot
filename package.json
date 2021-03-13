@@ -1,10 +1,10 @@
 {
   "name": "serverstat",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "",
   "main": "index.js",
   "engines": {
-    "node": "^14.x",
+    "node": "^15.x",
     "nodemon": "^2.x"
   },
   "scripts": {
@@ -19,6 +19,7 @@
     "discord.js": "^12.3.1",
     "dotenv": "^8.2.0",
     "fast-average-color-node": "^1.0.3",
+    "heroku-client": "^3.1.0",
     "minecraft-protocol": "^1.23.2",
     "minecraft-protocol-forge": "^1.0.0",
     "minecraft-server-util": "^3.4.3",
