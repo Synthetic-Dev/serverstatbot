@@ -13,7 +13,8 @@ class Command extends ICommand {
     }
 
     restart() {
-        this.client.heroku.delete("/apps/serverstatbot/dynos/Worker").then(console.log).catch(console.error)
+        this.client.heroku.delete("/apps/serverstatbot/dynos/Worker").then(data => {console.log(`Internal restart, ${data.toString()}`)}).catch(console.error)
+        this.client.destroy()
     }
 
     async execute() {
