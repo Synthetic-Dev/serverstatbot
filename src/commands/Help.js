@@ -9,6 +9,13 @@ class Command extends ICommand {
             desc: "Displays all available commands",
             aliases: [
                 "cmds"
+            ],
+            args: [
+                {
+                    name: "command",
+                    desc: "A command to get help about",
+                    optional: true
+                }
             ]
         })
     }
@@ -31,7 +38,7 @@ class Command extends ICommand {
     }
 
     /**
-     * 
+     * Get formatted commands string
      * @param {Discord.Collection} commands 
      * @param {Function} check 
      * @return {string}
@@ -61,49 +68,57 @@ class Command extends ICommand {
         return string
     }
 
-    async execute(message) {
+    /**
+     * Post embed containing command info
+     * @param {Discord.Message} message 
+     * @param {ICommand} command 
+     * @param {string} prefix 
+     */
+    commandHelp(message, command, prefix) {
+        let scommand = [`${prefix}${command.name()}`]
+        let args = ""
+    
+        if (command.numOfArguments() > 0) {
+            command.arguments().forEach(arg => {
+                if (arg.optional) {
+                    scommand.push(`\`\`[${arg.name}]\`\``)
+                    args += `**[${arg.name}]** - *${arg.desc ? arg.desc : "No description"}*\n`
+                } else {
+                    scommand.push(`\`\`<${arg.name}>\`\``)
+                    args += `**<${arg.name}>** - *${arg.desc ? arg.desc : "No description"}*\n`
+                }
+            })
+        }
+    
+        let embed = {
+            title: scommand.join(" "),
+            description: `**Description:** ${command.desc}\n` + (command.aliases().length > 0 ? `**Aliases:** ${command.aliases().join(", ")}\n` : "") + `**Arguments:**${command.numOfArguments() > 0 ? `\n${args.trim()}` : " None"}`,
+            color: 12333616
+        }
+    
+        Util.replyMessage(message, {
+            embed: embed
+        })
+    }
+
+    async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
+
+        let prefix = await settings.getSetting("prefix")
+
+        if (inputs[0]) {
+            const command = this.client.commands.get(inputs[0].toLowerCase())
+            if (!command) return Util.couldNotFind(message, "command", inputs[0]);
+            if (!Util.doesMemberHavePermission(message.member, command.permissions())) return command.secret ? null : Util.replyWarning(message, "You don't have permission to do that");
+            return this.commandHelp(message, command, prefix)
+        }
 
         let commandliststring = this.getCommands(this.client.commands, (command) => {
             const permissions = command.permissions()
             return command != this && !command.private && Util.doesMemberHavePermission(message.member, permissions)
         })
 
-        let prefix = await settings.getSetting("prefix")
-        this.postCommands(message, `**Disclaimer: This bot still underdevelopment and bugs/issues may arise, if you would like to report an issue you can report it in our support server:** [Join server](https://discord.gg/uqVp2XzUP8)\n\nRequires a minecraft server running a supported version with \`\`enable-query=true\`\`, to see supported versions do \`\`${prefix}versions\`\`\n**Prefix: \`\`${prefix}\`\`**`, commandliststring)
-
-        // Setup help message
-        let ip = await settings.getSetting("ip")
-
-        if (Util.doesMemberHavePermission(message.member, ["ADMINISTRATOR"]) && (ip == "0.0.0.0" || ip == "")) {
-            Util.sendMessage(message.channel, {
-                embed: {
-                    title: "Setup",
-                    description: "Get your server connected and setup!",
-                    color: 5145560,
-                    fields: [
-                        {
-                            name: "Add your server ip",
-                            value: `Do **${prefix}setip** \`\`<your ip here>\`\``,
-                            inline: true
-                        },
-                        {
-                            name: "Set your server port",
-                            value: `The server port defaults to **25565**, if your server uses a different port do **${prefix}setport** \`\`<your port here>\`\``,
-                            inline: true
-                        },
-                        {
-                            name: "Set up a log channel",
-                            value: `This is where server status and join/leave messages will be posted. Make sure that the bot has permission to post in this channel! Do **${prefix}setlogchannel** \`\`<channel or 'here' or 'clear'>\`\``
-                        },
-                        {
-                            name: "Need support?",
-                            value: `Join the bot support server here: [Join server](https://discord.gg/uqVp2XzUP8)`
-                        }
-                    ]
-                }
-            })
-        }
+        this.postCommands(message, `**Prefix:   \`\`${prefix}\`\`**\n${"—".repeat(5)}\nRequires a minecraft server running a supported version, to see supported versions do \`\`${prefix}versions\`\`\n`, commandliststring)
     }
 }
 

@@ -420,37 +420,6 @@ client.on("guildDelete", guild => {
 
 
 /**
- * Command Help
- */
-function commandHelp(message, command, prefix) {
-    let scommand = [`${prefix}${command.name()}`]
-    let args = ""
-
-    if (command.numOfArguments() > 0) {
-        command.arguments().forEach(arg => {
-            if (arg.optional) {
-                scommand.push(`\`\`[${arg.name}]\`\``)
-                args += `**[${arg.name}]** - *${arg.desc ? arg.desc : "No description"}*\n`
-            } else {
-                scommand.push(`\`\`<${arg.name}>\`\``)
-                args += `**<${arg.name}>** - *${arg.desc ? arg.desc : "No description"}*\n`
-            }
-        })
-    }
-
-    let embed = {
-        title: scommand.join(" "),
-        description: (command.aliases().length > 0 ? `**Aliases:** ${command.aliases().join(", ")}\n` : "") + args.trim(),
-        color: 12333616
-    }
-
-    Util.replyMessage(message, {
-        embed: embed
-    })
-}
- 
-
-/**
  * Command Parser
  */
 async function parseCommand(message) {
@@ -482,8 +451,10 @@ async function parseCommand(message) {
         }
 
         if (inputs.length < command.numOfRequiredArguments()) {
+            const helpCommand = client.commands.get("help")
+
             if (inputs.length == 0) {
-                return command.secret ? null : commandHelp(message, command, prefix)
+                return command.secret ? null : helpCommand.commandHelp(message, command, prefix)
             } else {
                 return command.secret ? null : Util.replyError(message, `'${commandName.toLowerCase()}' expects ${command.numOfRequiredArguments()} argument(s), got ${inputs.length}`);
             }
