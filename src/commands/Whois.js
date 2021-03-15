@@ -2,9 +2,9 @@ const {createCanvas, loadImage} = require("canvas")
 const { getAverageColor } = require("fast-average-color-node")
 const Util = require("../utils/util.js")
 const Mojang = require("../utils/mojang.js")
-const ICommand = require("../interfaces/ICommand.js")
+const CommandBase = require("../interfaces/CommandBase.js")
 
-class Command extends ICommand {
+class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "whois",

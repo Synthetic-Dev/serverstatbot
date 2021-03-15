@@ -1,6 +1,6 @@
 const Discord = require("discord.js")
 
-class ICommand {
+class CommandBase {
     /**
      * Constructor
      * @param {Discord.Client} client 
@@ -106,4 +106,4 @@ class ICommand {
     async execute(inputs, message) {}
 }
 
-module.exports = ICommand
+module.exports = CommandBase

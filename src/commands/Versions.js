@@ -1,8 +1,8 @@
 const Util = require("../utils/util.js")
 const Protocol = require("../utils/protocol.js")
-const ICommand = require("../interfaces/ICommand.js")
+const CommandBase = require("../interfaces/CommandBase.js")
 
-class Command extends ICommand {
+class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "versions",

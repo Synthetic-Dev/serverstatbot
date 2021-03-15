@@ -1,8 +1,8 @@
 const Discord = require("discord.js")
 const Util = require("../utils/util.js")
-const ICommand = require("../interfaces/ICommand.js")
+const CommandBase = require("../interfaces/CommandBase.js")
 
-class Command extends ICommand {
+class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "help",
@@ -71,7 +71,7 @@ class Command extends ICommand {
     /**
      * Post embed containing command info
      * @param {Discord.Message} message 
-     * @param {ICommand} command 
+     * @param {CommandBase} command 
      * @param {string} prefix 
      */
     commandHelp(message, command, prefix) {
