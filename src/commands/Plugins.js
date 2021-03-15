@@ -20,8 +20,8 @@ class Command extends CommandBase {
     async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
 
-        const ip = await settings.getSetting("ip")
-        const port = await settings.getSetting("port")
+        const ip = await settings.get("ip")
+        const port = await settings.get("port")
 
         const itemsPerPage = 20
 

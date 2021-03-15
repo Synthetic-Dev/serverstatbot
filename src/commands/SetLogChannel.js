@@ -23,13 +23,13 @@ class Command extends CommandBase {
         
         if (inputs[0] == "clear") {
             Util.replyMessage(message, `Removed log channel`)
-            return settings.setSetting("logchannel", "0")
+            return settings.set("logchannel", "0")
         } else if (!channel) {
             return Util.couldNotFind(message, "channel", inputs[0], "guild")
         } else if (!Util.doesMemberHavePermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])) return Util.replyError(message, "I do not have permission to send messages in that channel!");
         
         Util.replyMessage(message, `Log channel set to <#${channel.id}>`)
-        settings.setSetting("logchannel", channel.id)
+        settings.set("logchannel", channel.id)
     }
 }
 

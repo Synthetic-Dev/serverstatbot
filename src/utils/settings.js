@@ -51,7 +51,7 @@ class Settings {
      * @param {string} name
      * @returns {*}
      */
-    async getSetting(name) {
+    async get(name) {
         await this.isSetting(name)
 
         if (process.env.ISDEV == "TRUE") {
@@ -78,7 +78,7 @@ class Settings {
      * @param {string} name 
      * @param {*} value 
      */
-    async setSetting(name, value) {
+    async set(name, value) {
         await this.isSetting(name)
         this.cache.set(name, value)
 
@@ -101,13 +101,13 @@ class Settings {
      * @param {string} name 
      * @param {Function} transform 
      */
-    async editSetting(name, transform) {
+    async update(name, transform) {
         await this.isSetting(name)
 
-        this.getSetting(name).then(oldValue => {
+        this.get(name).then(oldValue => {
             Promise.resolve(transform(oldValue)).then(newValue => {
                 if (newValue === oldValue) return;
-                this.setSetting(name, newValue)
+                this.set(name, newValue)
             })
         })
     }

@@ -18,8 +18,8 @@ class Command extends CommandBase {
     async execute(message) {
         const settings = this.client.settings[message.guild.id]
 
-        const ip = await settings.getSetting("ip")
-        const port = await settings.getSetting("port")
+        const ip = await settings.get("ip")
+        const port = await settings.get("port")
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(async data => {

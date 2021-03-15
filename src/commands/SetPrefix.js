@@ -24,7 +24,7 @@ class Command extends CommandBase {
 
         if (inputs[0].length > 3) return Util.replyError(message, "Prefix can only be up to 3 characters long")
 
-        settings.setSetting("prefix", inputs[0])
+        settings.set("prefix", inputs[0])
         Util.replyMessage(message, `Prefix set to '${inputs[0]}'`)
     }
 }

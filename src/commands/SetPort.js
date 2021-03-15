@@ -29,7 +29,7 @@ class Command extends CommandBase {
         port = Math.abs(port)
         if (port > maxPort) return Util.replyError(message, `Port cannot exceed ${maxPort}`)
 
-        settings.setSetting("port", port)
+        settings.set("port", port)
         Util.replyMessage(message, `Port set to \`\`${port}\`\``)
     }
 }

@@ -60,17 +60,17 @@ function serverLogs() {
 
     client.servers = []
     client.setInterval(async () => {
-        if (await client.globalSettings.getSetting("maintenance")) return;
+        if (await client.globalSettings.get("maintenance")) return;
 
         client.guilds.cache.forEach(async guild => {
             let settings = client.settings[guild.id]
 
-            let channelId = await settings.getSetting("logchannel")
+            let channelId = await settings.get("logchannel")
             let channel = Util.getChannelById(guild, channelId)
             if (!channel) return;
 
             if (!Util.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"])) {
-                settings.setSetting("logchannel", "0")
+                settings.set("logchannel", "0")
 
                 let priorityChannel = Util.getPriorityChannel(guild, channel => Util.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"]))
                 if (priorityChannel) {
@@ -81,8 +81,8 @@ function serverLogs() {
                 return
             };
 
-            const ip = await settings.getSetting("ip")
-            const port = await settings.getSetting("port")
+            const ip = await settings.get("ip")
+            const port = await settings.get("port")
 
             let server = client.servers[guild.id] ? client.servers[guild.id] : {
                 ip: ip,
@@ -276,7 +276,7 @@ function activityDisplay() {
 
     client.activityIndex = 0;
     client.setInterval(() => {
-        client.globalSettings.getSetting("maintenance").then(async maintenance => {
+        client.globalSettings.get("maintenance").then(async maintenance => {
             if (maintenance) {
                 client.user.setPresence({
                     status: "dnd",
@@ -427,7 +427,7 @@ async function parseCommand(message) {
     const content = message.content
 
     const settings = client.settings[guild.id]
-    const prefix = await settings.getSetting("prefix")
+    const prefix = await settings.get("prefix")
 
     const isCommand = content.startsWith(prefix)
     let command, commandName, inputs
@@ -441,7 +441,7 @@ async function parseCommand(message) {
         command = client.commands.get(commandName.toLowerCase())
         if (!command) return Util.couldNotFind(message, "command", commandName);
 
-        if (!command.private && await client.globalSettings.getSetting("maintenance")) return Util.replyWarning(message, "Maintenance mode is currently enabled");
+        if (!command.private && await client.globalSettings.get("maintenance")) return Util.replyWarning(message, "Maintenance mode is currently enabled");
 
         message.command = command
 

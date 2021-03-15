@@ -23,7 +23,7 @@ class Command extends CommandBase {
             return true;
         })
 
-        help.postCommands(message, `Prefix: ${await settings.getSetting("prefix")}`, commandliststring)
+        help.postCommands(message, `Prefix: ${await settings.get("prefix")}`, commandliststring)
     }
 }
 

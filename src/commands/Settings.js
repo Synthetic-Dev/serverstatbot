@@ -15,12 +15,12 @@ class Command extends CommandBase {
     async execute(message) {
         const settings = this.client.settings[message.guild.id]
         
-        let logchannel = await settings.getSetting("logchannel")
+        let logchannel = await settings.get("logchannel")
 
         Util.sendMessage(message, {
             embed: {
                 title: "Settings",
-                description: `• **Prefix:** \`\`${await settings.getSetting("prefix")}\`\`\n• **Ip:** \`\`${await settings.getSetting("ip")}\`\`\n• **Port:** \`\`${await settings.getSetting("port")}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `<#${await settings.getSetting("logchannel")}>`}`,
+                description: `• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${await settings.get("ip")}\`\`\n• **Port:** \`\`${await settings.get("port")}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `<#${await settings.get("logchannel")}>`}`,
                 footer: Util.getFooter(this.client)
             }
         })

@@ -35,15 +35,15 @@ class Command extends CommandBase {
 
         const settings = this.client.settings[guild.id]
         
-        let logchannel = await settings.getSetting("logchannel")
+        let logchannel = await settings.get("logchannel")
         let owner = guild.owner ? guild.owner : await Util.getMember(guild, guild.ownerID)
         
-        let ip = await settings.getSetting("ip");
-        let port = await settings.getSetting("port");
+        let ip = await settings.get("ip");
+        let port = await settings.get("port");
 
         const localSettings = this.client.settings[toGuild.id]
 
-        let prefix = await localSettings.getSetting("prefix")
+        let prefix = await localSettings.get("prefix")
 
         return {
             embed: {
@@ -51,7 +51,7 @@ class Command extends CommandBase {
                     name: guild.name,
                     icon_url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
                 },
-                description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.getSetting("prefix")}\`\`\n• **Ip:** \`\`${ip}\`\`\n• **Port:** \`\`${port}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `${await settings.getSetting("logchannel")}`}\n\nPermissions:\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
+                description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${ip}\`\`\n• **Port:** \`\`${port}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `${await settings.get("logchannel")}`}\n\nPermissions:\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
                 color: 5145560
             }
         }
@@ -83,7 +83,7 @@ class Command extends CommandBase {
                 needSearch: true,
                 check: async (guild) => {
                     let search = inputs[1]
-                    let prefix = await this.client.settings[guild.id].getSetting("prefix");
+                    let prefix = await this.client.settings[guild.id].get("prefix");
                     if (prefix.substr(0, search.length).toLowerCase() == search) return true;
                     return false;
                 }
@@ -92,7 +92,7 @@ class Command extends CommandBase {
                 needSearch: true,
                 check: async (guild) => {
                     let search = inputs[1]
-                    let ip = await this.client.settings[guild.id].getSetting("ip");
+                    let ip = await this.client.settings[guild.id].get("ip");
                     if (ip.substr(0, search.length).toLowerCase() == search) return true;
                     return false;
                 }
@@ -101,7 +101,7 @@ class Command extends CommandBase {
                 needSearch: true,
                 check: async (guild) => {
                     let search = inputs[1]
-                    let port = await this.client.settings[guild.id].getSetting("port");
+                    let port = await this.client.settings[guild.id].get("port");
                     if (port.substr(0, search.length).toLowerCase() == search) return true;
                     return false;
                 }
@@ -109,14 +109,14 @@ class Command extends CommandBase {
             haslogchannel: {
                 needSearch: false,
                 check: async (guild) => {
-                    let logchannel = await this.client.settings[guild.id].getSetting("logchannel")
+                    let logchannel = await this.client.settings[guild.id].get("logchannel")
                     return logchannel != "0"
                 }
             },
             hasserver: {
                 needSearch: false,
                 check: async (guild) => {
-                    let ip = await this.client.settings[guild.id].getSetting("ip");
+                    let ip = await this.client.settings[guild.id].get("ip");
                     return ip != "0.0.0.0"
                 }
             },

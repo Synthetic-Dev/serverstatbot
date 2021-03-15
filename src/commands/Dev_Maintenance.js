@@ -16,7 +16,7 @@ class Command extends CommandBase {
     async execute(message) {
         const settings = this.client.globalSettings
 
-        settings.editSetting("maintenance", (enabled) => {
+        settings.update("maintenance", (enabled) => {
             Util.replyMessage(message, `${enabled ? "Disabled :octagonal_sign:" : "Enabled :white_check_mark:"} maintenance mode.`)
 
             return !enabled

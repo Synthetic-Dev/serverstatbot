@@ -23,9 +23,9 @@ class Command extends CommandBase {
         const settings = this.client.settings[message.guild.id]
         let [ip, port] = inputs[0].split(":")
 
-        settings.setSetting("ip", ip)
+        settings.set("ip", ip)
 
-        Util.replyMessage(message, `${port ? `:warning: Found port in ip, to set the port do \`\`${await settings.getSetting("prefix")}setport ${port}\`\`\n` : ""}Ip set to \`\`${ip}\`\``)
+        Util.replyMessage(message, `${port ? `:warning: Found port in ip, to set the port do \`\`${await settings.get("prefix")}setport ${port}\`\`\n` : ""}Ip set to \`\`${ip}\`\``)
     }
 }
 

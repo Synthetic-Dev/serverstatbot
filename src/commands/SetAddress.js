@@ -32,8 +32,8 @@ class Command extends CommandBase {
         port = Math.abs(port)
         if (port > maxPort) return Util.replyError(message, `Port cannot exceed ${maxPort}`)
 
-        settings.setSetting("ip", ip)
-        settings.setSetting("port", port)
+        settings.set("ip", ip)
+        settings.set("port", port)
 
         Util.replyMessage(message, `Ip set to \`\`${ip}\`\` and Port set to \`\`${port}\`\``)
     }

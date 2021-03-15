@@ -104,7 +104,7 @@ class Command extends CommandBase {
     async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
 
-        let prefix = await settings.getSetting("prefix")
+        let prefix = await settings.get("prefix")
 
         if (inputs[0]) {
             const command = this.client.commands.get(inputs[0].toLowerCase())
