@@ -5,8 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "botping",
-            desc: "Returns the bot's ping",
-            private: true
+            desc: "Returns the bot's ping"
         })
     }
 
