@@ -552,14 +552,15 @@ class Util {
      * @param {string} id
      * @returns {Promise<Discord.Message>} 
      */
-    static async getMessageInChannel(channel, id) {
-        try {
-            if (!channel.viewable) return;
-            let messages = await channel.messages.fetch()
-            return messages.get(id)
-        } catch(e) {
-            console.error(e)
-        }
+    static getMessageInChannel(channel, id) {
+        return new Promise((resolve, reject) => {
+            if (!channel.viewable) return reject(new Error("Not viewable"));
+            channel.messages.fetch().then(messages => {
+                let message = messages.get(id)
+                if (!message) return reject(new Error("Message does not exist"))
+                resolve(message)
+            }).catch(reject)
+        })
     }
 
     /**
@@ -568,17 +569,17 @@ class Util {
      * @param {string} id
      * @returns {Promise<Discord.Message>} 
      */
-    static async getPreviousMessage(channel, id) {
-        try {
-            if (!channel.viewable) return;
-            let messages = await channel.messages.fetch({
+    static getPreviousMessage(channel, id) {
+        return new Promise((resolve, reject) => {
+            if (!channel.viewable) return reject(new Error("Not viewable"));
+            channel.messages.fetch({
                 limit: 1,
                 before: id
-            })
-            return messages instanceof Discord.Collection ? messages.last() : messages
-        } catch(e) {
-            console.error(e)
-        }
+            }).then(messages => {
+                let message = messages instanceof Discord.Collection ? messages.last() : messages
+                resolve(message)
+            }).catch(reject)
+        })
     }
 
     /**
