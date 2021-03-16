@@ -13,8 +13,10 @@ class Command extends CommandBase {
     }
 
     restart() {
-        this.client.heroku.delete("/apps/serverstatbot/dynos/Worker").then(data => {console.log(`Internal restart, ${data.toString()}`)}).catch(console.error)
+        const heroku = this.client.heroku
         this.client.destroy()
+        
+        heroku.delete("/apps/serverstatbot/dynos/Worker").then(data => {console.log(`Internal restart, ${data.toString()}`)}).catch(console.error)
     }
 
     async execute() {
