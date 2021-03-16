@@ -11,6 +11,9 @@ class Command extends CommandBase {
             aliases: [
                 "players",
                 "plrs"
+            ],
+            tags: [
+                "CAN_DISABLE"
             ]
         })
     }

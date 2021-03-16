@@ -13,6 +13,9 @@ class Command extends CommandBase {
                     desc: "The starting page to display",
                     optional: true
                 }
+            ],
+            tags: [
+                "CAN_DISABLE"
             ]
         })
     }

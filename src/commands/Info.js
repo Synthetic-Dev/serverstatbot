@@ -10,6 +10,9 @@ class Command extends CommandBase {
             desc: "Displays current information about the server",
             aliases: [
                 "serverinfo"
+            ],
+            tags: [
+                "CAN_DISABLE"
             ]
         })
     }

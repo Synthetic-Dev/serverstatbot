@@ -5,7 +5,11 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "invite",
-            desc: "Get invite links for the bot"
+            desc: "Get invite links for the bot",
+            aliases: [
+                "invs",
+                "inv"
+            ]
         })
     }
 

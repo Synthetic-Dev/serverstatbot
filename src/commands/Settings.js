@@ -16,11 +16,12 @@ class Command extends CommandBase {
         const settings = this.client.settings[message.guild.id]
         
         let logchannel = await settings.get("logchannel")
+        let disabledCommands = await settings.get("disabledCommands")
 
         Util.sendMessage(message, {
             embed: {
                 title: "Settings",
-                description: `• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${await settings.get("ip")}\`\`\n• **Port:** \`\`${await settings.get("port")}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `<#${await settings.get("logchannel")}>`}`,
+                description: `• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${await settings.get("ip")}\`\`\n• **Port:** \`\`${await settings.get("port")}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `<#${await settings.get("logchannel")}>`}\n• **Disabled commands:** ${disabledCommands.length > 0 ? disabledCommands.join(", ") : "None"}`,
                 footer: Util.getFooter(this.client)
             }
         })

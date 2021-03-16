@@ -438,6 +438,9 @@ async function parseCommand(message) {
 
         message.command = command
 
+        const disabledCommands = await settings.get("disabledCommands")
+        if (disabledCommands.includes(command.name(true))) return Util.replyWarning(message, "That command is disabled in this server")
+
         const permissions = command.permissions()
         if (!Util.doesMemberHavePermission(message.member, permissions)) {
             return command.secret ? null : Util.replyWarning(message, "You don't have permission to do that")

@@ -15,7 +15,10 @@ class Command extends CommandBase {
             args: [{
                 name: "username | uuid",
                 desc: "The username or uuid of the player you want to get information about"
-            }]
+            }],
+            tags: [
+                "CAN_DISABLE"
+            ]
         })
     }
 

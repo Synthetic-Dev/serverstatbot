@@ -36,6 +36,7 @@ class Command extends CommandBase {
         const settings = this.client.settings[guild.id]
         
         let logchannel = await settings.get("logchannel")
+        let disabledCommands = await settings.get("disabledCommands")
         let owner = guild.owner ? guild.owner : await Util.getMember(guild, guild.ownerID)
         
         let ip = await settings.get("ip");
@@ -51,7 +52,7 @@ class Command extends CommandBase {
                     name: guild.name,
                     icon_url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
                 },
-                description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${ip}\`\`\n• **Port:** \`\`${port}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `${await settings.get("logchannel")}`}\n\nPermissions:\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
+                description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n**Members:** \`\`${guild.memberCount}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${ip}\`\`\n• **Port:** \`\`${port}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `${await settings.get("logchannel")}`}\n• **Disabled commands:** ${disabledCommands.length > 0 ? disabledCommands.join(", ") : "None"}\n\nPermissions:\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
                 color: 5145560
             }
         }
@@ -149,6 +150,7 @@ class Command extends CommandBase {
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Getting servers...").then(botMessage => {
             let promises = []
             cache.forEach(guild => {
+                if (promises.length > 75) return;
                 promises.push(this.getServer(message.guild, guild, check))
             })
 

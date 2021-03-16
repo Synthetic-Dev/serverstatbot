@@ -97,6 +97,24 @@ class CommandBase {
     permissions() {
         return this.data.perms || []
     }
+
+    /**
+     * Gets the tags assigned to the command
+     * @return {Array}
+     */
+    tags() {
+        return this.data.tags || []
+    }
+    
+    /**
+     * Checks if command has a tag
+     * @param {string} tagName
+     * @return {Array}
+     */
+    hasTag(tagName) {
+        const tags = this.tags()
+        return tags.includes(tagName)
+    }
     
     /**
      * The method that is executed when the command is ran

@@ -17,7 +17,7 @@ modelPaths.forEach(path => {
         if (jsfiles.length == 0) return;
 
         jsfiles.forEach(file => {
-            let name = file.split(".").shift().toLowerCase()
+            let name = file.split(".").shift()
             let setting = require(`..${path}/${file}`)
             models[path].collection.set(name, setting)
         })
@@ -106,7 +106,6 @@ class Settings {
 
         this.get(name).then(oldValue => {
             Promise.resolve(transform(oldValue)).then(newValue => {
-                if (newValue === oldValue) return;
                 this.set(name, newValue)
             }).catch(e => {})
         }).catch(e => {})
