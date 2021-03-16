@@ -1,6 +1,3 @@
-const HTTPS = require("https")
-const HTTP = require("http")
-
 const Heroku = require('heroku-client')
 const Discord = require("discord.js")
 const Canvas = require("canvas")
@@ -12,10 +9,6 @@ const Protocol = require("./utils/protocol.js")
 /**
  * Startup
  */
-const maxSockets = 50;
-HTTPS.globalAgent.maxSockets = maxSockets;
-HTTP.globalAgent.maxSockets = maxSockets;
-
 require("dotenv").config()
 Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
 const client = new Discord.Client();
