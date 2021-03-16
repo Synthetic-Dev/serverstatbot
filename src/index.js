@@ -292,7 +292,7 @@ function activityDisplay() {
 
             client.activityIndex++
             if (client.activityIndex == activities.length) client.activityIndex = 0;
-        })
+        }).catch(console.error)
     }, 10000)
 }
 
@@ -485,7 +485,7 @@ client.on("message", async message => {
 /**
  * Raw event emitter
  */
-client.on("raw", async packet => {
+client.on("raw", packet => {
     let reactionEvents = [
         "MESSAGE_REACTION_ADD",
         "MESSAGE_REACTION_REMOVE",
@@ -493,28 +493,29 @@ client.on("raw", async packet => {
     ]
 
     if (reactionEvents.includes(packet.t)) {
-        const guild = await Util.getGuildById(client, packet.d.guild_id)
-        const channel = Util.getChannelById(guild, packet.d.channel_id)
+        Util.getGuildById(client, packet.d.guild_id).then(guild => {
+            const channel = Util.getChannelById(guild, packet.d.channel_id)
 
-        if (channel.messages.cache.has(packet.d.message_id)) return;
+            if (channel.messages.cache.has(packet.d.message_id)) return;
 
-        channel.messages.fetch(packet.d.message_id).then(async message => {
-            if (packet.t === "MESSAGE_REACTION_REMOVE_ALL") {
-                client.emit("messageReactionRemoveAll", message);
-                return
-            }
-            
-            const emoji = packet.d.emoji.id ? packet.d.emoji.id : packet.d.emoji.name
-            const reaction = message.reactions.cache.get(emoji)
-            const user = await client.users.fetch(packet.d.user_id)
-            
-            if (packet.t === "MESSAGE_REACTION_ADD") {
-                client.emit("messageReactionAdd", reaction, user);
-            }
-            if (packet.t === "MESSAGE_REACTION_REMOVE") {
-                client.emit("messageReactionRemove", reaction, user);
-            }
-        });
+            channel.messages.fetch(packet.d.message_id).then(async message => {
+                if (packet.t === "MESSAGE_REACTION_REMOVE_ALL") {
+                    client.emit("messageReactionRemoveAll", message);
+                    return
+                }
+                
+                const emoji = packet.d.emoji.id ? packet.d.emoji.id : packet.d.emoji.name
+                const reaction = message.reactions.cache.get(emoji)
+                client.users.fetch(packet.d.user_id).then(user => {
+                    if (packet.t === "MESSAGE_REACTION_ADD") {
+                        client.emit("messageReactionAdd", reaction, user);
+                    }
+                    if (packet.t === "MESSAGE_REACTION_REMOVE") {
+                        client.emit("messageReactionRemove", reaction, user);
+                    }
+                }).catch(console.error)
+            });
+        }).catch(console.error)
     }
 });
 

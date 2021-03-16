@@ -164,8 +164,8 @@ class Command extends CommandBase {
                 }
 
                 Util.sendPages(message, pages)
-            })
-        }).catch(e=>{})
+            }).catch(e => {})
+        }).catch(e => {})
     }
 }
 

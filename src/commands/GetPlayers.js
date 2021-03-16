@@ -106,7 +106,7 @@ class Command extends CommandBase {
                     Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
                     console.error(error)
                 }
-            })
+            }).catch(e => {})
         }).catch(e=>{})
     }
 }

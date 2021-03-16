@@ -421,11 +421,7 @@ class Util {
      * @returns {Promise<Discord.Guild>} 
      */
     static getGuildById(client, id) {
-        try {
-            return client.guilds.fetch(id)
-        } catch(e) {
-            console.error(e)
-        }
+        return client.guilds.fetch(id)
     }
 
     /**
@@ -515,12 +511,8 @@ class Util {
      * @returns {Discord.GuildChannel?} 
      */
     static getChannelById(guild, id) {
-        try {
-            let channel = guild.channels.cache.get(id)
-            if (channel && channel.viewable) return channel;
-        } catch(e) {
-            console.error(e)
-        }
+        let channel = guild.channels.cache.get(id)
+        if (channel && channel.viewable) return channel;
     }
 
     /**
