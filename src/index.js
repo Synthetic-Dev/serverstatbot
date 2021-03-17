@@ -1,4 +1,5 @@
 const Heroku = require('heroku-client')
+const OSUtils = require("node-os-utils")
 const Discord = require("discord.js")
 const Canvas = require("canvas")
 const Mongoose = require("mongoose")
@@ -10,7 +11,9 @@ const Protocol = require("./utils/protocol.js")
  * Startup
  */
 require("dotenv").config()
+OSUtils.options.INTERVAL = 2000
 Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
+
 const client = new Discord.Client();
 if (process.env.HEROKUAPIKEY) {
     client.heroku = new Heroku({token: process.env.HEROKUAPIKEY})
@@ -50,9 +53,16 @@ function serverLogs() {
     ]
 
     const intervalTime = 60*1000
+    const restartTime = 12*60*60*1000
 
     client.servers = []
     client.setInterval(async () => {
+        if (Date.now() - client.startTime >= restartTime) {
+            const restartCommand = client.commands.get("restart")
+            restartCommand.restart()
+            return
+        }
+
         if (await client.globalSettings.get("maintenance")) return;
 
         client.guilds.cache.forEach(async guild => {
