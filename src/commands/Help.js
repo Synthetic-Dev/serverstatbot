@@ -60,7 +60,7 @@ class Command extends CommandBase {
                     })
                 }
     
-                string += `• **${scommand.join(" ")}** - *${command.desc}*\n`
+                string += `• **${scommand.join(" ")}** - ${command.desc}\n`
                 modules.push(command)
             }
         })
