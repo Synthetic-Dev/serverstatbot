@@ -11,13 +11,17 @@ class Command extends CommandBase {
     }
 
     async execute(message) {
+        let os = OSUtils.os
         let cpu = OSUtils.cpu
         let memory = OSUtils.mem
         let network = OSUtils.netstat
 
+        let osName = await os.oos()
         let cpuUsage = await cpu.usage()
         let memoryUsage = await memory.used()
         let netStats = await network.inOut()
+
+        let uptime = os.uptime()
 
         Util.sendMessage(message, {
             embed: {
@@ -48,16 +52,20 @@ class Command extends CommandBase {
                         inline: true
                     },
                     {
+                        name: "Server",
+                        value: `Shared Heroku System - OS: ${OSUtils.isNotSupported(osName) ? "Unknown" : osName} - Uptime: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime / 60) % 60)}m ${Math.floor(uptime % 60)}s`
+                    },
+                    {
                         name: "CPU",
-                        value: `${cpu.model()} - ${cpu.count()} core(s) (${cpuUsage}%)`
+                        value: OSUtils.isNotSupported(cpuUsage) ? "Not supported" : `${cpu.model()} - ${cpu.count()} core(s) (${cpuUsage}%)`
                     },
                     {
                         name: "Memory",
-                        value: `${memoryUsage.usedMemMb}MB (${Math.round((memoryUsage.usedMemMb / memoryUsage.totalMemMb) * 10000) / 100}%)`
+                        value: OSUtils.isNotSupported(memoryUsage) ? "Not supported" : `${memoryUsage.usedMemMb}MB (${Math.round((memoryUsage.usedMemMb / memoryUsage.totalMemMb) * 10000) / 100}%)`
                     },
                     {
-                        name: "Network",
-                        value: OSUtils.isNotSupported(netStats) ? "Not supported" : `In: ${netStats.total.inputMb}Mb\nOut: ${netStats.total.outputMb}Mb`,
+                        name: "Network Average",
+                        value: OSUtils.isNotSupported(netStats) ? "Not supported" : `In: ${netStats.total.inputMb}Mb, Out: ${netStats.total.outputMb}Mb`,
                         inline: true
                     }
                 ],
