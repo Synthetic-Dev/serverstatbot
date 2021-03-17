@@ -95,7 +95,7 @@ class Command extends CommandBase {
                         },
                         {
                             name: "Skin",
-                            value: `[Download](https://mc-heads.net/download/${uuid})\n[Use skin](https://mc-heads.net/change/${uuid})`,
+                            value: `[Download skin](https://mc-heads.net/download/${uuid})\n[Apply skin](https://mc-heads.net/change/${uuid})\nProvided by [mc-heads.net](https://mc-heads.net/)`,
                             inline: true
                         }
                     ],
