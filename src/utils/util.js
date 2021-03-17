@@ -736,7 +736,7 @@ class Util {
         const onlineFor = (Date.now() - client.startTime) / 1000
 
         return {
-            text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright 2021 © All rights reserved.`
+            text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright ${(new Date()).getUTCFullYear()} © All rights reserved.`
         }
     }
 
