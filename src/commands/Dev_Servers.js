@@ -176,7 +176,7 @@ class Command extends CommandBase {
                 if (property.needValue && (!value || AND.includes(value))) {
                     error = true
                     return Util.sendError(message.channel, `Search argument required for '${string}' property`)
-                } else {
+                } else if (property.needValue) {
                     isValue = true
                     value = value.toLowerCase().trim()
                 }
