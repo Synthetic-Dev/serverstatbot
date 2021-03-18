@@ -20,9 +20,7 @@ class Command extends CommandBase {
     displayInfo(message, ip, port, additionals) {
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(data => {
-                try {
-                    botMessage.delete()
-                } catch(e) {console.error(e)}
+                botMessage.delete().catch(e => {})
     
                 if (data.online) {
                     let fields = [

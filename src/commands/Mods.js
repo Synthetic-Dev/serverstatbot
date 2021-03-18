@@ -33,9 +33,7 @@ class Command extends CommandBase {
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(data => {
-                try {
-                    botMessage.delete()
-                } catch(e) {console.error(e)}
+                botMessage.delete().catch(e => {})
     
                 if (data.online) {
                     if (!data.modded) return Util.replyMessage(message, "The server does not have any mods")

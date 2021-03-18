@@ -27,9 +27,7 @@ class Command extends CommandBase {
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(async data => {
-                try {
-                    botMessage.delete()
-                } catch(e) {console.error(e)}
+                botMessage.delete().catch(e => {})
     
                 if (data.online) {
                     if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online");

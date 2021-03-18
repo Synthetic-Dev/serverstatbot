@@ -220,7 +220,7 @@ class Util {
         this.replyMessage(message, ":warning: " + warning).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete()
+                botMessage.delete().catch(e => {})
             }, 15000)
         }).catch(e=>{})
     }
@@ -234,7 +234,7 @@ class Util {
         this.sendMessage(channel, ":warning: " + warning).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete()
+                botMessage.delete().catch(e => {})
             }, 15000)
         }).catch(e=>{})
     }
@@ -248,7 +248,7 @@ class Util {
         this.replyMessage(message, ":stop_sign: " + error).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete()
+                botMessage.delete().catch(e => {})
             }, 15000)
         }).catch(e=>{})
     }
@@ -262,7 +262,7 @@ class Util {
         this.sendMessage(channel, ":stop_sign: " + error).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete()
+                botMessage.delete().catch(e => {})
             }, 15000)
         }).catch(e=>{})
     }

@@ -155,15 +155,10 @@ class Command extends CommandBase {
             })
 
             Promise.all(promises).then(pages => {
-                try {
-                    botMessage.delete()
-                } catch(e) {console.error(e)}
-
+                botMessage.delete().catch(e => {})
                 pages = pages.filter(value => value != null)
 
-                if (pages.length == 0) {
-                    return Util.sendWarning(message.channel, "No servers found")
-                }
+                if (pages.length == 0) return Util.sendWarning(message.channel, "No servers found");
 
                 Util.sendPages(message, pages)
             }).catch(e => {})

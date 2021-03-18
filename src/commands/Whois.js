@@ -35,9 +35,7 @@ class Command extends CommandBase {
             }
 
             if (!nameHistory) {
-                try {
-                    botMessage.delete()
-                } catch(e) {console.error(e)}
+                botMessage.delete().catch(e => {})
 
                 return Util.sendMessage(message, {
                     embed: {
@@ -71,9 +69,7 @@ class Command extends CommandBase {
             let averageColor = await getAverageColor(`https://mc-heads.net/body/${uuid}`)
             let decimalColor = (averageColor.value[0] * 256*256) + (averageColor.value[1] * 256) + (averageColor.value[2])
 
-            try {
-                botMessage.delete()
-            } catch(e) {console.error(e)}
+            botMessage.delete().catch(e => {})
 
             Util.sendMessage(message, {
                 files: [{
