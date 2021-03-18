@@ -53,7 +53,7 @@ function serverLogs() {
     ]
 
     const intervalTime = 60*1000
-    const restartTime = 12*60*60*1000
+    const restartTime = 24*60*60*1000
 
     client.servers = []
     client.setInterval(async () => {
@@ -131,16 +131,6 @@ function serverLogs() {
                 if (data.online) {
                     if (!server.online) {
                         if (["none", "offline"].includes(server.statusMessage.type)) {
-                            if (server.start) {
-                                Util.sendMessage(channel, {
-                                    embed: {
-                                        title: "Server",
-                                        description: (Date.now() - client.startTime < (intervalTime * 1.5) ? ":exclamation: Bot updated or restarted :exclamation:\n" : "") + `There is ${data.players.online}/${data.players.max} players in the server.`,
-                                        color: 5145560
-                                    }
-                                })
-                            }
-
                             if (!server.start && server.statusMessage.message && server.statusMessage.message.member == guild.me && Date.now() - server.statusMessage.message.createdTimestamp < 120*1000) {
                                 server.statusMessage.message.edit(statusContents.restart)
                             } else {
