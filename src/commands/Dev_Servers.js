@@ -12,10 +12,6 @@ class Command extends CommandBase {
             ],
             args: [
                 {
-                    name: "property",
-                    optional: true
-                },
-                {
                     name: "search",
                     optional: true
                 }
@@ -61,68 +57,74 @@ class Command extends CommandBase {
     async execute(message, inputs) {
         let cache = this.client.guilds.cache
 
-        let propertyChecks = {
+        const propertyChecks = {
             name: {
-                needSearch: true,
-                check: (guild) => {
-                    let search = inputs[1]
-                    if (guild.name.substr(0, search.length).toLowerCase() == search) return true;
-                    return false;
+                needValue: true,
+                check: (guild, value) => {
+                    return guild.name.toLowerCase().includes(value);
                 }
             },
             owner: {
-                needSearch: true,
-                check: async (guild) => {
-                    let search = inputs[1]
+                needValue: true,
+                check: async (guild, value) => {
                     let owner = guild.owner ? guild.owner : await Util.getMember(guild, guild.ownerID)
                     if (!owner || !owner.user) return false;
-                    if (owner.user.username.substr(0, search.length).toLowerCase() == search) return true;
-                    return false;
+                    return owner.user.username.toLowerCase().includes(value);
+                }
+            },
+            "members>": {
+                needValue: true,
+                check: async (guild, value) => {
+                    return guild.memberCount >= value;
+                }
+            },
+            "members<": {
+                needValue: true,
+                check: async (guild, value) => {
+                    return guild.memberCount <= value;
                 }
             },
             prefix: {
-                needSearch: true,
-                check: async (guild) => {
-                    let search = inputs[1]
+                needValue: true,
+                check: async (guild, value) => {
                     let prefix = await this.client.settings[guild.id].get("prefix");
-                    if (prefix.substr(0, search.length).toLowerCase() == search) return true;
-                    return false;
+                    return prefix.toLowerCase() == value;
                 }
             },
             ip: {
-                needSearch: true,
-                check: async (guild) => {
-                    let search = inputs[1]
+                needValue: true,
+                check: async (guild, value) => {
                     let ip = await this.client.settings[guild.id].get("ip");
-                    if (ip.substr(0, search.length).toLowerCase() == search) return true;
-                    return false;
+                    return ip.toLowerCase() == value;
                 }
             },
             port: {
-                needSearch: true,
-                check: async (guild) => {
-                    let search = inputs[1]
+                needValue: true,
+                check: async (guild, value) => {
                     let port = await this.client.settings[guild.id].get("port");
-                    if (port.substr(0, search.length).toLowerCase() == search) return true;
-                    return false;
+                    return port == value;
                 }
             },
             haslogchannel: {
-                needSearch: false,
+                needValue: false,
                 check: async (guild) => {
                     let logchannel = await this.client.settings[guild.id].get("logchannel")
                     return logchannel != "0"
                 }
             },
             hasserver: {
-                needSearch: false,
+                needValue: false,
                 check: async (guild) => {
                     let ip = await this.client.settings[guild.id].get("ip");
                     return ip != "0.0.0.0"
                 }
             },
         }
-        let amplifiers = {
+
+        const amplifiers = {
+            "=": (bool) => {
+                return bool
+            },
             "!": (bool) => {
                 return !bool
             }
@@ -130,21 +132,77 @@ class Command extends CommandBase {
 
         let check
         if (inputs[0]) {
-            inputs[0] = inputs[0].toLowerCase();
-            let amplifier = amplifiers[inputs[0].substr(0, 1)]
-            if (amplifier) inputs[0] = inputs[0].substr(1);
+            const AND = ["+", "&"]
+            const search = inputs[0].toLowerCase().split(" ")
+            let checks = []
+            
+            let isValue = false
+            let next = false
+            let error = false
 
-            let property = propertyChecks[inputs[0]]
-            if (!property) return Util.sendError(message.channel, `Invalid property, properties: \`\`${Object.keys(propertyChecks).join("``, ``")}\`\``);
+            search.forEach((string, index) => {
+                if (error) return;
 
-            if (property.needSearch && !inputs[1]) return Util.sendError(message.channel, "Search argument required");
-            if (inputs[1]) inputs[1] = inputs[1].toLowerCase().trim();
-
-            if (amplifier) {
-                check = async (guild) => {
-                    return amplifier(await Promise.resolve(property.check(guild)))
+                if (isValue) {
+                    isValue = false
+                    return
                 }
-            } else check = property.check;
+
+                if (next) {
+                    if (!AND.includes(string)) {
+                        if (propertyChecks[string]) {
+                            error = true
+                            Util.sendError(message.channel, `Expected "+" or "&" before next property`)
+                        } else {
+                            let value = checks[checks.length - 1].value
+                            if (!value) value = "";
+                            value += " " + string
+                            checks[checks.length - 1].value = value
+                        }
+                    } else next = false;
+                    return
+                }
+
+                let amplifier = amplifiers[string.substr(0, 1)]
+                if (amplifier) string = string.substr(1);
+
+                let property = propertyChecks[string]
+                if (!property) {
+                    error = true
+                    return Util.sendError(message.channel, `Invalid property '${string}', properties: \`\`${Object.keys(propertyChecks).join("``, ``")}\`\``)
+                }
+
+                let value = search[index + 1]
+                if (property.needValue && (!value || AND.includes(value))) {
+                    error = true
+                    return Util.sendError(message.channel, `Search argument required for '${string}' property`)
+                } else {
+                    isValue = true
+                    value = value.toLowerCase().trim()
+                }
+
+                checks.push({
+                    amplifier: amplifier ? amplifier : amplifiers["="],
+                    propertyCheck: property.check,
+                    value: value
+                })
+
+                next = true
+            })
+
+            if (error) return;
+
+            check = (guild) => {
+                return new Promise((resolve, reject) => {
+                    let bool = true
+                    let done = 0
+                    checks.forEach(async data => {
+                        bool = data.amplifier(await Promise.resolve(data.propertyCheck(guild, data.value))) && bool
+                        done++
+                        if (done == checks.length) resolve(bool);
+                    })
+                })
+            }
         }
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Getting servers...").then(botMessage => {
