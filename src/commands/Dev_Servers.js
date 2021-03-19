@@ -213,19 +213,19 @@ class Command extends CommandBase {
                     let page = await this.getServer(message.guild, guild, check)
                     if (page) pages.push(page);
                     done++
-                    if (done >= 75 || done == cache.length) resolve(pages)
+                    if (done >= 75 || done == cache.size) resolve(pages)
                 })
             })
 
             promise.then(pages => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
                 pages = pages.filter(value => value != null)
 
                 if (pages.length == 0) return Util.sendWarning(message.channel, "No servers found");
 
                 Util.sendPages(message, pages)
-            }).catch(e => {})
-        }).catch(e => {})
+            }).catch(console.error)
+        }).catch(console.error)
     }
 }
 

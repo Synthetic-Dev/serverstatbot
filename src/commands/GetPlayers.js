@@ -26,10 +26,10 @@ class Command extends CommandBase {
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(async data => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
 
                 if (data.online) {
-                    if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online");
+                    if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online").catch(console.error);
                     if (!data.players.sample || data.players.sample.length == 0) {
                         return Util.sendMessage(message, {
                             embed: {
@@ -37,7 +37,7 @@ class Command extends CommandBase {
                                 description: `**${data.players.online}/${data.players.max} players**\nThere is too many players online or the server does not have \`\`enable-query=true\`\`.`,
                                 color: 5145560
                             }
-                        })
+                        }).catch(console.error)
                     }
     
                     const columns = 7
@@ -72,7 +72,7 @@ class Command extends CommandBase {
                             } else {
                                 loadImage(`https://mc-heads.net/avatar/${player.name.clean}/22`).then(head => {
                                     context.drawImage(head, 2 + (maxWidth * column) + (5 * column), 2 + (i - breakpoint * column) * 28, 22, 22)
-                                }).catch(e => {}).finally(() => {
+                                }).catch(console.error).finally(() => {
                                     context.fillText(player.name.clean, 32 + (maxWidth * column) + (5 * column), (i - breakpoint * column) * 28 - 2, maxWidth - 32)
                                     done++
                                     if (done >= amountInList) resolve();
@@ -94,12 +94,12 @@ class Command extends CommandBase {
                                 url: "attachment://playerlist.png"
                             }
                         }
-                    })
+                    }).catch(console.error)
                 } else {
                     let error = data.error
     
                     if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                        return Util.replyMessage(message, "Server is not online")
+                        return Util.replyMessage(message, "Server is not online").catch(console.error)
                     } else if (error.code == "ENOTFOUND") {
                         return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
                     }
@@ -107,8 +107,8 @@ class Command extends CommandBase {
                     Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
                     console.error(error)
                 }
-            }).catch(e => {})
-        }).catch(e=>{})
+            }).catch(console.error)
+        }).catch(console.error)
     }
 }
 

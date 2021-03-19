@@ -14,7 +14,7 @@ class Command extends CommandBase {
 
     async execute(message) {
         const onlineFor = Math.abs((Date.now() - this.client.startTime) / 1000)
-        Util.replyMessage(message, `I have been online for ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s`)
+        Util.replyMessage(message, `I have been online for ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s`).catch(console.error)
     }
 }
 

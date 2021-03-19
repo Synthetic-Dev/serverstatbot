@@ -178,18 +178,19 @@ class Util {
      */
     static replyMessage(message, content) {
         return new Promise((resolve, reject) => {
-            if (!(message.channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])) {
+            let hasPerms = this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])
+            if (!(message.channel instanceof Discord.DMChannel) && !hasPerms) {
                 return this.dmUser(message.author, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`).then(resolve).catch(reject)
+            } else if(hasPerms) {
+                const stringAble = ["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)
+                if (stringAble) content = "\n" + content;
+        
+                message.reply(content).then(resolve).catch(() => {
+                    if (!(message.channel instanceof Discord.DMChannel)) {
+                        this.dmUser(message.author, ":stop_sign: Failed to reply with message in guild." + (stringAble ? content : null), !stringAble ? content : null).then(resolve).catch(reject)
+                    }
+                })
             }
-    
-            const stringAble = ["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)
-            if (stringAble) content = "\n" + content;
-    
-            message.reply(content).then(resolve).catch(() => {
-                if (!(message.channel instanceof Discord.DMChannel)) {
-                    this.dmUser(message.author, ":stop_sign: Failed to reply with message in guild." + (stringAble ? content : null), !stringAble ? content : null).then(resolve).catch(reject)
-                }
-            })
         })
     }
 
@@ -202,12 +203,12 @@ class Util {
     static async sendMessage(object, ...content) {
         return new Promise((resolve, reject) => {
             let channel = object instanceof Discord.Message ? object.channel : object
-
-            if (object instanceof Discord.Message && !(channel instanceof Discord.DMChannel) && !this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])) {
+            let hasPerms = this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])
+            if (object instanceof Discord.Message && !(channel instanceof Discord.DMChannel) && !hasPerms) {
                 return this.dmUser(object.author, `:stop_sign: I don't have permission to send messages in <#${object.channel.id}>!`).then(resolve).catch(reject)
+            } else if(hasPerms) {
+                channel.send(...content).then(resolve).catch(reject)
             }
-
-            channel.send(...content).then(resolve).catch(reject)
         })
     }
 
@@ -220,9 +221,9 @@ class Util {
         this.replyMessage(message, ":warning: " + warning).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
             }, 15000)
-        }).catch(e=>{})
+        }).catch(console.error)
     }
 
     /**
@@ -234,9 +235,9 @@ class Util {
         this.sendMessage(channel, ":warning: " + warning).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
             }, 15000)
-        }).catch(e=>{})
+        }).catch(console.error)
     }
 
     /**
@@ -248,9 +249,9 @@ class Util {
         this.replyMessage(message, ":stop_sign: " + error).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
             }, 15000)
-        }).catch(e=>{})
+        }).catch(console.error)
     }
 
     /**
@@ -262,9 +263,9 @@ class Util {
         this.sendMessage(channel, ":stop_sign: " + error).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
             }, 15000)
-        }).catch(e=>{})
+        }).catch(console.error)
     }
 
     /**
@@ -341,7 +342,7 @@ class Util {
             collector.on("end", () => {
                 botMessage.reactions.removeAll()
             })
-        }).catch(e=>{})
+        }).catch(console.error)
     }
 
     /**

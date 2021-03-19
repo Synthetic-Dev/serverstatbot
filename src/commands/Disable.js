@@ -40,21 +40,23 @@ class Command extends CommandBase {
 
         const commandName = command.name(true)
         settings.update("disabledCommands", disabled => {
+            let changeMessage = ""
             if (state) {
                 if (disabled.includes(commandName)) {
-                    Util.replyWarning(message, "That command is already disabled");
+                    changeMessage = "That command is already disabled";
                 } else {
                     disabled.push(commandName)
-                    Util.replyMessage(message, `\`\`${commandName}\`\` command has been disabled`);
+                    changeMessage = `\`\`${commandName}\`\` command has been disabled`;
                 }
             } else {
                 if (!disabled.includes(commandName)) {
-                    Util.replyWarning(message, "That command is already enabled");
+                    changeMessage = "That command is already enabled";
                 } else {
                     disabled = disabled.filter(name => name != commandName)
-                    Util.replyMessage(message, `\`\`${commandName}\`\` command has been enabled`);
+                    changeMessage = `\`\`${commandName}\`\` command has been enabled`;
                 }
             }
+            Util.replyWarning(message, changeMessage)
             return disabled
         })
     }

@@ -75,7 +75,7 @@ function serverLogs() {
             if (!Util.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"])) {
                 settings.set("logchannel", "0")
 
-                let priorityChannel = Util.getPriorityChannel(guild, channel => Util.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"]))
+                let priorityChannel = Util.getPriorityChannel(guild, chl => Util.doesMemberHavePermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
                 if (priorityChannel) {
                     Util.sendError(priorityChannel, "I do not have permission to send messages in the log channel! Log channel has been removed.")
                 } else {
@@ -120,7 +120,7 @@ function serverLogs() {
                             }
 
                             done++
-                        }).catch(e => {}).finally(() => {
+                        }).catch(console.error).finally(() => {
                             if (done == statuses.length) resolve();
                         })
                     })
@@ -137,7 +137,7 @@ function serverLogs() {
                                 Util.sendMessage(channel, statusContents.online).then(message => {
                                     server.statusMessage.message = message
                                     server.statusMessage.type = "online"
-                                }).catch(e => {})
+                                }).catch(console.error)
                             }
                         }
                     }
@@ -150,18 +150,18 @@ function serverLogs() {
                     if (!data.players.sample && data.players.online > 0) {
                         let text = ":warning: Server has too many players online to log activity"
                         Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text)
-                        }).catch(e => {})
+                            if (!message) Util.sendMessage(channel, text).catch(console.error)
+                        }).catch(console.error)
                     } else if (server.start && !data.query) {
                         let text = ":warning: ``enable-query=true`` is required for join logs"
                         Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text)
-                        }).catch(e => {})
+                            if (!message) Util.sendMessage(channel, text).catch(console.error)
+                        }).catch(console.error)
                     } else if (data.bedrock) {
                         let text = ":warning: Bedrock servers do not return all players online."
                         Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text)
-                        }).catch(e => {})
+                            if (!message) Util.sendMessage(channel, text).catch(console.error)
+                        }).catch(console.error)
                     } else if (data.query && current.length == data.players.online) {
                         if (!server.start) {
                             function playerMessage(player, text) {
@@ -183,9 +183,9 @@ function serverLogs() {
                                             attachment: image.toBuffer("image/png"),
                                             name: "playeraction.png"
                                         }]
-                                    })
+                                    }).catch(console.error)
                                 }).catch(error => {
-                                    Util.sendMessage(channel, `[Failed to load image] ${player} ${text}`)
+                                    Util.sendMessage(channel, `[Failed to load image] ${player} ${text}`).catch(console.error)
                                 })
                             }
 
@@ -217,22 +217,22 @@ function serverLogs() {
                                 Util.sendMessage(channel, statusContents.offline).then(message => {
                                     server.statusMessage.message = message
                                     server.statusMessage.type = "offline"
-                                }).catch(e => {})
+                                }).catch(console.error)
                             }
                         }
                         return
                     } else if (error.code == "ENOTFOUND") {
                         let text = ":warning: Could not find server, check that a valid ip and port is set, and is the server running a supported version?"
                         Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text)
-                        }).catch(e => {})
+                            if (!message) Util.sendMessage(channel, text).catch(console.error)
+                        }).catch(console.error)
                         return
                     }
                     
                     let text = ":stop_sign: An error occured when trying to get server info"
                     Util.getRecentMessage(channel, text).then(message => {
-                        if (!message) Util.sendMessage(channel, text)
-                    }).catch(e => {})
+                        if (!message) Util.sendMessage(channel, text).catch(console.error)
+                    }).catch(console.error)
 
                     console.error(error)
                 }

@@ -20,7 +20,7 @@ class Command extends CommandBase {
     displayInfo(message, ip, port, additionals) {
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(data => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
     
                 if (data.online) {
                     let fields = [
@@ -70,7 +70,7 @@ class Command extends CommandBase {
                             url: "attachment://favicon.png"
                         }
 
-                        Util.sendMessage(message, content)
+                        Util.sendMessage(message, content).catch(console.error)
                     }
                     if (data.favicon) {
                         favicon.src = data.favicon
@@ -88,7 +88,7 @@ class Command extends CommandBase {
                                 description: `Address: **${ip}:${port}**\nStatus: <:red_circle_with_cross:818512512764084265> **Offline**${error.message == "Failed to query server within time" ? "\nIf the server is online, check that ``enable-status=true`` or ``enabled-query=true``" : ""}`,
                                 color: 5145560
                             }
-                        })
+                        }).catch(console.error)
                     } else if (error.code == "ENOTFOUND") {
                         return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
                     }
@@ -96,8 +96,8 @@ class Command extends CommandBase {
                     Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
                     console.error(error)
                 }
-            }).catch(e => {})
-        }).catch(e=>{})
+            }).catch(console.error)
+        }).catch(console.error)
     }
 
     async execute(message) {

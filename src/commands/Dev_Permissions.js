@@ -23,7 +23,7 @@ class Command extends CommandBase {
                 title: "PERMISSIONS",
                 description: "``" + message.guild.me.permissions.toArray().join("``, ``") + "``"
             }
-        })
+        }).catch(console.error)
     }
 }
 

@@ -33,10 +33,10 @@ class Command extends CommandBase {
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(data => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
     
                 if (data.online) {
-                    if (!data.plugins || data.plugins.length == 0) return Util.replyMessage(message, "The server does not have any plugins")
+                    if (!data.plugins || data.plugins.length == 0) return Util.replyMessage(message, "The server does not have any plugins").catch(console.error)
     
                     let pages = []
                     let pluginstring = ""
@@ -61,7 +61,7 @@ class Command extends CommandBase {
                     let error = data.error
     
                     if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                        return Util.replyMessage(message, "Server is not online")
+                        return Util.replyMessage(message, "Server is not online").catch(console.error)
                     } else if (error.code == "ENOTFOUND") {
                         return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
                     }
@@ -69,8 +69,8 @@ class Command extends CommandBase {
                     Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
                     console.error(error)
                 }
-            }).catch(e => {})
-        }).catch(e=>{})
+            }).catch(console.error)
+        }).catch(console.error)
     }
 }
 

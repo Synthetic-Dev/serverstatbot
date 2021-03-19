@@ -33,7 +33,7 @@ class Command extends CommandBase {
             channel.bulkDelete(messages).then((deletedMessages) => {deleted += deletedMessages.size; deleting = false}).catch(e => {
                 deleting = true
                 messages.forEach(msg => {
-                    msg.delete().then(() => {deleted++}).catch(e => {}).finally(() => {if (deleting && deleted >= messages.size) deleting = false;})
+                    msg.delete().then(() => {deleted++}).catch(console.error).finally(() => {if (deleting && deleted >= messages.size) deleting = false;})
                 })
             }).finally(() => {
                 while (deleting) {}
@@ -41,10 +41,10 @@ class Command extends CommandBase {
                     botMessage.delete({
                         timeout: 5000
                     })
-                }).catch(e => {})
+                }).catch(console.error)
 
                 if (message && !message.deleted) {
-                    message.delete().then(() => {deleted++}).catch(e => {})
+                    message.delete().then(() => {deleted++}).catch(console.error)
                 }
             })
         }
@@ -58,11 +58,11 @@ class Command extends CommandBase {
                     botMessage.delete({
                         timeout: 5000
                     })
-                }).catch(e => {})
+                }).catch(console.error)
 
                 if (Date.now() - date.getTime() < 0) return Util.replyError(message, "Cannot delete messages from the future!");
                 if (Date.now() - date.getTime() > 14*24*60*60*1000) return Util.replyError(message, "Cannot delete messages older than 2 weeks");
-                Util.getRecentMessagesAfter(channel, this.client.user, date.getTime()).then(deleteMessages).catch(e => {})
+                Util.getRecentMessagesAfter(channel, this.client.user, date.getTime()).then(deleteMessages).catch(console.error)
             },
             count: value => {
                 let maxCount = 200
@@ -72,7 +72,7 @@ class Command extends CommandBase {
                 count = Math.abs(count)
                 if (count > maxCount) return Util.replyError(message, `Count cannot exceed ${maxCount}`)
 
-                Util.getRecentMessagesFrom(channel, this.client.user, count).then(deleteMessages).catch(e => {})
+                Util.getRecentMessagesFrom(channel, this.client.user, count).then(deleteMessages).catch(console.error)
             }
         }
 

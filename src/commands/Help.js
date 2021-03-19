@@ -34,7 +34,7 @@ class Command extends CommandBase {
                 color: 5145560,
                 footer: Util.getFooter(this.client)
             }
-        })
+        }).catch(console.error)
     }
 
     /**
@@ -98,7 +98,7 @@ class Command extends CommandBase {
     
         Util.replyMessage(message, {
             embed: embed
-        })
+        }).catch(console.error)
     }
 
     async execute(message, inputs) {

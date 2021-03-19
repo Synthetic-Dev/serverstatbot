@@ -28,7 +28,7 @@ class Command extends CommandBase {
                 color: 5145560,
                 footer: Util.getFooter(this.client)
             }
-        })
+        }).catch(console.error)
     }
 }
 

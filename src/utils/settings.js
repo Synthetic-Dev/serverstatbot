@@ -93,7 +93,7 @@ class Settings {
             }
 
             data.save()
-        }).catch(e => {})
+        }).catch(console.error)
     }
 
     /**
@@ -107,8 +107,8 @@ class Settings {
         this.get(name).then(oldValue => {
             Promise.resolve(transform(oldValue)).then(newValue => {
                 this.set(name, newValue)
-            }).catch(e => {})
-        }).catch(e => {})
+            }).catch(console.error)
+        }).catch(console.error)
     }
 
     /**

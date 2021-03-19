@@ -24,7 +24,7 @@ class Command extends CommandBase {
 
             let uptime = os.uptime()
 
-            botMessage.delete().catch(e => {})
+            botMessage.delete().catch(console.error)
 
             Util.sendMessage(message, {
                 embed: {
@@ -75,8 +75,8 @@ class Command extends CommandBase {
                     ],
                     footer: Util.getFooter(this.client)
                 }
-            })
-        })
+            }).catch(console.error)
+        }).catch(console.error)
     }
 }
 

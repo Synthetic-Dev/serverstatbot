@@ -27,10 +27,10 @@ class Command extends CommandBase {
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(async data => {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
     
                 if (data.online) {
-                    if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online");
+                    if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online").catch(console.error);
                     if (!data.players.sample || data.players.sample.length == 0) {
                         return Util.sendWarning(message, "There is too many players online or the server does not have ``enable-query=true``.")
                     }
@@ -43,13 +43,13 @@ class Command extends CommandBase {
                         }
                     })
     
-                    if (find) Util.sendMessage(message, `${find.name.clean} is in the server.`);
-                    else Util.sendMessage(message, `Could not find ${inputs[0]} in the server.`);
+                    if (find) Util.sendMessage(message, `${find.name.clean} is in the server.`).catch(console.error);
+                    else Util.sendMessage(message, `Could not find ${inputs[0]} in the server.`).catch(console.error);
                 } else {
                     let error = data.error
     
                     if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                        return Util.replyMessage(message, "Server is not online")
+                        return Util.replyMessage(message, "Server is not online").catch(console.error)
                     } else if (error.code == "ENOTFOUND") {
                         return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
                     }
@@ -57,8 +57,8 @@ class Command extends CommandBase {
                     Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
                     console.error(error)
                 }
-            }).catch(e => {})
-        }).catch(e=>{})
+            }).catch(console.error)
+        }).catch(console.error)
     }
 }
 

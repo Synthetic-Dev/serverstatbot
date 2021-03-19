@@ -24,7 +24,7 @@ class Command extends CommandBase {
                 description: `• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${await settings.get("ip")}\`\`\n• **Port:** \`\`${await settings.get("port")}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `<#${await settings.get("logchannel")}>`}\n• **Disabled commands:** ${disabledCommands.length > 0 ? disabledCommands.join(", ") : "None"}`,
                 footer: Util.getFooter(this.client)
             }
-        })
+        }).catch(console.error)
     }
 }
 

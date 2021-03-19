@@ -44,7 +44,7 @@ class Command extends CommandBase {
                 ],
                 footer: Util.getFooter(this.client)
             }
-        })
+        }).catch(console.error)
     }
 }
 

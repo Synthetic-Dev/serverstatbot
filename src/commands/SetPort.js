@@ -30,7 +30,7 @@ class Command extends CommandBase {
         if (port > maxPort) return Util.replyError(message, `Port cannot exceed ${maxPort}`)
 
         settings.set("port", port)
-        Util.replyMessage(message, `Port set to \`\`${port}\`\``)
+        Util.replyMessage(message, `Port set to \`\`${port}\`\``).catch(console.error)
     }
 }
 

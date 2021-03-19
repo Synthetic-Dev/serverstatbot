@@ -10,7 +10,7 @@ class Command extends CommandBase {
     }
 
     async execute(message) {
-        Util.replyMessage(message, `Pong! ${Math.abs(Util.ping(message))}ms`)
+        Util.replyMessage(message, `Pong! ${Math.abs(Util.ping(message))}ms`).catch(console.error)
     }
 }
 

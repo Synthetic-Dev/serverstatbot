@@ -35,14 +35,14 @@ class Command extends CommandBase {
             }
 
             if (!nameHistory) {
-                botMessage.delete().catch(e => {})
+                botMessage.delete().catch(console.error)
 
                 return Util.sendMessage(message, {
                     embed: {
                         title: ":white_check_mark: Available account",
                         description: `No account with the identifier \`\`${identifier}\`\` exists.`
                     }
-                })
+                }).catch(console.error)
             }
 
             let nameHistoryString = ""
@@ -69,7 +69,7 @@ class Command extends CommandBase {
             let averageColor = await getAverageColor(`https://mc-heads.net/body/${uuid}`)
             let decimalColor = (averageColor.value[0] * 256*256) + (averageColor.value[1] * 256) + (averageColor.value[2])
 
-            botMessage.delete().catch(e => {})
+            botMessage.delete().catch(console.error)
 
             Util.sendMessage(message, {
                 files: [{
@@ -99,8 +99,8 @@ class Command extends CommandBase {
                         url: "attachment://skin.png"
                     }
                 }
-            })
-        }).catch(e=>{})
+            }).catch(console.error)
+        }).catch(console.error)
     }
 }
 
