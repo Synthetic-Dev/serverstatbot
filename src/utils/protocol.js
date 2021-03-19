@@ -82,7 +82,7 @@ class Protocol {
             else {
                 MinecraftUtil.status(...args).then(query).catch(e => {
                     if (!e) query()
-                    else if (e == "Failed to retrieve the status of the server within time") {
+                    else if (e.message == "Failed to retrieve the status of the server within time") {
                         MinecraftUtil.statusFE01(...args).then(query).catch(() => {query()})
                     } else if (e.code == "ECONNREFUSED" && port != 25565) attemptBedrock()
                     else resolve([false, e]);

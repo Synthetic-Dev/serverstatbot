@@ -206,13 +206,18 @@ class Command extends CommandBase {
         }
 
         Util.sendMessage(message.channel, ":arrows_counterclockwise: Getting servers...").then(botMessage => {
-            let promises = []
-            cache.forEach(guild => {
-                if (promises.length > 75) return;
-                promises.push(this.getServer(message.guild, guild, check))
+            let promise = new Promise((resolve, reject) => {
+                let pages = []
+                let done = 0
+                cache.forEach(async guild => {
+                    let page = await this.getServer(message.guild, guild, check)
+                    if (page) pages.push(page);
+                    done++
+                    if (done >= 75 || done == cache.length) resolve(pages)
+                })
             })
 
-            Promise.all(promises).then(pages => {
+            promise.then(pages => {
                 botMessage.delete().catch(e => {})
                 pages = pages.filter(value => value != null)
 

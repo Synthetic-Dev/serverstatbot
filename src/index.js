@@ -211,7 +211,7 @@ function serverLogs() {
                     server.players = []
                     let error = data.error
 
-                    if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.toString()) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+                    if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                         if (wasOnline || server.start) {
                             if (["none", "online"].includes(server.statusMessage.type)) {
                                 Util.sendMessage(channel, statusContents.offline).then(message => {

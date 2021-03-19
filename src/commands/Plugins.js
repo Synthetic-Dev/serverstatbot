@@ -60,7 +60,7 @@ class Command extends CommandBase {
                 } else {
                     let error = data.error
     
-                    if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.toString()) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+                    if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                         return Util.replyMessage(message, "Server is not online")
                     } else if (error.code == "ENOTFOUND") {
                         return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");

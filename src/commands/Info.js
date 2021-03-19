@@ -81,11 +81,11 @@ class Command extends CommandBase {
                 } else {
                     let error = data.error
     
-                    if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.toString()) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+                    if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
                         return Util.sendMessage(message, {
                             embed: {
                                 title: "Server Info",
-                                description: `Address: **${ip}:${port}**\nStatus: <:red_circle_with_cross:818512512764084265> **Offline**${error == "Failed to query server within time" ? "\nIf the server is online, check that ``enable-status=true`` or ``enabled-query=true``" : ""}`,
+                                description: `Address: **${ip}:${port}**\nStatus: <:red_circle_with_cross:818512512764084265> **Offline**${error.message == "Failed to query server within time" ? "\nIf the server is online, check that ``enable-status=true`` or ``enabled-query=true``" : ""}`,
                                 color: 5145560
                             }
                         })
