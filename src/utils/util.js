@@ -163,9 +163,7 @@ class Util {
     static dmUser(user, content) {
         return new Promise((resolve, reject) => {
             user.createDM().then(dmChannel => {
-                this.sendMessage(dmChannel, content).then(message => {
-                    resolve(message)
-                }).catch(reject)
+                this.sendMessage(dmChannel, content).then(resolve).catch(reject)
             }).catch(reject)
         })
     }
@@ -178,15 +176,16 @@ class Util {
      */
     static replyMessage(message, content) {
         return new Promise((resolve, reject) => {
-            let hasPerms = this.doesMemberHavePermissionsInChannel(message.guild.me, message.channel, ["SEND_MESSAGES"])
-            if (!(message.channel instanceof Discord.DMChannel) && !hasPerms) {
-                return this.dmUser(message.author, `:stop_sign: I don't have permission to send messages in <#${message.channel.id}>!`).then(resolve).catch(reject)
+            let channel = message.channel
+            let hasPerms = this.doesMemberHavePermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])
+            if (!(channel instanceof Discord.DMChannel) && !hasPerms) {
+                return this.dmUser(message.author, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`).then(resolve).catch(reject)
             } else if(hasPerms) {
                 const stringAble = ["string", "number", "bigint", "boolean", "symbol"].includes(typeof content)
                 if (stringAble) content = "\n" + content;
         
                 message.reply(content).then(resolve).catch(() => {
-                    if (!(message.channel instanceof Discord.DMChannel)) {
+                    if (!(channel instanceof Discord.DMChannel)) {
                         this.dmUser(message.author, ":stop_sign: Failed to reply with message in guild." + (stringAble ? content : null), !stringAble ? content : null).then(resolve).catch(reject)
                     }
                 })
@@ -203,9 +202,9 @@ class Util {
     static async sendMessage(object, ...content) {
         return new Promise((resolve, reject) => {
             let channel = object instanceof Discord.Message ? object.channel : object
-            let hasPerms = this.doesMemberHavePermissionsInChannel(object.guild.me, channel, ["SEND_MESSAGES"])
+            let hasPerms = this.doesMemberHavePermissionsInChannel(channel.guild.me, channel, ["SEND_MESSAGES"])
             if (object instanceof Discord.Message && !(channel instanceof Discord.DMChannel) && !hasPerms) {
-                return this.dmUser(object.author, `:stop_sign: I don't have permission to send messages in <#${object.channel.id}>!`).then(resolve).catch(reject)
+                return this.dmUser(object.author, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`).then(resolve).catch(reject)
             } else if(hasPerms) {
                 channel.send(...content).then(resolve).catch(reject)
             }
@@ -408,11 +407,7 @@ class Util {
      * @returns {Promise<Discord.GuildMember>} 
      */
     static getMember(guild, resolvable) {
-        try {
-            return guild.members.fetch(resolvable)
-        } catch(e) {
-            console.error(e)
-        }
+        return guild.members.fetch(resolvable)
     }
 
     /**
@@ -429,37 +424,29 @@ class Util {
      * Gets an emoji
      * @param {Discord.Client} client 
      * @param {string} input 
-     * @returns {Discord.GuildEmoji}
+     * @returns {Discord.GuildEmoji?}
      */
     static getEmoji(client, input) {
-        try {
-            let find
-            if (Object.values(unicodeEmojis).includes(input)) find = input;
-            else find = unicodeEmojis[input];
-            if (find) return find;
+        let find
+        if (Object.values(unicodeEmojis).includes(input)) find = input;
+        else find = unicodeEmojis[input];
+        if (find) return find;
 
-            client.emojis.cache.forEach(emoji => {
-                if (!find && (emoji.name == input || emoji.name == unicodeEmojis[input])) find = emoji;
-            })
+        client.emojis.cache.forEach(emoji => {
+            if (!find && (emoji.name == input || emoji.name == unicodeEmojis[input])) find = emoji;
+        })
 
-            return find
-        } catch(e) {
-            console.error(e)
-        }
+        return find
     }
 
     /**
      * Gets an emoji by id
      * @param {Discord.Client} client 
      * @param {string} id 
-     * @returns {Discord.GuildEmoji}
+     * @returns {Discord.GuildEmoji?}
      */
     static getEmojiById(client, id) {
-        try {
-            return client.emojis.cache.get(id)
-        } catch(e) {
-            console.error(e)
-        }
+        return client.emojis.cache.get(id)
     }
 
     /**
@@ -468,20 +455,16 @@ class Util {
      * @returns {boolean}
      */
     static areEmojisEqual(...emojis) {
-        try {
-            emojis.forEach((emoji, index) => {
-                if (emoji instanceof Discord.Emoji) {
-                    emojis[index] = emoji.name
-                } else if (typeof emoji == "string") {
-                    let unicode = unicodeEmojis[emoji]
-                    if (unicode) emojis[index] = unicode;
-                }
-            })
-            
-            return emojis.filter(emoji => emoji == emojis[0]).length == emojis.length
-        } catch(e) {
-            console.error(e)
-        }
+        emojis.forEach((emoji, index) => {
+            if (emoji instanceof Discord.Emoji) {
+                emojis[index] = emoji.name
+            } else if (typeof emoji == "string") {
+                let unicode = unicodeEmojis[emoji]
+                if (unicode) emojis[index] = unicode;
+            }
+        })
+        
+        return emojis.filter(emoji => emoji == emojis[0]).length == emojis.length
     }
 
     /**
@@ -492,17 +475,13 @@ class Util {
      * @returns {Discord.GuildChannel?} 
      */
     static getChannel(guild, name, type) {
-        try {
-            let find
-            guild.channels.cache.forEach(channel => {
-                if (!find && channel.name == name
-                    && (!type || channel.type == type)
-                    && channel.viewable) find = channel;
-            })
-            return find
-        } catch(e) {
-            console.error(e)
-        }
+        let find
+        guild.channels.cache.forEach(channel => {
+            if (!find && channel.name == name
+                && (!type || channel.type == type)
+                && channel.viewable) find = channel;
+        })
+        return find
     }
 
     /**
@@ -747,17 +726,16 @@ class Util {
      * @param {string} name 
      * @returns {Promise<Discord.GuildChannel>} 
      */
-    static async getRole(guild, name) {
-        try {
-            let find
-            let roles = await guild.roles.fetch()
-            roles.cache.each(role => {
-                if (!find && role.name == name) find = role;
-            })
-            return find
-        } catch(e) {
-            console.error(e)
-        }
+    static getRole(guild, name) {
+        return new Promise((resolve, reject) => {
+            guild.roles.fetch().then(roles => {
+                let find
+                roles.cache.each(role => {
+                    if (!find && role.name == name) find = role;
+                })
+                resolve(find)
+            }).catch(reject)
+        })
     }
 
     /**
@@ -767,11 +745,7 @@ class Util {
      * @returns {Promise<Discord.Role>} 
      */
     static getRoleById(guild, id) {
-        try {
-            return guild.roles.fetch(id)
-        } catch(e) {
-            console.error(e)
-        }
+        return guild.roles.fetch(id)
     }
 
     /**
@@ -781,15 +755,10 @@ class Util {
      * @returns {Discord.GuildChannel} 
      */
     static parseChannel(guild, input) {
-        try {
-            input = input.replace(/^<#/, "").replace(/>$/, "")
-
-            let find = this.getChannelById(guild, input)
-            if (find) return find;
-            return this.getChannel(guild, input)
-        } catch(e) {
-            console.error(e)
-        }
+        input = input.replace(/^<#/, "").replace(/>$/, "")
+        let find = this.getChannelById(guild, input)
+        if (find) return find;
+        return this.getChannel(guild, input)
     }
 
     /**
@@ -799,15 +768,10 @@ class Util {
      * @returns {Discord.GuildEmoji | Discord.ReactionEmoji | Discord.Emoji} 
      */
     static parseEmoji(client, input) {
-        try {
-            input = input.replace(/^<:.+:/, "").replace(/>$/, "")
-
-            let find = this.getEmojiById(client, input)
-            if (find) return find;
-            return this.getEmoji(client, input)
-        } catch(e) {
-            console.error(e)
-        }
+        input = input.replace(/^<:.+:/, "").replace(/>$/, "")
+        let find = this.getEmojiById(client, input)
+        if (find) return find;
+        return this.getEmoji(client, input)
     }
 
     /**
@@ -817,15 +781,15 @@ class Util {
      * @returns {Promise<Discord.Role>} 
      */
     static async parseRole(guild, input) {
-        try {
-            input = input.replace(/^<@&/, "").replace(/>$/, "")
-
-            let find = await this.getRoleById(guild, input)
-            if (find) return find;
-            return this.getRole(guild, input)
-        } catch(e) {
-            console.error(e)
-        }
+        input = input.replace(/^<@&/, "").replace(/>$/, "")
+        return new Promise((resolve, reject) => {
+            this.getRoleById(guild, input).then(find => {
+                if (find) return resolve(find);
+                this.getRole(guild, input).then(find => {
+                    return resolve(find);
+                }).catch(reject)
+            }).catch(reject)
+        })
     }
 
     /**
@@ -834,14 +798,9 @@ class Util {
      * @returns {Date} 
      */
     static parseDate(input) {
-        try {
-            let number = Number(input)
-            let date = !isNaN(number) ? new Date(number) : new Date(input)
-
-            return isNaN(date) ? null : date
-        } catch(e) {
-            console.error(e)
-        }
+        let number = Number(input)
+        let date = !isNaN(number) ? new Date(number) : new Date(input)
+        return isNaN(date) ? null : date
     }
 }
 

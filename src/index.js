@@ -517,7 +517,7 @@ client.on("raw", packet => {
                         client.emit("messageReactionRemove", reaction, user);
                     }
                 }).catch(console.error)
-            });
+            }).catch(console.error)
         }).catch(console.error)
     }
 });
