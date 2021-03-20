@@ -213,7 +213,7 @@ class Command extends CommandBase {
                     let page = await this.getServer(message.guild, guild, check)
                     if (page) pages.push(page);
                     done++
-                    if (done >= 75 || done == cache.size) resolve(pages)
+                    if (pages.length >= 75 || done == cache.size) resolve(pages)
                 })
             })
 
