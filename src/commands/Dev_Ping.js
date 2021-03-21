@@ -40,7 +40,7 @@ class Command extends CommandBase {
         infoCommand.displayInfo(message, ip, port, (data, fields) => {
             fields.push({
                 name: "Debug Info:",
-                value: `Ping: ${data.ping}\nQuery: ${data.query}\nCached: ${data.cached}\nBedrock: ${data.bedrock}\nModded: ${data.modded}\nSrvRecord: ${JSON.stringify(data.srvRecord)}\nProtocol: ${data.version.protocol}`
+                value: `Ping: ${data.ping}\nQuery: ${data.query}\nCached: ${data.cached}\nBedrock: ${data.bedrock}\nModded: ${data.modded}\nProtocol: ${data.version.protocol}\nSrvRecord: ${JSON.stringify(data.srvRecord)}\nBedrockInfo: ${JSON.stringify(data.bedrockInfo)}`
             })
         })
     }
