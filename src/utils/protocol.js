@@ -4,6 +4,8 @@ const Forge = require("minecraft-protocol-forge")
 const MinecraftData = require("minecraft-data")
 const MinecraftUtil = require("minecraft-server-util")
 
+const formattingCode = /\u00C2?\u00A7([a-fklmnor0-9])/g;
+
 class Protocol {
     constructor() {
         console.error(`The ${this.constructor.name} class cannot be constructed.`);
@@ -58,6 +60,18 @@ class Protocol {
                         queryResponse.bedrock = statusResponse.bedrock;
                         queryResponse.modInfo = queryResponse.modInfo ? queryResponse.modInfo : statusResponse.modInfo ? statusResponse.modInfo : null
                         queryResponse.favicon = queryResponse.favicon ? queryResponse.favicon : statusResponse.favicon ? statusResponse.favicon : null
+
+                        if (queryResponse.bedrock) {
+                            queryResponse.edition = statusResponse.edition;
+                            queryResponse.serverGUID = statusResponse.serverGUID;
+                            queryResponse.serverID = statusResponse.serverID;
+                            queryResponse.motdLine1 = statusResponse.motdLine1;
+                            queryResponse.motdLine2 = statusResponse.motdLine2;
+                            queryResponse.gameMode = statusResponse.gameMode;
+                            queryResponse.gameModeID = statusResponse.gameModeID;
+                            queryResponse.portIPv4 = statusResponse.portIPv4;
+                            queryResponse.portIPv6 = statusResponse.portIPv6;
+                        }
                     } else {
                         queryResponse.bedrock = queryResponse.levelName != null
                     }
@@ -96,9 +110,41 @@ class Protocol {
         result.cached = false;
         result.latency = -1;
         result.description = {
-            text: result.description ? result.description.descriptionText : "",
-            ansi: null
+            raw: [],
+            text: {
+                raw: "A Minecraft Server",
+                clean: "A Minecraft Server"
+            },
+            ansi: null,
+            default: true
         }
+
+        if (result.bedrock) {
+            result.description.raw = result.motdLine1 || result.motdLine2 ? [result.motdLine1, result.motdLine2] : (result.description ? [result.description] : [])
+        } else {
+            result.description.raw = result.description ? [result.description] : []
+        }
+
+        if (result.description.raw.length > 0) {
+            let desc = result.description
+            desc.text.raw = []
+            desc.text.clean = []
+            desc.raw.forEach(descClass => {
+                if (!descClass) return;
+                desc.text.raw.push(descClass.toString())
+                desc.text.clean.push(descClass.toRaw())
+            })
+            desc.text.raw = desc.text.raw.join("\n").trim()
+            desc.text.clean = desc.text.clean.join("\n").trim()
+
+            if (desc.text.raw != "") {
+                desc.default = false
+            } else {
+                desc.text.raw = "A Minecraft Server"
+                desc.text.clean = "A Minecraft Server"
+            }
+        }
+
         if (result.bedrock || !verify) {
             this.requestCache[ip + ":" + port] = {
                 expires: Date.now() + this.cacheTime,
@@ -176,21 +222,36 @@ class Protocol {
         if (vSuccess) {
             result.latency = vResult.latency
             result.protocolVersion = result.protocolVersion ? result.protocolVersion : vResult.request.protocolVersion
+
             if (!result.favicon) result.favicon = vResult.favicon;
-            if ((result.description.text == "") && vResult.description) {
-                if (typeof vResult.description == "string") {
-                    result.description.text = vResult.description
-                } else {
-                    let description = vResult.description.text
-                    if (vResult.description.extra) {
-                        vResult.description.extra.forEach(extra => {
-                            description += extra.text
-                        })
+
+            if (vResult.description) {
+                let desc = result.description
+                if (typeof vResult.description == "string" && desc.default) {
+                    desc.text.raw = vResult.description
+                    desc.text.clean = vResult.description.replace(formattingCode, '').trim()
+                } else if (typeof vResult.description != "string") {
+                    if (desc.default) {
+                        let newText = vResult.description.text
+                        if (vResult.description.extra) {
+                            vResult.description.extra.forEach(extra => {
+                                newText += extra.text
+                            })
+                        }
+                        desc.text.raw = newText
+                        desc.text.clean = newText.replace(formattingCode, '').trim()
                     }
-                    result.description.text = description
-                    result.description.ansi = vResult.description.extra
+                    desc.ansi = vResult.description.extra
+                }
+
+                if (desc.text.raw != "") {
+                    desc.default = false
+                } else {
+                    desc.text.raw = "A Minecraft Server"
+                    desc.text.clean = "A Minecraft Server"
                 }
             }
+
             if (!result.modInfo) {
                 if (vResult.modinfo || vResult.modInfo) result.modInfo = vResult.modinfo ? vResult.modinfo : vResult.modInfo;
                 else if (vResult.forgeData) {
@@ -221,9 +282,6 @@ class Protocol {
         let [success, result] = await this.sendRequest(ip, port, verify)
 
         if (success) {
-            let desc = result.description.text && result.description.text != "" ? result.description.text : "A Minecraft Server"
-            if (typeof desc != "string") desc = "A Minecraft Server";
-
             let final = {
                 ip: result.host,
                 port: result.port,
@@ -235,6 +293,15 @@ class Protocol {
                 bedrock: result.bedrock,
                 modded: result.modInfo != null && result.modInfo.modList != null && result.modInfo.modList.length > 0,
                 srvRecord: result.srvRecord,
+                bedrockInfo: result.bedrock ? {
+                    levelName: result.levelName,
+                    edition: result.edition,
+                    serverID: result.serverID,
+                    gameMode: result.gameMode,
+                    gameModeID: result.gameModeID,
+                    portIPv4: result.portIPv4,
+                    portIPv6: result.portIPv6
+                } : null,
                 version: {
                     minecraft: result.version + (result.software ? ` (${result.software})` : ""),
                     gamemode: result.gameType ? result.gameType : null,
@@ -246,8 +313,8 @@ class Protocol {
                     sample: result.players ? result.players : result.samplePlayers ? result.samplePlayers : []
                 },
                 motd: {
-                    raw: desc,
-                    clean: desc.replace(/§./g, "").trim(),
+                    raw: result.description.text.raw,
+                    clean: result.description.text.clean,
                     ansi: result.description.ansi
                 },
                 favicon: result.favicon,
