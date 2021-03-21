@@ -109,7 +109,7 @@ class Protocol {
 
         result.cached = false;
         result.latency = -1;
-        result.description = {
+        result._description = {
             raw: [],
             text: {
                 raw: "A Minecraft Server",
@@ -120,19 +120,22 @@ class Protocol {
         }
 
         if (result.bedrock) {
-            result.description.raw = result.motdLine1 || result.motdLine2 ? [result.motdLine1, result.motdLine2] : (result.description ? [result.description] : [])
+            result._description.raw = result.motdLine1 || result.motdLine2 ? [result.motdLine1, result.motdLine2] : (result.description ? [result.description] : [])
         } else {
-            result.description.raw = result.description ? [result.description] : []
+            result._description.raw = result.description ? [result.description] : []
         }
+
+        result.description = result._description
+        delete result._description
 
         if (result.description.raw.length > 0) {
             let desc = result.description
             desc.text.raw = []
             desc.text.clean = []
-            desc.raw.forEach(descClass => {
-                if (!descClass) return;
-                desc.text.raw.push(descClass.toString())
-                desc.text.clean.push(descClass.toRaw())
+            desc.raw.forEach(d => {
+                if (!d) return;
+                desc.text.raw.push(d.toString())
+                desc.text.clean.push(d.toRaw())
             })
             desc.text.raw = desc.text.raw.join("\n").trim()
             desc.text.clean = desc.text.clean.join("\n").trim()
