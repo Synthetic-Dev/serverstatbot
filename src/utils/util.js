@@ -216,7 +216,7 @@ class Util {
                     this.cannotSendMessages(medium.author, channel).then(reject)
                 } else if(hasPerms) {
                     channel.send(...content).then(resolve).catch(e => {
-                        if (isMessage) this.dmUser(message.author, `:stop_sign: Failed to send message in <#${channel.id}>!`).then(() => {reject(e)}).catch(reject);
+                        if (isMessage) this.dmUser(medium.author, `:stop_sign: Failed to send message in <#${channel.id}>!`).then(() => {reject(e)}).catch(reject);
                     })
                 }
             }
