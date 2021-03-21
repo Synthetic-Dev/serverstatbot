@@ -47,9 +47,6 @@ class Command extends CommandBase {
                             title: "Server Info " + (data.bedrock ? "(Bedrock)" : "(Java)"),
                             description: `Address: **${ip}${port != 25565 ? `:${port}` : ""}**\nStatus: <:green_circle_with_tick:818512512500105249> **Online**${data.latency > 0 ? `\nLatency: **${data.latency}ms**` : ""}\nPlayers: **${data.players.online}/${data.players.max}**`,
                             color: 5145560,
-                            thumbnail: {
-                                url: "attachment://favicon.png"
-                            },
                             fields: fields
                         }
                     }
@@ -66,7 +63,13 @@ class Command extends CommandBase {
                             attachment: image.toBuffer("image/png"),
                             name: "favicon.png"
                         }]
+                        content.embed.thumbnail = {
+                            url: "attachment://favicon.png"
+                        }
 
+                        Util.sendMessage(message, content).catch(console.error)
+                    }
+                    favicon.onerror = () => {
                         Util.sendMessage(message, content).catch(console.error)
                     }
                     if (data.favicon) {
