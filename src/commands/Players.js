@@ -88,7 +88,7 @@ class Command extends CommandBase {
                         }],
                         embed: {
                             title: "Playerlist",
-                            description: `**${data.players.online}/${data.players.max} players**` + (!data.query ? "\nThis may not be all the players set ``enable-query=true`` to get all players." : "") + (data.bedrock ? "\nBedrock servers do not return all players online." : ""),
+                            description: `**${data.players.online}/${data.players.max} players**` + (!data.query ? "\nThis may not be all the players set ``enable-query=true`` to get all players." : "") + (data.bedrock ? "\n:warning: Bedrock servers may not show all players online." : ""),
                             color: 5145560,
                             image: {
                                 url: "attachment://playerlist.png"
