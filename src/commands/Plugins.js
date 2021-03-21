@@ -41,7 +41,7 @@ class Command extends CommandBase {
                     let pages = []
                     let pluginstring = ""
                     data.plugins.forEach((plugin, index) => {
-                        pluginstring += `• **[${plugin.name}](https://dev.bukkit.org/search?search=${plugin.name})** - ${plugin.version}\n`
+                        pluginstring += `• **[${plugin.name}](${data.bedrock ? `https://poggit.pmmp.io/p/${plugin.name}` : `https://dev.bukkit.org/search?search=${plugin.name}`})** - ${plugin.version}\n`
     
                         if ((index % (itemsPerPage - 1) == 0 && index != 0) || index + 1 == data.plugins.length) {
                             pages.push({
