@@ -7,8 +7,8 @@ class Command extends CommandBase {
             name: "setlogchannel",
             desc: "Sets the text channel that join/leave messages will be shown",
             args: [{
-                name: "channel | 'here' | 'clear'",
-                desc: "The channel"
+                name: "channel",
+                desc: "Can be a channel name, id or tag, if set to \"here\" then current channel is selected. Use \"clear\" to remove the channel."
             }],
             perms: [
                 "ADMINISTRATOR"

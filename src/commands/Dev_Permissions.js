@@ -4,11 +4,10 @@ const CommandBase = require("../interfaces/CommandBase.js")
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
-            name: "devpermissions",
+            name: "permissions",
             desc: "Get bot permissions in current guild",
             aliases: [
-                "dpermissions",
-                "dperms"
+                "perms"
             ],
             perms: [
                 "DEV"
@@ -21,7 +20,8 @@ class Command extends CommandBase {
         Util.sendMessage(message, {
             embed: {
                 title: "PERMISSIONS",
-                description: "``" + message.guild.me.permissions.toArray().join("``, ``") + "``"
+                description: "``" + message.guild.me.permissions.toArray().join("``, ``") + "``",
+                color: 927567
             }
         }).catch(console.error)
     }

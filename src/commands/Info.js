@@ -18,7 +18,7 @@ class Command extends CommandBase {
     }
 
     displayInfo(message, ip, port, additionals) {
-        Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
+        Util.sendMessage(message, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(data => {
                 botMessage.delete().catch(console.error)
     
@@ -66,9 +66,6 @@ class Command extends CommandBase {
                             attachment: image.toBuffer("image/png"),
                             name: "favicon.png"
                         }]
-                        content.embed.thumbnail = {
-                            url: "attachment://favicon.png"
-                        }
 
                         Util.sendMessage(message, content).catch(console.error)
                     }

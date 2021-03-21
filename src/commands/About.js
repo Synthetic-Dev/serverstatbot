@@ -16,6 +16,7 @@ class Command extends CommandBase {
         Util.sendMessage(message, {
             embed: {
                 title: "About",
+                color: 5145560,
                 author: {
                     name: this.client.user.username,
                     icon_url: this.client.user.avatarURL({
@@ -24,7 +25,6 @@ class Command extends CommandBase {
                         format: "png"
                     })
                 },
-                color: 5145560,
                 fields: [
                     {
                         name: "Version",

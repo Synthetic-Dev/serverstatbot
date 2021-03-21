@@ -6,10 +6,10 @@ const CommandBase = require("../interfaces/CommandBase.js")
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
-            name: "getplayers",
+            name: "players",
             desc: "Gets all the players currently online",
             aliases: [
-                "players",
+                "getplayers",
                 "plrs"
             ],
             tags: [
@@ -24,7 +24,7 @@ class Command extends CommandBase {
         const ip = await settings.get("ip")
         const port = await settings.get("port")
 
-        Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
+        Util.sendMessage(message, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(async data => {
                 botMessage.delete().catch(console.error)
 

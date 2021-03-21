@@ -431,6 +431,10 @@ async function parseCommand(message) {
     
         if (!client.commands) return console.error("Commands not loaded");
 
+        if (!Util.doesMemberHavePermissionsInChannel(guild.me, message.channel, ["SEND_MESSAGES"])) {
+            return Util.cannotSendMessages(message.author, message.channel)
+        }
+
         command = client.commands.get(commandName.toLowerCase())
         if (!command) return Util.couldNotFind(message, "command", commandName);
 
@@ -450,7 +454,7 @@ async function parseCommand(message) {
             const helpCommand = client.commands.get("help")
 
             if (inputs.length == 0) {
-                return command.secret ? null : helpCommand.commandHelp(message, command, prefix)
+                return command.secret ? null : helpCommand.commandHelp(message, command)
             } else {
                 return command.secret ? null : Util.replyError(message, `'${commandName.toLowerCase()}' expects ${command.numOfRequiredArguments()} argument(s), got ${inputs.length}`);
             }

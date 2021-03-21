@@ -4,12 +4,8 @@ const CommandBase = require("../interfaces/CommandBase.js")
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
-            name: "devservers",
-            desc: "View and search connected servers and details",
-            aliases: [
-                "dservers",
-                "dsrvs"
-            ],
+            name: "guilds",
+            desc: "View and search connected guilds and details",
             args: [
                 {
                     name: "search",
@@ -49,7 +45,7 @@ class Command extends CommandBase {
                     icon_url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
                 },
                 description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n**Members:** \`\`${guild.memberCount}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${ip}\`\`\n• **Port:** \`\`${port}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `${await settings.get("logchannel")}`}\n• **Disabled commands:** ${disabledCommands.length > 0 ? disabledCommands.join(", ") : "None"}\n\nPermissions:\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
-                color: 5145560
+                color: 927567
             }
         }
     }
@@ -152,7 +148,7 @@ class Command extends CommandBase {
                     if (!AND.includes(string)) {
                         if (propertyChecks[string]) {
                             error = true
-                            Util.sendError(message.channel, `Expected "+" or "&" before next property`)
+                            Util.sendError(message, `Expected "+" or "&" before next property`)
                         } else {
                             let value = checks[checks.length - 1].value
                             if (!value) value = "";
@@ -169,13 +165,13 @@ class Command extends CommandBase {
                 let property = propertyChecks[string]
                 if (!property) {
                     error = true
-                    return Util.sendError(message.channel, `Invalid property '${string}', properties: \`\`${Object.keys(propertyChecks).join("``, ``")}\`\``)
+                    return Util.sendError(message, `Invalid property '${string}', properties: \`\`${Object.keys(propertyChecks).join("``, ``")}\`\``)
                 }
 
                 let value = search[index + 1]
                 if (property.needValue && (!value || AND.includes(value))) {
                     error = true
-                    return Util.sendError(message.channel, `Search argument required for '${string}' property`)
+                    return Util.sendError(message, `Search argument required for '${string}' property`)
                 } else if (property.needValue) {
                     isValue = true
                     value = value.toLowerCase().trim()
@@ -205,7 +201,7 @@ class Command extends CommandBase {
             }
         }
 
-        Util.sendMessage(message.channel, ":arrows_counterclockwise: Getting servers...").then(botMessage => {
+        Util.sendMessage(message, ":arrows_counterclockwise: Getting servers...").then(botMessage => {
             let promise = new Promise((resolve, reject) => {
                 let pages = []
                 let done = 0

@@ -11,7 +11,7 @@ class Command extends CommandBase {
             ],
             args: [{
                 name: "type",
-                desc: "The type of clearing: ``after`` or ``count``"
+                desc: "The clearing action type"
             },
             {
                 name: "value",
@@ -27,12 +27,16 @@ class Command extends CommandBase {
     async execute(message, inputs) {
         let channel = message.channel
 
-        function deleteMessages(messages) {
+        let deleteMessages = messages => {
             let deleted = 0
             let deleting = true
             channel.bulkDelete(messages).then((deletedMessages) => {deleted += deletedMessages.size; deleting = false}).catch(e => {
                 deleting = true
                 messages.forEach(msg => {
+                    if (!msg || msg.deleted) {
+                        if (deleting && deleted >= messages.size) deleting = false;
+                        return
+                    };
                     msg.delete().then(() => {deleted++}).catch(console.error).finally(() => {if (deleting && deleted >= messages.size) deleting = false;})
                 })
             }).finally(() => {

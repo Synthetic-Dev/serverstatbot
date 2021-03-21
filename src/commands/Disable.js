@@ -5,15 +5,14 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "disable",
-            desc: "Disables/enables a command in the guild, example: ``.disable whois true``",
+            desc: "Disables/enables a command in the guild",
             args: [{
-                name: "command",
-                desc: "The command to disable"
+                name: "action",
+                desc: "Whether to add or remove the command from being disabled"
             },
             {
-                name: "state",
-                desc: "Whether to disable or enable the command, defaults to disable",
-                optional: true
+                name: "command",
+                desc: "The command to disable"
             }],
             perms: [
                 "ADMINISTRATOR"
@@ -24,26 +23,28 @@ class Command extends CommandBase {
     async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
         
-        const command = this.client.commands.get(inputs[0].toLowerCase())
-        if (!command) return Util.couldNotFind(message, "command", inputs[0]);
-        if (!command.hasTag("CAN_DISABLE")) return Util.replyWarning(message, "That command cannot be disabled");
-        
-        let state = true
-        if (inputs[1]) {
-            let stateTypes_true = ["y", "yes", "true"]
-            let stateTypes_false = ["n", "no", "false"]
-            let trueState = stateTypes_true.includes(inputs[1].toLowerCase())
-            let falseState = stateTypes_false.includes(inputs[1].toLowerCase())
-            if (!trueState && !falseState) return Util.replyError(message, `Not a valid state, must be: ${stateTypes_true.concat(stateTypes_false).join(", ")}`);
-            if (falseState) state = false;
+        const actions = {
+            add: true,
+            remove: false
         }
+        let action = inputs[0].toLowerCase()
+        let state = actions[action]
+        if (state == null) {
+            return Util.replyError(message, `Invalid action, actions: \`\`${Object.keys(actions).join("``, ``")}\`\``)
+        }
+
+        const command = this.client.commands.get(inputs[1].toLowerCase())
+        if (!command) return Util.couldNotFind(message, "command", inputs[1]);
+        if (!command.hasTag("CAN_DISABLE")) return Util.replyWarning(message, "That command cannot be disabled");
 
         const commandName = command.name(true)
         settings.update("disabledCommands", disabled => {
             let changeMessage = ""
+            let warning = false
             if (state) {
                 if (disabled.includes(commandName)) {
                     changeMessage = "That command is already disabled";
+                    warning = true
                 } else {
                     disabled.push(commandName)
                     changeMessage = `\`\`${commandName}\`\` command has been disabled`;
@@ -51,12 +52,14 @@ class Command extends CommandBase {
             } else {
                 if (!disabled.includes(commandName)) {
                     changeMessage = "That command is already enabled";
+                    warning = true
                 } else {
                     disabled = disabled.filter(name => name != commandName)
                     changeMessage = `\`\`${commandName}\`\` command has been enabled`;
                 }
             }
-            Util.replyWarning(message, changeMessage)
+            if (warning) Util.replyWarning(message, changeMessage);
+            else Util.sendMessage(message, changeMessage);
             return disabled
         })
     }

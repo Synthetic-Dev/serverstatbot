@@ -5,7 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "setaddress",
-            desc: "Sets the server address used by the bot, alternative to using ``setip`` and ``setport``",
+            desc: "Sets the server address used by the bot, alternative to using .setip and .setport",
             aliases: [
                 "setaddr",
                 "address"

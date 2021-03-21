@@ -16,7 +16,7 @@ class Command extends CommandBase {
         let memory = OSUtils.mem
         let network = OSUtils.netstat
 
-        Util.sendMessage(message.channel, ":arrows_counterclockwise: Collecting stats...").then(async botMessage => {
+        Util.sendMessage(message, ":arrows_counterclockwise: Collecting stats...").then(async botMessage => {
             let osName = await os.oos()
             let cpuUsage = await cpu.usage()
             let memoryUsage = await memory.used()

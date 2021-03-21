@@ -31,7 +31,7 @@ class Command extends CommandBase {
         let startPage = inputs[0] ? Number(inputs[0]) : 1
         if (typeof(startPage) != "number" || startPage == null || isNaN(startPage)) return Util.replyError(message, "Page must be a number");
 
-        Util.sendMessage(message.channel, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
+        Util.sendMessage(message, ":arrows_counterclockwise: Pinging server...").then(botMessage => {
             Protocol.getInfo(ip, port).then(data => {
                 botMessage.delete().catch(console.error)
     

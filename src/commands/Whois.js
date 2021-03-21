@@ -40,7 +40,8 @@ class Command extends CommandBase {
                 return Util.sendMessage(message, {
                     embed: {
                         title: ":white_check_mark: Available account",
-                        description: `No account with the identifier \`\`${identifier}\`\` exists.`
+                        description: `No account with the identifier \`\`${identifier}\`\` exists.`,
+                        color: 4633441
                     }
                 }).catch(console.error)
             }

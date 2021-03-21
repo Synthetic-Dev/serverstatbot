@@ -6,7 +6,7 @@ const CommandBase = require("../interfaces/CommandBase.js")
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
-            name: "devpingserver",
+            name: "debugpingserver",
             desc: "Pings a server with the given details",
             aliases: [
                 "dping"
