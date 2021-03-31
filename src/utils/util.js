@@ -551,6 +551,30 @@ class Util {
     }
 
     /**
+     * Like channel.messages.fetch() but consults cache first with reduced api spam
+     * @param {Discord.TextChannel} channel 
+     * @param {string | Discord.ChannelLogsQueryOptions | null} options 
+     * @param {boolean?} cache
+     * @param {boolean?} force
+     *//*
+    static async getMessages(channel, options, cache, force) {
+        return new Promise((resolve, reject) => {
+            let cached = channel.messages.cache
+            let last = cached.array().pop()
+            if (last && last.createdTimestamp + 180*1000 >= Date.now()) {
+                if (typeof options == "string") {
+                    let message = cached.get(options)
+                    if (message) resolve(message);
+                    else reject(new Error("Message not found"));
+                } else {
+                    let message = cached.get(options)
+                    //not finished
+                }
+            } else channel.messages.fetch(options, cache, force).then(resolve).catch(reject);
+        })
+    }*/
+
+    /**
      * Gets a message from a channel by id
      * @param {Discord.TextChannel} channel
      * @param {string} id
@@ -596,14 +620,11 @@ class Util {
         return new Promise((resolve, reject) => {
             channel.messages.fetch({limit: 5}).then((messages) => {
                 let find
-                let recency = 0
                 messages.each(message => {
                     if (find) return;
                     if (text.includes(message.content)) {
                         find = message
-                        find.recency = recency
                     }
-                    recency++
                 })
                 resolve(find)
             }).catch(reject)
@@ -620,18 +641,14 @@ class Util {
         return new Promise((resolve, reject) => {
             channel.messages.fetch({limit: 5}).then(messages => {
                 let find
-                let recency = 0
                 messages.each(message => {
                     if (find) return;
                     text.forEach(string => {
                         if (find) return;
                         if (message.content.includes(string)) {
                             find = message
-                            find.recency = recency
                         }
                     })
-
-                    recency++
                 })
                 resolve(find)
             }).catch(reject)
