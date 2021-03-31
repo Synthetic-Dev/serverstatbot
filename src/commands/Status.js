@@ -6,9 +6,10 @@ const CommandBase = require("../interfaces/CommandBase.js")
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
-            name: "info",
+            name: "status",
             desc: "Displays current information about the server",
             aliases: [
+                "info",
                 "serverinfo"
             ],
             tags: [
