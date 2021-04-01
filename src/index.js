@@ -57,7 +57,7 @@ function serverLogs() {
 
     client.servers = []
     client.setInterval(async () => {
-        if (Date.now() - client.startTime >= restartTime) {
+        if (client.uptime >= restartTime) {
             const restartCommand = client.commands.get("restart")
             restartCommand.restart()
             return
@@ -301,8 +301,6 @@ function activityDisplay() {
  * Startup
  */
 client.on("ready", () => {
-    client.startTime = Date.now()
-
     client.globalSettings = new Settings.Global();
     console.log(`Loaded global settings`)
 
@@ -326,58 +324,55 @@ client.on("ready", () => {
 
     if (process.env.ISDEV != "TRUE") {
         function updateStats() {
-            Util.requestAsync({
-                hostname: "top.gg",
-                path: "/api/bots/759415210628087841/stats",
-                protocol: "HTTPS",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": process.env.TOPGGTOKEN
-                },
-                data: JSON.stringify({
-                    server_count: client.guilds.cache.size
-                })
-            }).then(() => {
-                console.log("Stats update sent to top.gg")
-            }).catch(error => {
-                console.error(error)
+            let users = 0
+            client.guilds.cache.forEach(guild => {
+                users += guild.memberCount
             })
 
-            Util.requestAsync({
-                hostname: "discordbotlist.com",
-                path: "/api/v1/bots/759415210628087841/stats",
-                protocol: "HTTPS",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": process.env.BOTLISTTOKEN
+            const apis = [
+                {
+                    hostname: "top.gg",
+                    path: "/api/bots/759415210628087841/stats",
+                    token: process.env.TOPGGTOKEN,
+                    data: JSON.stringify({
+                        server_count: client.guilds.cache.size
+                    })
                 },
-                data: JSON.stringify({
-                    guilds: client.guilds.cache.size
-                })
-            }).then(() => {
-                console.log("Stats update sent to discordbotlist.com")
-            }).catch(error => {
-                console.error(error)
-            })
+                {
+                    hostname: "discordbotlist.com",
+                    path: "/api/v1/bots/759415210628087841/stats",
+                    token: process.env.BOTLISTTOKEN,
+                    data: JSON.stringify({
+                        guilds: client.guilds.cache.size,
+                        users: users
+                    })
+                },
+                {
+                    hostname: "discord.bots.gg",
+                    path: "/api/v1/bots/759415210628087841/stats",
+                    token: process.env.BOTSGGTOKEN,
+                    data: JSON.stringify({
+                        guildCount: client.guilds.cache.size
+                    })
+                },
+            ]
 
-            Util.requestAsync({
-                hostname: "discord.bots.gg",
-                path: "/api/v1/bots/759415210628087841/stats",
-                protocol: "HTTPS",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": process.env.BOTSGGTOKEN
-                },
-                data: JSON.stringify({
-                    guildCount: client.guilds.cache.size
+            apis.forEach(api => {
+                Util.requestAsync({
+                    hostname: api.hostname,
+                    path: api.path,
+                    protocol: "HTTPS",
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": api.token
+                    },
+                    data: api.data
+                }).then(() => {
+                    console.log("Stats update sent to " + api.hostname)
+                }).catch(error => {
+                    console.error(error)
                 })
-            }).then(() => {
-                console.log("Stats update sent to discord.bots.gg")
-            }).catch(error => {
-                console.error(error)
             })
         }
 
