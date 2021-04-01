@@ -36,7 +36,7 @@ class Command extends CommandBase {
         }
 
         if (!nameHistory) {
-            botMessage.delete().catch(console.error)
+            Util.stopTyping(message)
 
             return Util.sendMessage(message, {
                 embed: {
