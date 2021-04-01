@@ -45,7 +45,8 @@ class Command extends CommandBase {
                     icon_url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
                 },
                 description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n**Members:** \`\`${guild.memberCount}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${ip}\`\`\n• **Port:** \`\`${port}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `${await settings.get("logchannel")}`}\n• **Disabled commands:** ${disabledCommands.length > 0 ? disabledCommands.join(", ") : "None"}\n\nPermissions:\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
-                color: 927567
+                color: 927567,
+                timestamp: Date.now()
             }
         }
     }
@@ -201,26 +202,26 @@ class Command extends CommandBase {
             }
         }
 
-        Util.sendMessage(message, ":arrows_counterclockwise: Getting servers...").then(botMessage => {
-            let promise = new Promise((resolve, reject) => {
-                let pages = []
-                let done = 0
-                cache.forEach(async guild => {
-                    let page = await this.getServer(message.guild, guild, check)
-                    if (page) pages.push(page);
-                    done++
-                    if (pages.length >= 75 || done == cache.size) resolve(pages)
-                })
+        Util.startTyping(message).catch(console.error)
+
+        let promise = new Promise((resolve, reject) => {
+            let pages = []
+            let done = 0
+            cache.forEach(async guild => {
+                let page = await this.getServer(message.guild, guild, check)
+                if (page) pages.push(page);
+                done++
+                if (pages.length >= 75 || done == cache.size) resolve(pages)
             })
+        })
 
-            promise.then(pages => {
-                botMessage.delete().catch(console.error)
-                pages = pages.filter(value => value != null)
+        promise.then(pages => {
+            Util.stopTyping(message)
+            pages = pages.filter(value => value != null)
 
-                if (pages.length == 0) return Util.sendWarning(message.channel, "No servers found");
+            if (pages.length == 0) return Util.sendWarning(message.channel, "No servers found");
 
-                Util.sendPages(message, pages)
-            }).catch(console.error)
+            Util.sendPages(message, pages)
         }).catch(console.error)
     }
 }

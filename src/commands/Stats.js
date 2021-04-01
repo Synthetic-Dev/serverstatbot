@@ -13,69 +13,72 @@ class Command extends CommandBase {
     async execute(message) {
         let os = OSUtils.os
         let cpu = OSUtils.cpu
-        let memory = OSUtils.mem
         let network = OSUtils.netstat
 
-        Util.sendMessage(message, ":arrows_counterclockwise: Collecting stats...").then(async botMessage => {
-            let osName = await os.oos()
-            let cpuUsage = await cpu.usage()
-            let memoryUsage = await memory.used()
-            let netStats = await network.inOut()
+        Util.startTyping(message).catch(console.error)
 
-            let uptime = os.uptime()
+        let osName = await os.oos()
+        let cpuUsage = await cpu.usage()
+        let netStats = await network.inOut()
+        let uptime = os.uptime()
 
-            botMessage.delete().catch(console.error)
+        let users = 0
+        this.client.guilds.cache.forEach(guild => {
+            users += guild.memberCount
+        })
 
-            Util.sendMessage(message, {
-                embed: {
-                    title: "Stats",
-                    author: {
-                        name: this.client.user.username,
-                        icon_url: this.client.user.avatarURL({
-                            size: 64,
-                            dynamic: true,
-                            format: "png"
-                        })
+        Util.stopTyping(message)
+
+        Util.sendMessage(message, {
+            embed: {
+                title: "Stats",
+                author: {
+                    name: this.client.user.username,
+                    icon_url: this.client.user.avatarURL({
+                        size: 64,
+                        dynamic: true,
+                        format: "png"
+                    })
+                },
+                color: 5145560,
+                fields: [
+                    {
+                        name: "Version",
+                        value: process.env.npm_package_version,
+                        inline: true
                     },
-                    color: 5145560,
-                    fields: [
-                        {
-                            name: "Version",
-                            value: process.env.npm_package_version,
-                            inline: true
-                        },
-                        {
-                            name: "Servers",
-                            value: this.client.guilds.cache.size,
-                            inline: true
-                        },
-                        {
-                            name: "Users",
-                            value: this.client.users.cache.size,
-                            inline: true
-                        },
-                        {
-                            name: "Server",
-                            value: `Shared Heroku System - OS: ${OSUtils.isNotSupported(osName) ? "Unknown" : osName} - Uptime: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime / 60) % 60)}m ${Math.floor(uptime % 60)}s`
-                        },
-                        {
-                            name: "CPU",
-                            value: OSUtils.isNotSupported(cpuUsage) ? "Not supported" : `${cpu.model()} - ${cpu.count()} core(s) (${cpuUsage}%)`
-                        },
-                        {
-                            name: "Memory",
-                            value: OSUtils.isNotSupported(memoryUsage) ? "Not supported" : `${Math.round(memoryUsage.totalMemMb / 1024)}GB (${Math.round((memoryUsage.usedMemMb / memoryUsage.totalMemMb) * 10000) / 100}%)`,
-                            inline: true
-                        },
-                        {
-                            name: "Network Average",
-                            value: OSUtils.isNotSupported(netStats) ? "Not supported" : `In: ${netStats.total.inputMb}Mb, Out: ${netStats.total.outputMb}Mb`,
-                            inline: true
-                        }
-                    ],
-                    footer: Util.getFooter(this.client)
-                }
-            }).catch(console.error)
+                    {
+                        name: "Servers",
+                        value: this.client.guilds.cache.size,
+                        inline: true
+                    },
+                    {
+                        name: "Users",
+                        value: users,
+                        inline: true
+                    },
+                    {
+                        name: "Server",
+                        value: `Shared Heroku System - OS: ${OSUtils.isNotSupported(osName) ? "Unknown" : osName} - Uptime: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime / 60) % 60)}m ${Math.floor(uptime % 60)}s`
+                    },
+                    {
+                        name: "CPU",
+                        value: OSUtils.isNotSupported(cpuUsage) ? "Not supported" : `${cpu.model()} - ${cpu.count()} core(s) (${cpuUsage}%)`
+                    },
+                    {
+                        name: "Memory Usage",
+                        value: `${Math.round(process.memoryUsage().rss / (1024*1024))}MB`,
+                        inline: true
+                    },
+                    {
+                        name: "Network Average",
+                        value: OSUtils.isNotSupported(netStats) ? "Not supported" : `In: ${netStats.total.inputMb}Mb, Out: ${netStats.total.outputMb}Mb`,
+                        inline: true
+                    }
+                ],
+                timestamp: Date.now(),
+                footer: Util.getFooter(this.client)
+            }
         }).catch(console.error)
     }
 }

@@ -21,7 +21,8 @@ class Command extends CommandBase {
             embed: {
                 title: "PERMISSIONS",
                 description: "``" + message.guild.me.permissions.toArray().join("``, ``") + "``",
-                color: 927567
+                color: 927567,
+                timestamp: Date.now()
             }
         }).catch(console.error)
     }

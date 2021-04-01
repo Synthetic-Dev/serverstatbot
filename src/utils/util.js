@@ -155,6 +155,29 @@ class Util {
     };
 
     /**
+     * Start typing
+     * @param {Discord.TextChannel | Discord.DMChannel | Discord.Message} medium 
+     * @param {number} count
+     * @returns {Promise}
+     */
+    static startTyping(medium, count = 1) {
+        let isMessage = medium instanceof Discord.Message
+        let channel = isMessage ? medium.channel : medium
+        return channel.startTyping(count)
+    }
+
+    /**
+     * Stop typing
+     * @param {Discord.TextChannel | Discord.DMChannel | Discord.Message} medium 
+     * @param {boolean} force
+     */
+     static stopTyping(medium, force = false) {
+        let isMessage = medium instanceof Discord.Message
+        let channel = isMessage ? medium.channel : medium
+        channel.stopTyping(force)
+    }
+
+    /**
      * DMs a user with the given text
      * @param {Discord.User} user
      * @param {Discord.APIMessageContentResolvable | Discord.MessageAdditions | (Discord.MessageOptions & {split?: false;})} content 
@@ -762,10 +785,8 @@ class Util {
      * @returns {Object}
      */
     static getFooter(client) {
-        const onlineFor = (Date.now() - client.startTime) / 1000
-
         return {
-            text: `Uptime: ${Math.floor(onlineFor / 3600)}h ${Math.floor((onlineFor / 60) % 60)}m ${Math.floor(onlineFor % 60)}s | Copyright ${(new Date()).getUTCFullYear()} © All rights reserved.`
+            text: `Uptime: ${Math.floor(client.uptime / 1000 / 3600)}h ${Math.floor((client.uptime / 1000 / 60) % 60)}m ${Math.floor(client.uptime / 1000 % 60)}s | Copyright ${(new Date()).getUTCFullYear()} © All rights reserved.`
         }
     }
 

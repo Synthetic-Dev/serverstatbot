@@ -42,6 +42,7 @@ class Command extends CommandBase {
                         value: `Java ${Protocol.getMinSupportedVersion()}+ and all official Bedrock versions`
                     }
                 ],
+                timestamp: Date.now(),
                 footer: Util.getFooter(this.client)
             }
         }).catch(console.error)

@@ -62,6 +62,7 @@ class Command extends CommandBase {
                     description: `**Prefix: \`\`${prefix}\`\`**${desc}`,
                     fields: fields,
                     color: 5145560,
+                    timestamp: Date.now(),
                     footer: Util.getFooter(this.client)
                 }
             }

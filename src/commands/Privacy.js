@@ -48,6 +48,7 @@ class Command extends CommandBase {
                         value: "If you would like information on a specific matter or would like your data to be deleted please [join support server](https://discord.gg/uqVp2XzUP8)"
                     }
                 ],
+                timestamp: Date.now(),
                 footer: Util.getFooter(this.client)
             }
         }).catch(console.error)

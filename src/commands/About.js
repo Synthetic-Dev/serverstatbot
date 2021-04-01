@@ -17,6 +17,7 @@ class Command extends CommandBase {
         Util.sendMessage(message, {
             embed: {
                 title: "About",
+                description: "/// ***Awaiting verification*** ///",
                 color: 5145560,
                 author: {
                     name: this.client.user.username,
@@ -58,6 +59,7 @@ class Command extends CommandBase {
                         inline: true
                     }
                 ],
+                timestamp: Date.now(),
                 footer: Util.getFooter(this.client)
             }
         }).catch(console.error)
