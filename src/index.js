@@ -410,32 +410,66 @@ client.on("guildDelete", guild => {
 /**
  * Command Parser
  */
+let commandUsageCache = {};
+const commandsWithinTimeout = 3;
+const commandTimeoutTime = 10*1000;
+
 async function parseCommand(message) {
-    const guild = message.guild
-    const content = message.content
+    Object.keys(commandUsageCache).forEach(id => {
+        let data = commandUsageCache[id]
+        if (data && data.lastCommand + commandTimeoutTime < Date.now()) {
+            delete commandUsageCache[id];
+        }
+    })
 
-    const settings = client.settings[guild.id]
-    const prefix = await settings.get("prefix")
+    const guild = message.guild;
+    const content = message.content;
 
-    const isCommand = content.startsWith(prefix)
-    let command, commandName, inputs
+    const settings = client.settings[guild.id];
+    const prefix = await settings.get("prefix");
+
+    const isCommand = content.startsWith(prefix);
+    let command, commandName, inputs;
 
     if (isCommand) {
+        let commandUsage = (commandUsageCache[message.author.id] ? commandUsageCache[message.author.id] : {lastCommand: Date.now(), consStart: Date.now(), consCommands: 0, consWarningSent: false});
+        commandUsageCache[message.author.id] = commandUsage;
+
+        if (commandUsage.consCommands > commandsWithinTimeout && commandUsage.lastCommand + commandTimeoutTime > Date.now()) {
+            if (commandUsage.consWarningSent) return;
+            commandUsage.consWarningSent = true;
+            return Util.sendMessage(message, {
+                embed: {
+                    title: "Running too many commands!",
+                    description: `Please wait ${Math.round((commandTimeoutTime - (Date.now() - commandUsage.lastCommand)) / 1000)} seconds before running another command.`,
+                    color: 12333616
+                }
+            })
+        }
+
+        if (commandUsage.consStart + commandTimeoutTime > Date.now()) {
+            commandUsage.consCommands++;
+        } else {
+            commandUsage.consStart = Date.now();
+            commandUsage.consCommands = 0;
+        }
+
+        commandUsage.lastCommand = Date.now();
+        commandUsageCache[message.author.id] = commandUsage;
+
         [commandName, ...inputs] = content.trim().substring(prefix.length).split(" ");
         if (!commandName || commandName.length == 0) return;
     
         if (!client.commands) return console.error("Commands not loaded");
 
         if (!Util.doesMemberHavePermissionsInChannel(guild.me, message.channel, ["SEND_MESSAGES"])) {
-            return Util.cannotSendMessages(message.author, message.channel)
+            return Util.cannotSendMessages(message.author, message.channel);
         }
 
         command = client.commands.get(commandName.toLowerCase())
         if (!command) return //Util.couldNotFind(message, "command", commandName);
 
         if (!command.private && await client.globalSettings.get("maintenance")) return Util.replyWarning(message, "Maintenance mode is currently enabled");
-
-        message.command = command
 
         const disabledCommands = await settings.get("disabledCommands")
         if (disabledCommands.includes(command.name(true))) return Util.replyWarning(message, "That command is disabled in this server")
