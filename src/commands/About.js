@@ -7,6 +7,7 @@ class Command extends CommandBase {
             name: "about",
             desc: "Information about the bot",
             aliases: [
+                "version",
                 "abt"
             ]
         })
