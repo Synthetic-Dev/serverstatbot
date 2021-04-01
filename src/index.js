@@ -498,7 +498,7 @@ client.on("raw", packet => {
         Util.getGuildById(client, packet.d.guild_id).then(guild => {
             const channel = Util.getChannelById(guild, packet.d.channel_id)
 
-            if (channel.messages.cache.has(packet.d.message_id)) return;
+            if (!channel || channel.messages.cache.has(packet.d.message_id)) return;
 
             channel.messages.fetch(packet.d.message_id).then(async message => {
                 if (packet.t === "MESSAGE_REACTION_REMOVE_ALL") {
