@@ -436,7 +436,7 @@ async function parseCommand(message) {
         }
 
         command = client.commands.get(commandName.toLowerCase())
-        if (!command) return Util.couldNotFind(message, "command", commandName);
+        if (!command) return //Util.couldNotFind(message, "command", commandName);
 
         if (!command.private && await client.globalSettings.get("maintenance")) return Util.replyWarning(message, "Maintenance mode is currently enabled");
 
