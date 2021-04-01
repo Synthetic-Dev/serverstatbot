@@ -5,7 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "privacy",
-            desc: "View the our privacy policy",
+            desc: "View our privacy policy",
             aliases: [
                 "policy",
                 "privacypolicy"
