@@ -1,7 +1,7 @@
-const Minecraft = require("minecraft-protocol")
+/*const Minecraft = require("minecraft-protocol")
 const DNS = require("minecraft-protocol/src/client/tcp_dns.js")
 const Forge = require("minecraft-protocol-forge")
-const MinecraftData = require("minecraft-data")
+const MinecraftData = require("minecraft-data")*/
 const MinecraftUtil = require("minecraft-server-util")
 
 const formattingCode = /\u00C2?\u00A7([a-fklmnor0-9])/g;
@@ -106,6 +106,7 @@ class Protocol {
 
         let [success, result] = await bulkData
         if (!success) return [false, result];
+        console.log(result)
 
         result.cached = false;
         result.latency = -1;
@@ -155,7 +156,7 @@ class Protocol {
             }
             return [true, result]
         }
-
+        /*
         let verifyData = new Promise((resolve, reject) => {
             const dataVersion = result.version.match(/(\d+\.)?(\d+\.)?(\d)/g).filter(match => match.length > 0)[0] || "1.16.5"
             const mcData = MinecraftData(dataVersion)
@@ -265,6 +266,7 @@ class Protocol {
                 }
             }
         }
+        */
 
         this.requestCache[ip + ":" + port] = {
             expires: Date.now() + this.cacheTime,
