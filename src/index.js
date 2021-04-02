@@ -16,8 +16,6 @@ Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
 
 const client = new Discord.Client({
     messageCacheMaxSize: 50,
-    messageCacheLifetime: 60*30,
-    messageSweepInterval: 60*5,
     messageEditHistoryMaxSize: 1,
     presence: {
         status: "idle",

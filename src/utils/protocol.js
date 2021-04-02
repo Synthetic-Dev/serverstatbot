@@ -106,7 +106,6 @@ class Protocol {
 
         let [success, result] = await bulkData
         if (!success) return [false, result];
-        console.log(result)
 
         result.cached = false;
         result.latency = -1;
