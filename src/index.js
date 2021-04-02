@@ -120,6 +120,7 @@ function serverLogs() {
                     type: "none"
                 }
             }
+            client.servers[guild.id] = server
 
             if (server.ip != ip || server.port != port) {
                 server.ip = ip;
@@ -136,6 +137,9 @@ function serverLogs() {
                         Util.getRecentMessage(channel, status.content).then(message => {
                             if (message) {
                                 if (server.statusMessage.message && Util.isMessageMoreRecent(message, server.statusMessage.message)) {
+                                    server.statusMessage.message = message
+                                    server.statusMessage.type = status.type
+                                } else if(!server.statusMessage.message) {
                                     server.statusMessage.message = message
                                     server.statusMessage.type = status.type
                                 }
