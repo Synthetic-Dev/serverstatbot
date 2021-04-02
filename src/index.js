@@ -14,7 +14,20 @@ require("dotenv").config()
 OSUtils.options.INTERVAL = 2000
 Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
 
-const client = new Discord.Client();
+const client = new Discord.Client({
+    messageCacheMaxSize: 50,
+    messageCacheLifetime: 60*30,
+    messageSweepInterval: 60*5,
+    messageEditHistoryMaxSize: 1,
+    presence: {
+        status: "idle",
+        activity: {
+            name: "Starting...",
+            type: "PLAYING"
+        }
+    }
+});
+
 if (process.env.HEROKUAPIKEY) {
     client.heroku = new Heroku({token: process.env.HEROKUAPIKEY})
 }
@@ -23,6 +36,17 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
+
+
+const fs = require('fs');
+const v8 = require('v8');
+
+function createHeapSnapshot() {
+  const snapshotStream = v8.getHeapSnapshot();
+  const fileName = `${Date.now()}.heapsnapshot`;
+  const fileStream = fs.createWriteStream(fileName);
+  snapshotStream.pipe(fileStream);
+}
 
 
 /**
@@ -298,6 +322,72 @@ function activityDisplay() {
 
 
 /**
+ * Update bot site stats
+ */
+ function updateStats() {
+    let users = 0
+    client.guilds.cache.forEach(guild => {
+        users += guild.memberCount
+    })
+
+    const apis = [
+        {
+            hostname: "top.gg",
+            path: "/api/bots/759415210628087841/stats",
+            token: process.env.TOPGGTOKEN,
+            data: JSON.stringify({
+                server_count: client.guilds.cache.size
+            })
+        },
+        {
+            hostname: "discordbotlist.com",
+            path: "/api/v1/bots/759415210628087841/stats",
+            token: process.env.BOTLISTTOKEN,
+            data: JSON.stringify({
+                guilds: client.guilds.cache.size,
+                users: users
+            })
+        },
+        {
+            hostname: "discord.bots.gg",
+            path: "/api/v1/bots/759415210628087841/stats",
+            token: process.env.BOTSGGTOKEN,
+            data: JSON.stringify({
+                guildCount: client.guilds.cache.size
+            })
+        },
+        {
+            hostname: "botsfordiscord.com",
+            path: "/api/bot/759415210628087841",
+            token: process.env.BFDTOKEN,
+            data: JSON.stringify({
+                server_count: client.guilds.cache.size
+            })
+        },
+    ]
+
+    apis.forEach(api => {
+        console.log("Stats sent to " + api.hostname)
+        Util.requestAsync({
+            hostname: api.hostname,
+            path: api.path,
+            protocol: "HTTPS",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": api.token
+            },
+            data: api.data
+        }).then(() => {
+            console.log("Stats updated on " + api.hostname)
+        }).catch(error => {
+            console.error(error)
+        })
+    })
+}
+
+
+/**
  * Startup
  */
 client.on("ready", () => {
@@ -323,61 +413,10 @@ client.on("ready", () => {
     })
 
     if (process.env.ISDEV != "TRUE") {
-        function updateStats() {
-            let users = 0
-            client.guilds.cache.forEach(guild => {
-                users += guild.memberCount
-            })
-
-            const apis = [
-                {
-                    hostname: "top.gg",
-                    path: "/api/bots/759415210628087841/stats",
-                    token: process.env.TOPGGTOKEN,
-                    data: JSON.stringify({
-                        server_count: client.guilds.cache.size
-                    })
-                },
-                {
-                    hostname: "discordbotlist.com",
-                    path: "/api/v1/bots/759415210628087841/stats",
-                    token: process.env.BOTLISTTOKEN,
-                    data: JSON.stringify({
-                        guilds: client.guilds.cache.size,
-                        users: users
-                    })
-                },
-                {
-                    hostname: "discord.bots.gg",
-                    path: "/api/v1/bots/759415210628087841/stats",
-                    token: process.env.BOTSGGTOKEN,
-                    data: JSON.stringify({
-                        guildCount: client.guilds.cache.size
-                    })
-                },
-            ]
-
-            apis.forEach(api => {
-                Util.requestAsync({
-                    hostname: api.hostname,
-                    path: api.path,
-                    protocol: "HTTPS",
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": api.token
-                    },
-                    data: api.data
-                }).then(() => {
-                    console.log("Stats update sent to " + api.hostname)
-                }).catch(error => {
-                    console.error(error)
-                })
-            })
-        }
-
         updateStats()
         client.setInterval(updateStats, 120*60*1000)
+    } else {
+        //client.setInterval(createHeapSnapshot, 10*60*1000)
     }
 
     console.log("Bot started successfully")
@@ -517,7 +556,6 @@ client.on("message", async message => {
     parseCommand(message)
 });
 
-
 /**
  * Raw event emitter
  */
@@ -542,6 +580,7 @@ client.on("raw", packet => {
                 
                 const emoji = packet.d.emoji.id ? packet.d.emoji.id : packet.d.emoji.name
                 const reaction = message.reactions.cache.get(emoji)
+                if (!reaction) return;
                 client.users.fetch(packet.d.user_id).then(user => {
                     if (packet.t === "MESSAGE_REACTION_ADD") {
                         client.emit("messageReactionAdd", reaction, user);

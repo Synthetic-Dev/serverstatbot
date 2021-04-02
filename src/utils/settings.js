@@ -70,6 +70,7 @@ class Settings {
             data.save()
         }
 
+        this.cache.set(name, data.Value)
         return data.Value
     }
 
