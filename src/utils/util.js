@@ -870,7 +870,18 @@ class Util {
     static parseDate(input) {
         let number = Number(input)
         let date = !isNaN(number) ? new Date(number) : new Date(input)
-        return isNaN(date) ? null : date
+        date = isNaN(date) ? null : date
+
+        if (!date) {
+            let currentDate = new Date()
+            let namedDates = {
+                "today": new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate()),
+                "yesterday": new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - 1),
+            }
+            date = namedDates[input.toLowerCase()]
+        }
+
+        return date
     }
 }
 

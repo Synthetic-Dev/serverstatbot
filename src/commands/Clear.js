@@ -57,6 +57,7 @@ class Command extends CommandBase {
             after: value => {
                 if (!value) return Util.replyError(message, "Must specifiy a date and/or time");
                 let date = Util.parseDate(value)
+                if (!date) return Util.replyError(message, "Invalid date");
 
                 Util.sendMessage(channel, `Deleting messages after ${date.toDateString()}`).then(botMessage => {
                     botMessage.delete({
