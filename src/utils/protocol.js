@@ -3,16 +3,19 @@ const DNS = require("minecraft-protocol/src/client/tcp_dns.js")
 const Forge = require("minecraft-protocol-forge")
 const MinecraftData = require("minecraft-data")*/
 const MinecraftUtil = require("minecraft-server-util")
+const NodeCache = require("node-cache")
 
 const formattingCode = /\u00C2?\u00A7([a-fklmnor0-9])/g;
+const cacheTime = 30;
+const requestCache = new NodeCache({
+    checkperiod: cacheTime / 2,
+    stdTTL: cacheTime
+});
 
 class Protocol {
     constructor() {
         console.error(`The ${this.constructor.name} class cannot be constructed.`);
     }
-
-    static requestCache = {};
-    static cacheTime = 30*1000;
 
     /**
      * The minimum minecraft version that the statusFE01() handshake supports
@@ -31,19 +34,6 @@ class Protocol {
      * @returns {Promise<boolean, Object<string, any> | Error | string>}
      */
     static async sendRequest(ip, port = 25565, verify = true) {
-        Object.keys(this.requestCache).forEach((address) => {
-            let data = this.requestCache[address]
-            if (data && data.expires < Date.now()) {
-                delete this.requestCache[address];
-            }
-        })
-
-        let cachedData = this.requestCache[ip + ":" + port]
-        if (cachedData) {
-            cachedData.value.cached = true;
-            return [true, cachedData.value]
-        }
-
         let bulkData = new Promise((resolve, reject) => {
             let args = [ip, {port: port, timeout: 3000}]
 
@@ -149,10 +139,6 @@ class Protocol {
         }
 
         if (result.bedrock || !verify) {
-            this.requestCache[ip + ":" + port] = {
-                expires: Date.now() + this.cacheTime,
-                value: result
-            }
             return [true, result]
         }
         /*
@@ -267,11 +253,6 @@ class Protocol {
         }
         */
 
-        this.requestCache[ip + ":" + port] = {
-            expires: Date.now() + this.cacheTime,
-            value: result
-        }
-
         return [true, result]
     }
 
@@ -283,10 +264,19 @@ class Protocol {
      * @returns {Promise<{ip: string, port: number, online: boolean, error?: Error | string, latency?: number, ping?: boolean, query?: boolean, cached?: boolean, bedrock?: boolean, modded?: boolean, srvRecord?: {host: string, port: number}, version?: {minecraft: string, gamemode?: string, protocol?: number}, players?: {online: number, max: number, sample: {id: string?, name: {raw: string, clean: string}}[], all: boolean}, motd?: {raw: string, clean: string, ansi: Object[]?}, favicon?: string, plugins?: {name: string, version: string}[], modInfo?: {type: string, modlist: Object[]}}>}
      */
     static async getInfo(ip, port = 25565, verify = true) {
+        let final
+
+        let cacheKey = ip + ":" + port
+        if (requestCache.has(cacheKey)) {
+            final = requestCache.get(cacheKey)
+            final.cached = true;
+            return final
+        }
+
         let [success, result] = await this.sendRequest(ip, port, verify)
 
         if (success) {
-            let final = {
+            final = {
                 ip: result.host,
                 port: result.port,
                 latency: result.latency,
@@ -378,16 +368,18 @@ class Protocol {
                     })
                 }
             }
-
-            return final
         } else {
-            return {
+            final = {
                 ip: ip,
                 port: port,
                 online: false,
                 error: result
             }
         }
+
+        requestCache.set(cacheKey, final)
+
+        return final
     }
 
     /**

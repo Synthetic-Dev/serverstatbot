@@ -3,6 +3,7 @@ const OSUtils = require("node-os-utils")
 const Discord = require("discord.js")
 const Canvas = require("canvas")
 const Mongoose = require("mongoose")
+const NodeCache = require("node-cache")
 const Util = require("./utils/util.js")
 const Settings = require("./utils/settings.js")
 const Protocol = require("./utils/protocol.js")
@@ -16,6 +17,8 @@ Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
 
 const client = new Discord.Client({
     messageCacheMaxSize: 50,
+    messageCacheLifetime: 60*60,
+    messageSweepInterval: 60*10,
     messageEditHistoryMaxSize: 1,
     presence: {
         status: "idle",
@@ -130,7 +133,7 @@ function serverLogs() {
                 server.start = true;
             }
 
-            if (!server.statusMessage.message) {
+            if (!server.statusMessage.message || server.statusMessage.message.deleted) {
                 await new Promise((resolve, reject) => {
                     let done = 0
                     statuses.forEach((status, index) => {
@@ -393,12 +396,17 @@ function activityDisplay() {
  * Startup
  */
 client.on("ready", () => {
-    client.globalSettings = new Settings.Global();
+    client.globalSettings = client.globalSettings ? client.globalSettings : new Settings.Global();
     console.log(`Loaded global settings`)
+
+    //BE CAUTIOUS WHEN RUNNING OFF OF PRODUCTION
+    if (process.env.ISDEV != "TRUE") {
+        Settings.Guild.cleanup(client.guilds.cache)
+    }
 
     client.settings = {}
     client.guilds.cache.forEach(guild => {
-        client.settings[guild.id] = new Settings.Guild(guild);
+        client.settings[guild.id] = client.settings[guild.id] ? client.settings[guild.id] : new Settings.Guild(guild);
     })
     console.log(`Loaded settings for ${Object.values(client.settings).length} guild(s)`)
 
@@ -429,11 +437,19 @@ client.on("ready", () => {
 
 
 /**
+ * Watch for ratelimiting
+ */
+client.on("rateLimit", info => {
+    console.warn(info)
+})
+
+
+/**
  * Guild joining and leaving
  */
 client.on("guildCreate", guild => {
     if (!client.settings) client.settings = [];
-    client.settings[guild.id] = new Settings.Guild(guild);
+    client.settings[guild.id] = client.settings[guild.id] ? client.settings[guild.id] : new Settings.Guild(guild);
 })
 
 client.on("guildDelete", guild => {
@@ -442,29 +458,25 @@ client.on("guildDelete", guild => {
     if (client.settings) {
         let settings = client.settings[guild.id]
         settings.clear()
-
-        client.settings[guild.id] = null;
+        delete client.settings[guild.id];
     }
 })
 
-
+    
 /**
  * Command Parser
  */
-let commandUsageCache = {};
+const commandUsageCache = new NodeCache({
+    checkperiod: 300,
+    useClones: false
+});
 const commandsWithinTimeout = 3;
-const commandTimeoutTime = 10*1000;
+const commandTimeoutTime = 15*1000;
 
 async function parseCommand(message) {
-    Object.keys(commandUsageCache).forEach(id => {
-        let data = commandUsageCache[id]
-        if (data && data.lastCommand + commandTimeoutTime < Date.now()) {
-            delete commandUsageCache[id];
-        }
-    })
-
     const guild = message.guild;
     const content = message.content;
+    const author = message.author;
 
     const settings = client.settings[guild.id];
     const prefix = await settings.get("prefix");
@@ -473,8 +485,12 @@ async function parseCommand(message) {
     let command, commandName, inputs;
 
     if (isCommand) {
-        let commandUsage = (commandUsageCache[message.author.id] ? commandUsageCache[message.author.id] : {lastCommand: Date.now(), consStart: Date.now(), consCommands: 0, consWarningSent: false});
-        commandUsageCache[message.author.id] = commandUsage;
+        let commandUsage
+        if (commandUsageCache.has(author.id)) commandUsage = commandUsageCache.get(author.id);
+        else {
+            commandUsage = {lastCommand: Date.now(), consCommands: 0, consWarningSent: false};
+            commandUsageCache.set(author.id, commandUsage);
+        }
 
         if (commandUsage.consCommands > commandsWithinTimeout && commandUsage.lastCommand + commandTimeoutTime > Date.now()) {
             if (commandUsage.consWarningSent) return;
@@ -488,15 +504,14 @@ async function parseCommand(message) {
             })
         }
 
-        if (commandUsage.consStart + commandTimeoutTime > Date.now()) {
+        if (commandUsage.lastCommand + commandTimeoutTime > Date.now()) {
             commandUsage.consCommands++;
         } else {
-            commandUsage.consStart = Date.now();
             commandUsage.consCommands = 0;
         }
 
         commandUsage.lastCommand = Date.now();
-        commandUsageCache[message.author.id] = commandUsage;
+        commandUsageCache.ttl(author.id, commandTimeoutTime/1000);
 
         [commandName, ...inputs] = content.trim().substring(prefix.length).split(" ");
         if (!commandName || commandName.length == 0) return;
@@ -504,7 +519,7 @@ async function parseCommand(message) {
         if (!client.commands) return console.error("Commands not loaded");
 
         if (!Util.doesMemberHavePermissionsInChannel(guild.me, message.channel, ["SEND_MESSAGES"])) {
-            return Util.cannotSendMessages(message.author, message.channel);
+            return Util.cannotSendMessages(author, message.channel);
         }
 
         command = client.commands.get(commandName.toLowerCase())

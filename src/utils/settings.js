@@ -1,11 +1,12 @@
 const Discord = require("discord.js")
+const NodeCache = require("node-cache")
 const FileSystem = require("fs")
 
 const modelPaths = ["/models/global", "/models/guild"]
-const models = {}
+const MODELS = {}
 
 modelPaths.forEach(path => {
-    models[path] = {
+    MODELS[path] = {
         collection: new Discord.Collection(),
         loaded: false
     }
@@ -19,10 +20,10 @@ modelPaths.forEach(path => {
         jsfiles.forEach(file => {
             let name = file.split(".").shift()
             let setting = require(`..${path}/${file}`)
-            models[path].collection.set(name, setting)
+            MODELS[path].collection.set(name, setting)
         })
 
-        models[path].loaded = true
+        MODELS[path].loaded = true
     })
 })
 
@@ -32,9 +33,11 @@ class Settings {
         this.queryFilter = queryFilter
         this.optionsFilter = optionsFilter
 
-        this.models = models[path]
-        this.settings = models[path].collection
-        this.cache = new Discord.Collection()
+        this.models = MODELS[path]
+        this.settings = MODELS[path].collection
+        this.cache = new NodeCache({
+            checkperiod: 0
+        })
     }
 
     /**
@@ -53,10 +56,6 @@ class Settings {
      */
     async get(name) {
         await this.isSetting(name)
-
-        if (process.env.ISDEV == "TRUE") {
-            if (name == "prefix") return "--";
-        }
 
         let cachedValue = this.cache.get(name)
         if (cachedValue) return cachedValue;
@@ -116,9 +115,9 @@ class Settings {
      * Removes all settings from cache and database
      */
     clear() {
-        this.cache.clear()
+        this.cache.flushAll()
         this.settings.each((setting, name) => {
-            setting.findOneAndDelete(this.queryFilter(name))
+            setting.deleteMany(this.queryFilter(name))
         })
     }
 }
@@ -137,6 +136,28 @@ class GuildSettings extends Settings {
         })
 
         this.guild = guild
+    }
+
+    /**
+     * Removes all data from guilds that the bot is no longer in
+     * @param {Discord.Collection} guilds
+     */
+    static async cleanup(guilds) {
+        let path = "/models/guild"
+        let models = MODELS[path]
+        while (!models.loaded) await new Promise(resolve => setTimeout(resolve, 1000));
+
+        console.log("Cleanup started")
+
+        let guildIds = []
+        guilds.forEach(guild => {
+            guildIds.push(guild.id)
+        })
+
+        models.collection.forEach(async (setting, name) => {
+            let result = await setting.deleteMany().where("GuildID").nin(guildIds).exec()
+            console.log(`Deleted ${result.deletedCount} unused documents from '${name}' collection`)
+        })
     }
 }
 

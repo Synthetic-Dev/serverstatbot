@@ -11,4 +11,4 @@ const Schema = new Mongoose.Schema({
     }
 })
 
-module.exports = Mongoose.model("ips", Schema)
+module.exports = Mongoose.model((process.env.ISDEV == "TRUE" ? "T_" : "") + "ips", Schema)

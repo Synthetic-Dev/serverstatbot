@@ -3,7 +3,7 @@ const Mongoose = require("mongoose")
 const Schema = new Mongoose.Schema({
     Value: {
         type: String,
-        default: "."
+        default: process.env.ISDEV == "TRUE" ? "--" : "."
     },
     GuildID: {
         type: String,
@@ -11,4 +11,4 @@ const Schema = new Mongoose.Schema({
     }
 })
 
-module.exports = Mongoose.model("prefixes", Schema)
+module.exports = Mongoose.model((process.env.ISDEV == "TRUE" ? "T_" : "") + "prefixes", Schema)
