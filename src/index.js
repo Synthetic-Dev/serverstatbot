@@ -550,13 +550,11 @@ async function parseCommand(message) {
         let commandUsage
         if (commandUsageCache.has(author.id)) commandUsage = commandUsageCache.get(author.id);
         else {
-            commandUsage = {lastCommand: Date.now(), consCommands: 0, consWarningSent: false};
+            commandUsage = {lastCommand: Date.now(), consCommands: 0};
             commandUsageCache.set(author.id, commandUsage);
         }
 
         if (commandUsage.consCommands > commandsWithinTimeout && commandUsage.lastCommand + commandTimeoutTime > Date.now()) {
-            if (commandUsage.consWarningSent) return;
-            commandUsage.consWarningSent = true;
             return Util.sendMessage(message, {
                 embed: {
                     title: "Running too many commands!",
