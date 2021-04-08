@@ -29,8 +29,7 @@ class Command extends CommandBase {
 
         let deleteMessages = messages => {
             let deleted = 0
-            let deleting = true
-            channel.bulkDelete(messages).then((deletedMessages) => {deleted += deletedMessages.size; deleting = false}).catch(e => {
+            channel.bulkDelete(messages, true).then((deletedMessages) => {deleted += deletedMessages.size; deleting = false}).catch(e => {
                 deleting = true
                 messages.forEach(msg => {
                     if (!msg || msg.deleted) {
@@ -47,7 +46,7 @@ class Command extends CommandBase {
                     })
                 }).catch(console.error)
 
-                if (message && !message.deleted) {
+                if (message && !message.deleted && Util.doesMemberHavePermissionsInChannel(channel.guild.me, channel, ["MANAGE_MESSAGES"])) {
                     message.delete().then(() => {deleted++}).catch(console.error)
                 }
             })
