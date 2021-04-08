@@ -29,6 +29,7 @@ class Command extends CommandBase {
 
         let deleteMessages = messages => {
             let deleted = 0
+            let deleting = true
             channel.bulkDelete(messages, true).then((deletedMessages) => {deleted += deletedMessages.size; deleting = false}).catch(e => {
                 deleting = true
                 messages.forEach(msg => {
