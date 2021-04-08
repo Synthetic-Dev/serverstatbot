@@ -1,40 +1,39 @@
+const Mongoose = require("mongoose")
 const Discord = require("discord.js")
 const NodeCache = require("node-cache")
 const FileSystem = require("fs")
 
-const modelPaths = ["/models/global", "/models/guild"]
-const MODELS = {}
+const MODELS = {
+    collection: new Discord.Collection(),
+    loaded: false
+}
 
-modelPaths.forEach(path => {
-    MODELS[path] = {
-        collection: new Discord.Collection(),
-        loaded: false
-    }
+FileSystem.readdir(`${__dirname}/../models/guild`, (error, files) => {
+    if (error) return console.error(error);
 
-    FileSystem.readdir(`${__dirname}/../${path}`, (error, files) => {
-        if (error) return console.error(error);
+    const jsfiles = files.filter(file => file.split(".").pop() == "js")
+    if (jsfiles.length == 0) return;
 
-        const jsfiles = files.filter(file => file.split(".").pop() == "js")
-        if (jsfiles.length == 0) return;
-
-        jsfiles.forEach(file => {
-            let name = file.split(".").shift()
-            let setting = require(`..${path}/${file}`)
-            MODELS[path].collection.set(name, setting)
-        })
-
-        MODELS[path].loaded = true
+    jsfiles.forEach(file => {
+        let name = file.split(".").shift()
+        let setting = require(`../models/guild/${file}`)
+        MODELS.collection.set(name, setting)
     })
+
+    MODELS.loaded = true
 })
 
 class Settings {
-    constructor(path, queryFilter = () => {return {}}, optionsFilter = (n, v) => {return v}) {
+    constructor(options = {
+        queryFilter: () => {return {}},
+        optionsFilter: (_, v) => {return v}
+    }) {
 
-        this.queryFilter = queryFilter
-        this.optionsFilter = optionsFilter
+        this.queryFilter = options.queryFilter
+        this.optionsFilter = options.optionsFilter
 
-        this.models = MODELS[path]
-        this.settings = MODELS[path].collection
+        this.models = options.singleModel ? options.singleModel : options.models
+        this.settings = this.models.collection
         this.cache = new NodeCache({
             checkperiod: 0
         })
@@ -61,11 +60,18 @@ class Settings {
         if (cachedValue) return cachedValue;
 
         const setting = this.settings.get(name)
-        let data = await setting.findOne(this.queryFilter(name))
+        let model = setting;
+
+        if (this.models.single) {
+            if (setting.constant) return setting.schema.Value;
+            model = this.models.model
+        }
+
+        let data = await model.findOne(this.queryFilter(name))
 
         if (!data) {
             let options = this.optionsFilter(name, {})
-            data = new setting(options)
+            data = new model(options)
             data.save()
         }
 
@@ -83,13 +89,19 @@ class Settings {
         this.cache.set(name, value)
 
         const setting = this.settings.get(name)
-        const filter = this.queryFilter(name)
-        setting.findOne(filter).then(async data => {
+        let model = setting;
+
+        if (this.models.single) {
+            if (setting.constant) throw new Error(`Constant '${name}' cannot be changed`);
+            model = this.models.model
+        }
+
+        model.findOne(this.queryFilter(name)).then(async data => {
             if (data) {
                 data.Value = value
             } else {
                 let options = this.optionsFilter(name, {Value: value})
-                data = new setting(options)
+                data = new model(options)
             }
 
             data.save()
@@ -117,22 +129,27 @@ class Settings {
     clear() {
         this.cache.flushAll()
         this.settings.each((setting, name) => {
-            setting.deleteMany(this.queryFilter(name))
+            let model = setting
+            if (this.models.single) {
+                model = this.models.model
+            }
+
+            model.deleteMany(this.queryFilter(name))
         })
     }
 }
 
 class GuildSettings extends Settings {
     constructor(guild) {
-        super("/models/guild", 
-        
-        () => {
-            return {GuildID: guild.id}
-        }, 
-
-        (name, options) => {
-            options.GuildID = guild.id;
-            return options
+        super({
+            models: MODELS,
+            queryFilter: () => {
+                return {GuildID: guild.id}
+            }, 
+            optionsFilter: (_, options) => {
+                options.GuildID = guild.id;
+                return options
+            }
         })
 
         this.guild = guild
@@ -143,9 +160,7 @@ class GuildSettings extends Settings {
      * @param {Discord.Collection} guilds
      */
     static async cleanup(guilds) {
-        let path = "/models/guild"
-        let models = MODELS[path]
-        while (!models.loaded) await new Promise(resolve => setTimeout(resolve, 1000));
+        while (!MODELS.loaded) await new Promise(resolve => setTimeout(resolve, 1000));
 
         console.log("Cleanup started")
 
@@ -154,7 +169,7 @@ class GuildSettings extends Settings {
             guildIds.push(guild.id)
         })
 
-        models.collection.forEach(async (setting, name) => {
+        MODELS.collection.forEach(async (setting, name) => {
             let result = await setting.deleteMany().where("GuildID").nin(guildIds).exec()
             console.log(`Deleted ${result.deletedCount} unused documents from '${name}' collection`)
         })
@@ -163,15 +178,44 @@ class GuildSettings extends Settings {
 
 class GlobalSettings extends Settings {
     constructor() {
-        super("/models/global",
+        const Schema = new Mongoose.Schema({
+            _name: {
+                type: String
+            },
+            Value: ""
+        })
+
+        const singleModel = {
+            single: true,
+            loaded: false,
+            model: Mongoose.model("globals", Schema),
+            collection: new Discord.Collection()
+        }
+
+        FileSystem.readdir(`${__dirname}/../models/global`, (error, files) => {
+            if (error) return console.error(error);
         
-        (name) => {
-            return {_name: name}
-        },
+            const jsfiles = files.filter(file => file.split(".").pop() == "js")
+            if (jsfiles.length == 0) return;
         
-        (name, options) => {
-            options._name = name;
-            return options
+            jsfiles.forEach(file => {
+                let name = file.split(".").shift()
+                let setting = require(`../models/global/${file}`)
+                singleModel.collection.set(name, setting)
+            })
+        
+            singleModel.loaded = true
+        })
+
+        super({
+            singleModel: singleModel,
+            queryFilter: (name) => {
+                return {_name: name}
+            },
+            optionsFilter: (name, options) => {
+                options._name = name;
+                return options
+            }
         })
     }
 }

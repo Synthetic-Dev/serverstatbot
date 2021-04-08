@@ -1,9 +1,13 @@
-const Heroku = require('heroku-client')
-const OSUtils = require("node-os-utils")
-const Discord = require("discord.js")
 const Canvas = require("canvas")
+const OSUtils = require("node-os-utils")
+const DonateAPI = require("donatebot-node-api")
+const { HypixelAPI } = require("hypixel-api-v2")
+
 const Mongoose = require("mongoose")
+const Discord = require("discord.js")
 const NodeCache = require("node-cache")
+const Heroku = require('heroku-client')
+
 const Util = require("./utils/util.js")
 const Settings = require("./utils/settings.js")
 const Protocol = require("./utils/protocol.js")
@@ -29,6 +33,19 @@ const client = new Discord.Client({
     }
 });
 
+client.hypixel = new HypixelAPI(process.env.HYPIXELTOKEN)
+
+client.globalSettings = client.globalSettings ? client.globalSettings : new Settings.Global();
+console.log(`Loaded global settings`)
+
+client.globalSettings.get("supportServer").then(id => {
+    //console.log(id)
+    client.donations = new DonateAPI({
+        serverID: id,
+        apiKey: process.env.DONATETOKEN
+    })
+})
+
 if (process.env.HEROKUAPIKEY) {
     client.heroku = new Heroku({token: process.env.HEROKUAPIKEY})
 }
@@ -36,7 +53,9 @@ if (process.env.HEROKUAPIKEY) {
 Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${process.env.DBCLUSTER}.${process.env.DBDOMAIN}.mongodb.net/data`, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-})
+}).then(connection => {
+    client.db = connection
+}).catch(console.error)
 
 
 const fs = require('fs');
@@ -45,8 +64,9 @@ const v8 = require('v8');
 function createHeapSnapshot() {
   const snapshotStream = v8.getHeapSnapshot();
   const fileName = `${Date.now()}.heapsnapshot`;
-  const fileStream = fs.createWriteStream(fileName);
+  const fileStream = fs.createWriteStream(`${__dirname}/../heapsnapshots/${fileName}`);
   snapshotStream.pipe(fileStream);
+  console.log(`New heapsnapshot created ${fileName}`)
 }
 
 
@@ -281,11 +301,11 @@ function serverLogs() {
 function activityDisplay() {
     const activities = [
         {
-            text: "commands | .help",
-            type: "PLAYING"
+            text: "for .help | a mention",
+            type: "WATCHING"
         },
         {
-            text: "support | discord.gg/uqVp2XzUP8",
+            text: "in discord.gg/uqVp2XzUP8",
             type: "PLAYING"
         },
         {
@@ -322,14 +342,14 @@ function activityDisplay() {
             client.activityIndex++
             if (client.activityIndex == activities.length) client.activityIndex = 0;
         }).catch(console.error)
-    }, 10000)
+    }, 15000)
 }
 
 
 /**
  * Update bot site stats
  */
- function updateStats() {
+function updateStats() {
     let users = 0
     client.guilds.cache.forEach(guild => {
         users += guild.memberCount
@@ -393,12 +413,31 @@ function activityDisplay() {
 
 
 /**
+ * Votes for bot
+ */
+function updateVotes() {
+    Util.requestAsync({
+        hostname: "top.gg",
+        path: "/api/bots/759415210628087841/votes",
+        protocol: "HTTPS",
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": process.env.TOPGGTOKEN
+        }
+    }).then(response => {
+        let data = JSON.parse(response)
+        //console.log(data.length, data)
+    }).catch(error => {
+        console.error(error)
+    })
+}
+
+
+/**
  * Startup
  */
 client.on("ready", () => {
-    client.globalSettings = client.globalSettings ? client.globalSettings : new Settings.Global();
-    console.log(`Loaded global settings`)
-
     //BE CAUTIOUS WHEN RUNNING OFF OF PRODUCTION
     if (process.env.ISDEV != "TRUE") {
         Settings.Guild.cleanup(client.guilds.cache)
@@ -422,11 +461,16 @@ client.on("ready", () => {
         }
     })
 
+    updateVotes()
+ 
     if (process.env.ISDEV != "TRUE") {
         updateStats()
         client.setInterval(updateStats, 120*60*1000)
-    } else {
-        //client.setInterval(createHeapSnapshot, 10*60*1000)
+    }
+
+    if (process.env.SNAPSHOTS == "TRUE") {
+        createHeapSnapshot()
+        client.setInterval(createHeapSnapshot, 60*60*1000)
     }
 
     console.log("Bot started successfully")
@@ -440,7 +484,7 @@ client.on("ready", () => {
  * Watch for ratelimiting
  */
 client.on("rateLimit", info => {
-    console.warn(info)
+    //console.warn(info)
 })
 
 
@@ -477,14 +521,17 @@ async function parseCommand(message) {
     const guild = message.guild;
     const content = message.content;
     const author = message.author;
+    
 
     const settings = client.settings[guild.id];
     const prefix = await settings.get("prefix");
 
-    const isCommand = content.startsWith(prefix);
+    const isPrefix = content.startsWith(prefix);
+    const mentionString = `<@!${client.user.id}>`
+    const isMention = content.trim().split(" ").shift().substr(0, mentionString.length) == mentionString
     let command, commandName, inputs;
 
-    if (isCommand) {
+    if (isPrefix || isMention) {
         let commandUsage
         if (commandUsageCache.has(author.id)) commandUsage = commandUsageCache.get(author.id);
         else {
@@ -513,7 +560,7 @@ async function parseCommand(message) {
         commandUsage.lastCommand = Date.now();
         commandUsageCache.ttl(author.id, commandTimeoutTime/1000);
 
-        [commandName, ...inputs] = content.trim().substring(prefix.length).split(" ");
+        [commandName, ...inputs] = content.trim().substring(isPrefix ? prefix.length : mentionString.length + (content.trim().substr(mentionString.length, 1) == " " ? 1 : 0)).split(" ");
         if (!commandName || commandName.length == 0) return;
     
         if (!client.commands) return console.error("Commands not loaded");
@@ -545,10 +592,13 @@ async function parseCommand(message) {
             }
         }
 
-        let argumentCount = Math.min(inputs.length, command.numOfArguments())
-        let end = inputs.slice(argumentCount - 1).join(" ")
-        inputs = inputs.slice(0, argumentCount - 1)
-        inputs[argumentCount - 1] = end
+        let argumentCount = command.numOfArguments()
+        if (argumentCount == 0 || !command.arguments()[argumentCount - 1].multiple) {
+            argumentCount = Math.min(inputs.length, argumentCount)
+            let end = inputs.slice(argumentCount - 1).join(" ")
+            inputs = inputs.slice(0, argumentCount - 1)
+            inputs[argumentCount - 1] = end
+        }
 
         client.setImmediate(() => {
             Promise.resolve(command.execute(message, inputs)).catch(e => {

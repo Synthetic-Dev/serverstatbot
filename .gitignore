@@ -4,4 +4,6 @@ package-lock.json
 .env
 .VSCodeCounter
 npm-debug.log
+heapsnapshots
 *.heapsnapshot
+*.pdn

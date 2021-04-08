@@ -1,6 +1,6 @@
 {
   "name": "serverstat",
-  "version": "1.9.8",
+  "version": "1.9.9",
   "description": "",
   "main": "index.js",
   "engines": {
@@ -17,9 +17,11 @@
   "dependencies": {
     "canvas": "^2.7.0",
     "discord.js": "^12.5.1",
+    "donatebot-node-api": "^1.0.3",
     "dotenv": "^8.2.0",
     "fast-average-color-node": "^1.0.3",
     "heroku-client": "^3.1.0",
+    "hypixel-api-v2": "^1.1.9",
     "minecraft-server-util": "^3.4.4",
     "mongoose": "^5.10.7",
     "node-cache": "^5.1.2",
