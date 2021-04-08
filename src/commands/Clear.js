@@ -1,5 +1,5 @@
 const Util = require("../utils/util.js")
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
@@ -28,19 +28,30 @@ class Command extends CommandBase {
         let channel = message.channel
 
         let deleteMessages = messages => {
+            if (!messages || messages == null || messages.length == 0) {
+                return Util.replyWarning(channel, `No messages found!`).catch(console.error)
+            }
+
             let deleted = 0
             let deleting = true
             channel.bulkDelete(messages, true).then((deletedMessages) => {deleted += deletedMessages.size; deleting = false}).catch(e => {
+                Util.replyMessage(message, `Deleting messages manually, this may take some time. In order to increase deletion time please give the bot permissions to manage messages.`).catch(console.error)
+
                 deleting = true
+                let completed = 0
                 messages.forEach(msg => {
                     if (!msg || msg.deleted) {
-                        if (deleting && deleted >= messages.size) deleting = false;
+                        completed++
+                        if (deleting && completed >= messages.length) deleting = false;
                         return
                     };
-                    msg.delete().then(() => {deleted++}).catch(console.error).finally(() => {if (deleting && deleted >= messages.size) deleting = false;})
+                    msg.delete().then(() => {deleted++}).catch(console.error).finally(() => {
+                        completed++
+                        if (deleting && completed >= messages.length) deleting = false;
+                    })
                 })
-            }).finally(() => {
-                while (deleting) {}
+            }).finally(async () => {
+                while (deleting) await Util.sleep(1000);
                 Util.sendMessage(channel, `Deleted ${deleted} message(s)`).then(botMessage => {
                     botMessage.delete({
                         timeout: 5000
