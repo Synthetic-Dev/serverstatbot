@@ -1,7 +1,7 @@
 const {createCanvas, loadImage} = require("canvas")
 const Util = require("../utils/util.js")
 const Protocol = require("../utils/protocol.js")
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {

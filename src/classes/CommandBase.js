@@ -19,7 +19,9 @@ class CommandBase {
 
         if (data.args) {
             let optional = false
-            data.args.forEach(arg => {
+            data.args.forEach((arg, index) => {
+                if (arg.multiple && index != data.args.length - 1) throw new Error("Multiple argument appeared before end of arguments") 
+
                 if (arg.optional) optional = true;
                 else if (optional) throw new Error("Optional argument appeared before required argument")
             })

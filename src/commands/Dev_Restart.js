@@ -1,4 +1,4 @@
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {

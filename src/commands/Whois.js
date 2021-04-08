@@ -2,7 +2,7 @@ const {createCanvas, loadImage} = require("canvas")
 const { getAverageColor } = require("fast-average-color-node")
 const Util = require("../utils/util.js")
 const Mojang = require("../utils/mojang.js")
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
@@ -40,7 +40,7 @@ class Command extends CommandBase {
 
             return Util.sendMessage(message, {
                 embed: {
-                    title: ":white_check_mark: Available account",
+                    title: "<:green_circle_with_tick:818512512500105249> Available account",
                     description: `No account with the identifier \`\`${identifier}\`\` exists.`,
                     color: 4633441,
                     timestamp: Date.now()

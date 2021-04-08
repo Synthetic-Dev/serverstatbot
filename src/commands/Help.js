@@ -1,6 +1,6 @@
 const Discord = require("discord.js")
 const Util = require("../utils/util.js")
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
@@ -106,11 +106,11 @@ class Command extends CommandBase {
         if (command.numOfArguments() > 0) {
             command.arguments().forEach(arg => {
                 if (arg.optional) {
-                    scommand.push(`\`\`[${arg.name}]\`\``)
-                    args += `\`\`[${arg.name}]\`\` - ${arg.desc ? arg.desc : "No description"}\n`
+                    scommand.push(`\`\`[${arg.multiple ? "..." : ""}${arg.name}]\`\``)
+                    args += `\`\`[${arg.multiple ? "..." : ""}${arg.name}]\`\` - ${arg.desc ? arg.desc : "No description"}\n`
                 } else {
-                    scommand.push(`\`\`<${arg.name}>\`\``)
-                    args += `\`\`<${arg.name}>\`\` - ${arg.desc ? arg.desc : "No description"}\n`
+                    scommand.push(`\`\`<${arg.multiple ? "..." : ""}${arg.name}>\`\``)
+                    args += `\`\`<${arg.multiple ? "..." : ""}${arg.name}>\`\` - ${arg.desc ? arg.desc : "No description"}\n`
                 }
             })
         }

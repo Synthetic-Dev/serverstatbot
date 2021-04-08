@@ -1,7 +1,7 @@
 const Canvas = require("canvas")
 const Util = require("../utils/util.js")
 const Protocol = require("../utils/protocol.js")
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
@@ -54,6 +54,55 @@ class Command extends CommandBase {
                     }
                 }
 
+                /*
+                let motd = Canvas.createCanvas(512, 64)
+                let context = motd.getContext("2d")
+                context.imageSmoothingEnabled = false
+                context.font = "20px 'Pixel Font'"
+                context.textBaseline = "top"
+                context.textAlign = "left"
+                context.fillStyle = "#fff"
+                */
+
+                /*
+                ansiMap.set('0', ansi_styles_1.default.black);
+ansiMap.set('1', ansi_styles_1.default.blue);
+ansiMap.set('2', ansi_styles_1.default.green);
+ansiMap.set('3', ansi_styles_1.default.cyan);
+ansiMap.set('4', ansi_styles_1.default.red);
+ansiMap.set('5', ansi_styles_1.default.magenta);
+ansiMap.set('6', ansi_styles_1.default.yellow);
+ansiMap.set('7', ansi_styles_1.default.gray);
+ansiMap.set('8', ansi_styles_1.default.blackBright);
+ansiMap.set('9', ansi_styles_1.default.blueBright);
+ansiMap.set('a', ansi_styles_1.default.greenBright);
+ansiMap.set('b', ansi_styles_1.default.cyanBright);
+ansiMap.set('c', ansi_styles_1.default.redBright);
+ansiMap.set('d', ansi_styles_1.default.magentaBright);
+ansiMap.set('e', ansi_styles_1.default.yellowBright);
+ansiMap.set('f', ansi_styles_1.default.whiteBright);
+ansiMap.set('k', ansi_styles_1.default.reset);
+ansiMap.set('l', ansi_styles_1.default.bold);
+ansiMap.set('m', ansi_styles_1.default.strikethrough);
+ansiMap.set('n', ansi_styles_1.default.underline);
+ansiMap.set('o', ansi_styles_1.default.italic);
+ansiMap.set('r', ansi_styles_1.default.reset);
+                */
+
+                content.files = []
+
+                /*
+                console.log(data.motd)
+
+                content.files.push({
+                    attachment: motd.toBuffer("image/png"),
+                    name: "motd.png"
+                })
+
+                content.embed.image = {
+                    url: "attachment://motd.png"
+                }*/
+
                 let image = Canvas.createCanvas(64, 64)
                 let context = image.getContext("2d")
                 context.imageSmoothingEnabled = false
@@ -62,10 +111,10 @@ class Command extends CommandBase {
                 favicon.onload = () => {
                     context.drawImage(favicon, 0, 0, 64, 64)
 
-                    content.files = [{
+                    content.files.push({
                         attachment: image.toBuffer("image/png"),
                         name: "favicon.png"
-                    }]
+                    })
                     content.embed.thumbnail = {
                         url: "attachment://favicon.png"
                     }

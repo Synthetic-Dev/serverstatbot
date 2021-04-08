@@ -1,5 +1,5 @@
 const Util = require("../utils/util.js")
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
@@ -8,7 +8,7 @@ class Command extends CommandBase {
             desc: "Sets the text channel that join/leave messages will be shown",
             args: [{
                 name: "channel",
-                desc: "Can be a channel name, id or tag, if set to \"here\" then current channel is selected. Use \"clear\" to remove the channel."
+                desc: "Can be a channel name, id or tag, if set to \"here\" then the current channel is selected. Use \"clear\" to remove the channel."
             }],
             perms: [
                 "ADMINISTRATOR"

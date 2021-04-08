@@ -1,16 +1,26 @@
 const OSUtils = require("node-os-utils")
 const Util = require("../utils/util.js")
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "stats",
-            desc: "Hardware information about the bot"
+            desc: "View statistics",
+            args: [{
+                name: "type",
+                desc: "The type of statistics you would like to see"
+            },
+            {
+                name: "options",
+                desc: "Options for specific statistic types",
+                optional: true,
+                multiple: true
+            }]
         })
     }
 
-    async execute(message) {
+    async botStats(message) {
         let os = OSUtils.os
         let cpu = OSUtils.cpu
         let network = OSUtils.netstat
@@ -80,6 +90,42 @@ class Command extends CommandBase {
                 footer: Util.getFooter(this.client)
             }
         }).catch(console.error)
+    }
+
+    async hypixelStats(message, inputs) {
+        const types = {
+            players: () => {
+                Util.startTyping(message).catch(console.error)
+                this.client.hypixel.counts().then(counts => {
+                    Util.stopTyping(message)
+
+                    
+                })
+            }
+        }
+
+        let type = inputs.shift().toLowerCase()
+        let method = types[type]
+        if (method == null) {
+            return Util.replyError(message, `Invalid hypixel stat, statistic types: \`\`${Object.keys(types).join("``, ``")}\`\``)
+        }
+
+        method(inputs)
+    }
+
+    async execute(message, inputs) {
+        const types = {
+            bot: "botStats"
+            //hypixel: "hypixelStats"
+        }
+
+        let type = inputs.shift().toLowerCase()
+        let method = types[type]
+        if (method == null) {
+            return Util.replyError(message, `Invalid type, types: \`\`${Object.keys(types).join("``, ``")}\`\``)
+        }
+
+        this[method](message, inputs)
     }
 }
 

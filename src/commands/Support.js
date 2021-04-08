@@ -1,6 +1,6 @@
 const Util = require("../utils/util.js")
 const Protocol = require("../utils/protocol.js")
-const CommandBase = require("../interfaces/CommandBase.js")
+const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
@@ -28,8 +28,8 @@ class Command extends CommandBase {
                 color: 5145560,
                 fields: [
                     {
-                        name: "Support the bot",
-                        value: "**[Donate](https://www.paypal.com/donate?hosted_button_id=F9CPBU97FFXYU)**",
+                        name: "Donate",
+                        value: "[Help support by donating](https://donatebot.io/checkout/797779595852120064)",
                         inline: true
                     },
                     {

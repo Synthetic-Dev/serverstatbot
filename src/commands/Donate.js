@@ -1,25 +1,18 @@
 const Util = require("../utils/util.js")
+const Protocol = require("../utils/protocol.js")
 const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
-            name: "invite",
-            desc: "Get invite links for the bot",
-            aliases: [
-                "invs",
-                "inv"
-            ]
+            name: "donate",
+            desc: "Donation info for the bot"
         })
     }
 
     async execute(message) {
-        const settings = this.client.settings[message.guild.id]
-        let prefix = await settings.get("prefix")
-        
         Util.sendMessage(message, {
             embed: {
-                description: `**You can invite the bot from one of these sites:**\n• [top.gg](https://top.gg/bot/759415210628087841)\n• [bots.gg](https://discord.bots.gg/bots/759415210628087841)\n• [discordbotlist.com](https://discordbotlist.com/bots/server-stat)\nDo \`\`${prefix}vote\`\` to get direct links to vote on these sites.`,
                 author: {
                     name: this.client.user.username,
                     icon_url: this.client.user.avatarURL({
@@ -29,6 +22,9 @@ class Command extends CommandBase {
                     })
                 },
                 color: 5145560,
+                title: "Donate",
+                url: "https://donatebot.io/checkout/797779595852120064",
+                description: "Donating helps to keep the bot up, working and online 24/7!\n\nSubscriptions will give you access to amazing additional features supplied by the bot. Find out more information on the donation page.",
                 timestamp: Date.now(),
                 footer: Util.getFooter(this.client)
             }
