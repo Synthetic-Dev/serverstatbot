@@ -561,7 +561,7 @@ async function parseCommand(message) {
         commandUsage.lastCommand = Date.now();
         commandUsageCache.ttl(author.id, commandTimeoutTime/1000);
 
-        if (content.trim().length == mentionString.length) {
+        if (isMention && content.trim() == firstWord) {
             return Util.sendMessage(message, {
                 embed: {
                     title: "Getting started",
