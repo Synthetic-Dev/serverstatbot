@@ -46,13 +46,15 @@ class Command extends CommandBase {
                             if (deleting && completed >= messages.length) deleting = false;
                             return
                         };
-    
+
                         msg.delete().then(() => {deleted++}).catch(console.error).finally(() => {
                             completed++
                             if (deleting && completed >= messages.length) deleting = false;
                         })
                     } catch(e) {
                         console.error(e)
+                        completed++
+                        if (deleting && completed >= messages.length) deleting = false;
                     }
                 })
             }).finally(async () => {
