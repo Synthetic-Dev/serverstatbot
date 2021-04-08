@@ -521,14 +521,29 @@ async function parseCommand(message) {
     const guild = message.guild;
     const content = message.content;
     const author = message.author;
-    
 
     const settings = client.settings[guild.id];
     const prefix = await settings.get("prefix");
 
-    const isPrefix = content.startsWith(prefix);
     const mentionString = `<@!${client.user.id}>`
-    const isMention = content.trim().split(" ").shift().substr(0, mentionString.length) == mentionString
+    const botRole = await Util.getRole(guild, client.user.username)
+    const roleMentionString = `<@&${botRole ? botRole.id : "0"}>`
+    const firstWord = content.trim().split(" ").shift().substr(0, mentionString.length)
+    const isMention = firstWord == mentionString || firstWord == roleMentionString
+
+    if (isMention && content.trim().length == mentionString.length) {
+        return Util.sendMessage(message, {
+            embed: {
+                title: "Getting started",
+                description: `My **prefix** in this server is: **\`\`${prefix}\`\`**\n\nTo run a command you can do \`\`${prefix}<command>\`\` or \`\`@${client.user.username} <command>\`\`!\nIf you would like to view a list of all commands you can do:\n\`\`${prefix}help\`\` or \`\`@${client.user.username} help\`\`.`,
+                color: 5145560,
+                timestamp: Date.now(),
+                footer: Util.getFooter(client)
+            }
+        })
+    }
+
+    const isPrefix = content.startsWith(prefix);
     let command, commandName, inputs;
 
     if (isPrefix || isMention) {

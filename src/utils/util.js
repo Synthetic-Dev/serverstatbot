@@ -794,7 +794,7 @@ class Util {
      * Gets a role
      * @param {Discord.Guild} guild
      * @param {string} name 
-     * @returns {Promise<Discord.GuildChannel>} 
+     * @returns {Promise<Discord.Role>} 
      */
     static getRole(guild, name) {
         return new Promise((resolve, reject) => {
