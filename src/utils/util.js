@@ -352,50 +352,55 @@ class Util {
 
         let page = startPage
         this.sendMessage(message, pages[page]).then(botMessage => {
-            if (!botMessage || pages.length == 1 || botMessage.channel instanceof Discord.DMChannel) return;
+            try {
+                if (!botMessage || pages.length == 1 || botMessage.channel instanceof Discord.DMChannel) return;
 
-            let emojis = ["arrow_backward", "arrow_forward", "previous_track", "next_track"]
-            emojis.forEach((name, index) => {
-                let emoji = this.getEmoji(guild, name)
-                emojis[index] = emoji
+                let emojis = ["arrow_backward", "arrow_forward", "previous_track", "next_track"]
+                emojis.forEach((name, index) => {
+                    let emoji = this.getEmoji(guild, name)
+                    emojis[index] = emoji
+                    if (!botMessage || botMessage.deleted) return;
+                    botMessage.react(emoji).catch(console.error)
+                })
+
                 if (!botMessage || botMessage.deleted) return;
-                botMessage.react(emoji)
-            })
+                let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: 300000, idle: 30000, dispose: true})
 
-            let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: 300000, idle: 30000, dispose: true})
+                collector.on("collect", (reaction, user) => {
+                    if (!botMessage || botMessage.deleted) {
+                        collector.stop()
+                        return
+                    };
 
-            collector.on("collect", (reaction, user) => {
-                if (!botMessage || botMessage.deleted) {
-                    collector.stop()
-                    return
-                };
+                    reaction.users.remove(user).catch(console.error)
 
-                reaction.users.remove(user)
+                    let oldPage = page
 
-                let oldPage = page
+                    if (this.areEmojisEqual(reaction.emoji, emojis[0])) {
+                        page = page - 1 >= 0 ? page - 1 : pages.length - 1
 
-                if (this.areEmojisEqual(reaction.emoji, emojis[0])) {
-                    page = page - 1 >= 0 ? page - 1 : pages.length - 1
+                    } else if (this.areEmojisEqual(reaction.emoji, emojis[1])) {
+                        page = page + 1 < pages.length ? page + 1 : 0
 
-                } else if (this.areEmojisEqual(reaction.emoji, emojis[1])) {
-                    page = page + 1 < pages.length ? page + 1 : 0
+                    } else if (this.areEmojisEqual(reaction.emoji, emojis[2])) {
+                        page = 0
 
-                } else if (this.areEmojisEqual(reaction.emoji, emojis[2])) {
-                    page = 0
+                    } else if (this.areEmojisEqual(reaction.emoji, emojis[3])) {
+                        page = pages.length - 1
+                    }
 
-                } else if (this.areEmojisEqual(reaction.emoji, emojis[3])) {
-                    page = pages.length - 1
-                }
+                    if (page != oldPage) {
+                        botMessage.edit(pages[page]).catch(console.error)
+                    }
+                })
 
-                if (page != oldPage) {
-                    botMessage.edit(pages[page])
-                }
-            })
-
-            collector.on("end", () => {
-                if (!botMessage || botMessage.deleted) return;
-                botMessage.reactions.removeAll()
-            })
+                collector.on("end", async () => {
+                    if (!botMessage || botMessage.deleted) return;
+                    botMessage.reactions.removeAll().catch(console.error)
+                })
+            } catch(e) {
+                console.error(e)
+            }
         }).catch(console.error)
     }
 
