@@ -40,16 +40,20 @@ class Command extends CommandBase {
                 deleting = true
                 let completed = 0
                 messages.forEach(msg => {
-                    if (!msg || msg.deleted) {
-                        completed++
-                        if (deleting && completed >= messages.length) deleting = false;
-                        return
-                    };
-
-                    msg.delete().then(() => {deleted++}).catch(console.error).finally(() => {
-                        completed++
-                        if (deleting && completed >= messages.length) deleting = false;
-                    })
+                    try {
+                        if (!msg || msg.deleted) {
+                            completed++
+                            if (deleting && completed >= messages.length) deleting = false;
+                            return
+                        };
+    
+                        msg.delete().then(() => {deleted++}).catch(console.error).finally(() => {
+                            completed++
+                            if (deleting && completed >= messages.length) deleting = false;
+                        })
+                    } catch(e) {
+                        console.error(e)
+                    }
                 })
             }).finally(async () => {
                 while (deleting) await Util.sleep(1000);
