@@ -531,18 +531,6 @@ async function parseCommand(message) {
     const firstWord = content.trim().split(" ").shift().substr(0, mentionString.length)
     const isMention = firstWord == mentionString || firstWord == roleMentionString
 
-    if (isMention && content.trim().length == mentionString.length) {
-        return Util.sendMessage(message, {
-            embed: {
-                title: "Getting started",
-                description: `My **prefix** in this server is: **\`\`${prefix}\`\`**\n\nTo run a command you can do \`\`${prefix}<command>\`\` or \`\`@${client.user.username} <command>\`\`!\nIf you would like to view a list of all commands you can do:\n\`\`${prefix}help\`\` or \`\`@${client.user.username} help\`\`.`,
-                color: 5145560,
-                timestamp: Date.now(),
-                footer: Util.getFooter(client)
-            }
-        })
-    }
-
     const isPrefix = content.startsWith(prefix);
     let command, commandName, inputs;
 
@@ -572,6 +560,18 @@ async function parseCommand(message) {
 
         commandUsage.lastCommand = Date.now();
         commandUsageCache.ttl(author.id, commandTimeoutTime/1000);
+
+        if (content.trim().length == mentionString.length) {
+            return Util.sendMessage(message, {
+                embed: {
+                    title: "Getting started",
+                    description: `My **prefix** in this server is: **\`\`${prefix}\`\`**\n\nTo run a command you can do \`\`${prefix}<command>\`\` or \`\`@${client.user.username} <command>\`\`!\nIf you would like to view a list of all commands you can do:\n\`\`${prefix}help\`\` or \`\`@${client.user.username} help\`\`.`,
+                    color: 5145560,
+                    timestamp: Date.now(),
+                    footer: Util.getFooter(client)
+                }
+            })
+        }
 
         [commandName, ...inputs] = content.trim().substring(isPrefix ? prefix.length : mentionString.length + (content.trim().substr(mentionString.length, 1) == " " ? 1 : 0)).split(" ");
         if (!commandName || commandName.length == 0) return;
