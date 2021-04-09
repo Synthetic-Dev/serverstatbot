@@ -620,7 +620,7 @@ async function parseCommand(message) {
         if (!client.commands) return console.error("Commands not loaded");
 
         if (!Util.doesMemberHavePermissionsInChannel(guild.me, message.channel, ["SEND_MESSAGES"])) {
-            return Util.cannotSendMessages(author, message.channel);
+            return //Util.cannotSendMessages(author, message.channel);
         }
 
         command = client.commands.get(commandName.toLowerCase())
@@ -691,7 +691,7 @@ client.on("raw", packet => {
         Util.getGuildById(client, packet.d.guild_id).then(guild => {
             const channel = Util.getChannelById(guild, packet.d.channel_id)
 
-            if (!channel || channel.messages.cache.has(packet.d.message_id)) return;
+            if (!channel || !channel.viewable || channel.messages.cache.has(packet.d.message_id)) return;
 
             channel.messages.fetch(packet.d.message_id).then(async message => {
                 if (packet.t === "MESSAGE_REACTION_REMOVE_ALL") {

@@ -160,7 +160,7 @@ class Util {
      * @param {number} count
      * @returns {Promise}
      */
-    static startTyping(medium, count = 1) {
+    static startTyping(medium, count = null) {
         let isMessage = medium instanceof Discord.Message
         let channel = isMessage ? medium.channel : medium
         return channel.startTyping(count)
@@ -208,10 +208,10 @@ class Util {
             } else {
                 let hasPerms = this.doesMemberHavePermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])
                 if (!hasPerms) {
-                    this.cannotSendMessages(message.author, channel).then(reject)
+                    //this.cannotSendMessages(message.author, channel).then(reject)
                 } else {
                     message.reply(content).then(resolve).catch(e => {
-                        this.dmUser(message.author, `:stop_sign: Failed to reply with message in <#${channel.id}>!\n` + (stringAble ? content : ""), !stringAble ? content : null).then(() => {reject(e)}).catch(reject)
+                        reject(e) //this.dmUser(message.author, `:stop_sign: Failed to reply with message in <#${channel.id}>!\n` + (stringAble ? content : ""), !stringAble ? content : null).then(() => {reject(e)}).catch(reject)
                     })
                 }
             }
@@ -236,10 +236,10 @@ class Util {
             } else {
                 let hasPerms = this.doesMemberHavePermissionsInChannel(channel.guild.me, channel, ["SEND_MESSAGES"])
                 if (isMessage && !hasPerms) {
-                    this.cannotSendMessages(medium.author, channel).then(reject)
+                    //this.cannotSendMessages(medium.author, channel).then(reject)
                 } else if(hasPerms) {
                     channel.send(...content).then(resolve).catch(e => {
-                        if (isMessage) this.dmUser(medium.author, `:stop_sign: Failed to send message in <#${channel.id}>!`).then(() => {reject(e)}).catch(reject);
+                        reject(e) //if (isMessage) this.dmUser(medium.author, `:stop_sign: Failed to send message in <#${channel.id}>!`).then(() => {reject(e)}).catch(reject);
                     })
                 }
             }
