@@ -55,7 +55,9 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
     useUnifiedTopology: true
 }).then(connection => {
     client.db = connection
-}).catch(console.error)
+}).catch(e => {
+    console.error(`Database[connection]: ${e.toString()};\n${e.method} at ${e.path}`)
+})
 
 
 const fs = require('fs');
@@ -169,7 +171,9 @@ function serverLogs() {
                             }
 
                             done++
-                        }).catch(console.error).finally(() => {
+                        }).catch(e => {
+                            console.error(`Logging[getRecentMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        }).finally(() => {
                             if (done == statuses.length) resolve();
                         })
                     })
@@ -186,7 +190,9 @@ function serverLogs() {
                                 Util.sendMessage(channel, statusContents.online).then(message => {
                                     server.statusMessage.message = message
                                     server.statusMessage.type = "online"
-                                }).catch(console.error)
+                                }).catch(e => {
+                                    console.error(`Logging[sendMessage:status]: ${e.toString()};\n${e.method} at ${e.path}`)
+                                })
                             }
                         }
                     }
@@ -199,18 +205,30 @@ function serverLogs() {
                     if (!data.players.sample && data.players.online > 0) {
                         let text = ":warning: Server has too many players online to log activity"
                         Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text).catch(console.error)
-                        }).catch(console.error)
+                            if (!message) Util.sendMessage(channel, text).catch(e => {
+                                console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            })
+                        }).catch(e => {
+                            console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        })
                     } else if (server.start && !data.query) {
                         let text = ":warning: ``enable-query=true`` is required for join logs"
                         Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text).catch(console.error)
-                        }).catch(console.error)
+                            if (!message) Util.sendMessage(channel, text).catch(e => {
+                                console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            })
+                        }).catch(e => {
+                            console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        })
                     } else if (data.bedrock) {
                         let text = ":warning: Bedrock servers do not return all players online."
                         Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text).catch(console.error)
-                        }).catch(console.error)
+                            if (!message) Util.sendMessage(channel, text).catch(e => {
+                                console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            })
+                        }).catch(e => {
+                            console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        })
                     } else if (data.query && current.length == data.players.online) {
                         if (!server.start) {
                             function playerMessage(player, text) {
@@ -232,9 +250,13 @@ function serverLogs() {
                                             attachment: image.toBuffer("image/png"),
                                             name: "playeraction.png"
                                         }]
-                                    }).catch(console.error)
+                                    }).catch(e => {
+                                        console.error(`Logging[sendMessage:player]: ${e.toString()};\n${e.method} at ${e.path}`)
+                                    })
                                 }).catch(error => {
-                                    Util.sendMessage(channel, `[Failed to load image] ${player} ${text}`).catch(console.error)
+                                    Util.sendMessage(channel, `[Failed to load image] ${player} ${text}`).catch(e => {
+                                        console.error(`Logging[sendMessage:player(failed)]: ${e.toString()};\n${e.method} at ${e.path}`)
+                                    })
                                 })
                             }
 
@@ -266,26 +288,38 @@ function serverLogs() {
                                 Util.sendMessage(channel, statusContents.offline).then(message => {
                                     server.statusMessage.message = message
                                     server.statusMessage.type = "offline"
-                                }).catch(console.error)
+                                }).catch(e => {
+                                    console.error(`Logging[sendMessage:status]: ${e.toString()};\n${e.method} at ${e.path}`)
+                                })
                             }
                         }
                         return
                     } else if (error.code == "ENOTFOUND") {
                         let text = ":warning: Could not find server, check that a valid ip and port is set, and is the server running a supported version?"
                         Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text).catch(console.error)
-                        }).catch(console.error)
+                            if (!message) Util.sendMessage(channel, text).catch(e => {
+                                console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            })
+                        }).catch(e => {
+                            console.error(`Logging[getRecentMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        })
                         return
                     }
                     
                     let text = ":stop_sign: An error occured when trying to get server info"
                     Util.getRecentMessage(channel, text).then(message => {
-                        if (!message) Util.sendMessage(channel, text).catch(console.error)
-                    }).catch(console.error)
+                        if (!message) Util.sendMessage(channel, text).catch(e => {
+                            console.error(`Logging[sendMessage:error]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        })
+                    }).catch(e => {
+                        console.error(`Logging[getRecentMessage:error]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
 
-                    console.error(error)
+                    console.error(`Logging[error]: ${error.toString()};\n${error.method} at ${error.path}`)
                 }
-            }).catch(console.error).finally(() => {
+            }).catch(e => {
+                console.error(`Logging[getInfo]: ${e.toString()};\n${e.method} at ${e.path}`)
+            }).finally(() => {
                 server.start = false
 
                 client.servers[guild.id] = server
@@ -326,6 +360,8 @@ function activityDisplay() {
                         name: "Maintenance mode",
                         type: "PLAYING"
                     }
+                }).catch(e => {
+                    console.error(`Activity[setPresence]: ${e.toString()};\n${e.method} at ${e.path}`)
                 })
                 return
             }
@@ -337,11 +373,15 @@ function activityDisplay() {
                     name: typeof activity.text == "function" ? activity.text() : activity.text,
                     type: activity.type
                 }
+            }).catch(e => {
+                console.error(`Activity[setPresence]: ${e.toString()};\n${e.method} at ${e.path}`)
             })
 
             client.activityIndex++
             if (client.activityIndex == activities.length) client.activityIndex = 0;
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Activity[getSetting]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }, 15000)
 }
 
@@ -525,11 +565,12 @@ async function parseCommand(message) {
     const settings = client.settings[guild.id];
     const prefix = await settings.get("prefix");
 
-    const mentionString = `<@!${client.user.id}>`
+    const mentionStrings = [`<@${client.user.id}>`, `<@!${client.user.id}>`]
     const botRole = await Util.getRole(guild, client.user.username)
-    const roleMentionString = `<@&${botRole ? botRole.id : "0"}>`
-    const firstWord = content.trim().split(" ").shift().substr(0, mentionString.length)
-    const isMention = firstWord == mentionString || firstWord == roleMentionString
+    if (botRole) mentionStrings.push(`<@&${botRole.id}>`);
+    let firstWord = content.trim().split(" ").shift()
+    firstWord = firstWord.substring(0, firstWord.indexOf(">") + 1)
+    const isMention = mentionStrings.includes(firstWord)
 
     const isPrefix = content.startsWith(prefix);
     let command, commandName, inputs;
@@ -573,7 +614,7 @@ async function parseCommand(message) {
             })
         }
 
-        [commandName, ...inputs] = content.trim().substring(isPrefix ? prefix.length : mentionString.length + (content.trim().substr(mentionString.length, 1) == " " ? 1 : 0)).split(" ");
+        [commandName, ...inputs] = content.trim().substring(isPrefix ? prefix.length : firstWord.length + (content.trim().substr(firstWord.length, 1) == " " ? 1 : 0)).split(" ");
         if (!commandName || commandName.length == 0) return;
     
         if (!client.commands) return console.error("Commands not loaded");
@@ -668,9 +709,15 @@ client.on("raw", packet => {
                     if (packet.t === "MESSAGE_REACTION_REMOVE") {
                         client.emit("messageReactionRemove", reaction, user);
                     }
-                }).catch(console.error)
-            }).catch(console.error)
-        }).catch(console.error)
+                }).catch(e => {
+                    console.error(`Raw[fetchUser]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
+            }).catch(e => {
+                console.error(`Raw[fetchMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            })
+        }).catch(e => {
+            console.error(`Raw[getGuild]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 });
 
