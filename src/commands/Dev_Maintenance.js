@@ -17,7 +17,9 @@ class Command extends CommandBase {
         const settings = this.client.globalSettings
 
         settings.update("maintenance", (enabled) => {
-            Util.replyMessage(message, `${enabled ? "Disabled :octagonal_sign:" : "Enabled :white_check_mark:"} maintenance mode.`).catch(console.error)
+            Util.replyMessage(message, `${enabled ? "Disabled :octagonal_sign:" : "Enabled :white_check_mark:"} maintenance mode.`).catch(e => {
+                console.error(`Maintenance[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            })
 
             return !enabled
         })

@@ -269,9 +269,13 @@ class Util {
         this.replyMessage(message, ":warning: " + warning).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete().catch(console.error)
+                botMessage.delete().catch(e => {
+                    console.error(`replyWarning[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
             }, 15000)
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`replyWarning[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     /**
@@ -283,9 +287,13 @@ class Util {
         this.sendMessage(medium, ":warning: " + warning).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete().catch(console.error)
+                botMessage.delete().catch(e => {
+                    console.error(`sendWarning[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
             }, 15000)
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`sendWarning[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     /**
@@ -293,13 +301,17 @@ class Util {
      * @param {Discord.Message} message 
      * @param {string} error 
      */
-    static async replyError(message, error) {
+    static replyError(message, error) {
         this.replyMessage(message, ":stop_sign: " + error).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete().catch(console.error)
+                botMessage.delete().catch(e => {
+                    console.error(`replyError[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
             }, 15000)
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`replyError[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     /**
@@ -307,13 +319,17 @@ class Util {
      * @param {Discord.TextChannel | Discord.DMChannel | Discord.Message} medium 
      * @param {string} error 
      */
-    static async sendError(medium, error) {
+    static sendError(medium, error) {
         this.sendMessage(medium, ":stop_sign: " + error).then(botMessage => {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
-                botMessage.delete().catch(console.error)
+                botMessage.delete().catch(e => {
+                    console.error(`sendError[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
             }, 15000)
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`sendError[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     /**
@@ -360,7 +376,9 @@ class Util {
                     let emoji = this.getEmoji(guild, name)
                     emojis[index] = emoji
                     if (!botMessage || botMessage.deleted) return;
-                    botMessage.react(emoji).catch(console.error)
+                    botMessage.react(emoji).catch(e => {
+                        console.error(`Pages[addReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 })
 
                 if (!botMessage || botMessage.deleted) return;
@@ -372,7 +390,9 @@ class Util {
                         return
                     };
 
-                    reaction.users.remove(user).catch(console.error)
+                    reaction.users.remove(user).catch(e => {
+                        console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
 
                     let oldPage = page
 
@@ -390,18 +410,31 @@ class Util {
                     }
 
                     if (page != oldPage) {
-                        botMessage.edit(pages[page]).catch(console.error)
+                        botMessage.edit(pages[page]).catch(e => {
+                            console.error(`Pages[editMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        })
                     }
                 })
 
                 collector.on("end", async () => {
                     if (!botMessage || botMessage.deleted) return;
-                    botMessage.reactions.removeAll().catch(console.error)
+                    botMessage.reactions.removeAll().catch(e => {
+                        botMessage.reactions.cache.forEach(reaction => {
+                            if (reaction && reaction.me) {
+                                reaction.users.remove().catch(e => {
+                                    console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                                })
+                            }
+                        })
+                        console.error(`Pages[removeAllReactions]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 })
             } catch(e) {
-                console.error(e)
+                console.error(`Pages[stack]: ${e.toString()};\n${e.method} at ${e.path}`)
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Pages[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     /**

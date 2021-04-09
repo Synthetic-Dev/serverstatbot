@@ -31,13 +31,17 @@ class Command extends CommandBase {
         let startPage = inputs[0] ? Number(inputs[0]) : 1
         if (typeof(startPage) != "number" || startPage == null || isNaN(startPage)) return Util.replyError(message, "Page must be a number");
 
-        Util.startTyping(message).catch(console.error)
+        Util.startTyping(message).catch(e => {
+            console.error(`Mods[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
 
         Protocol.getInfo(ip, port).then(data => {
             Util.stopTyping(message)
 
             if (data.online) {
-                if (!data.modded) return Util.replyMessage(message, "The server does not have any mods").catch(console.error)
+                if (!data.modded) return Util.replyMessage(message, "The server does not have any mods").catch(e => {
+                    console.error(`Mods[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
 
                 let pages = []
                 let modstring = ""
@@ -63,15 +67,19 @@ class Command extends CommandBase {
                 let error = data.error
 
                 if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                    return Util.replyMessage(message, "Server is not online").catch(console.error)
+                    return Util.replyMessage(message, "Server is not online").catch(e => {
+                        console.error(`Mods[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 } else if (error.code == "ENOTFOUND") {
                     return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
                 }
                 
                 Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
-                console.error(error)
+                console.error(`Mods[error]: ${error.toString()};\n${error.method} at ${error.path}`)
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Mods[getInfo]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

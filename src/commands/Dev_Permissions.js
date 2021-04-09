@@ -24,7 +24,9 @@ class Command extends CommandBase {
                 color: 927567,
                 timestamp: Date.now()
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Permissions[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

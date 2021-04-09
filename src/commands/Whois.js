@@ -25,7 +25,9 @@ class Command extends CommandBase {
     async execute(message, inputs) {
         let identifier = inputs[0]
 
-        Util.startTyping(message).catch(console.error)
+        Util.startTyping(message).catch(e => {
+            console.error(`Whois[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
 
         let uuid = identifier.replace("-", "")
         if (!Mojang.isUUID(uuid)) uuid = await Mojang.getUUID(identifier);
@@ -45,7 +47,9 @@ class Command extends CommandBase {
                     color: 4633441,
                     timestamp: Date.now()
                 }
-            }).catch(console.error)
+            }).catch(e => {
+                console.error(`Whois[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            })
         }
 
         let nameHistoryString = ""
@@ -103,7 +107,9 @@ class Command extends CommandBase {
                 },
                 timestamp: Date.now()
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Whois[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

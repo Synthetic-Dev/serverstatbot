@@ -31,13 +31,17 @@ class Command extends CommandBase {
         let startPage = inputs[0] ? Number(inputs[0]) : 1
         if (typeof(startPage) != "number" || startPage == null || isNaN(startPage)) return Util.replyError(message, "Page must be a number");
 
-        Util.startTyping(message).catch(console.error)
+        Util.startTyping(message).catch(e => {
+            console.error(`Plugins[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
 
         Protocol.getInfo(ip, port).then(data => {
             Util.stopTyping(message)
 
             if (data.online) {
-                if (!data.plugins || data.plugins.length == 0) return Util.replyMessage(message, "The server does not have any plugins").catch(console.error)
+                if (!data.plugins || data.plugins.length == 0) return Util.replyMessage(message, "The server does not have any plugins").catch(e => {
+                    console.error(`Plugins[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
 
                 let pages = []
                 let pluginstring = ""
@@ -63,15 +67,19 @@ class Command extends CommandBase {
                 let error = data.error
 
                 if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                    return Util.replyMessage(message, "Server is not online").catch(console.error)
+                    return Util.replyMessage(message, "Server is not online").catch(e => {
+                        console.error(`Plugins[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 } else if (error.code == "ENOTFOUND") {
                     return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
                 }
                 
                 Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
-                console.error(error)
+                console.error(`Plugins[error]: ${error.toString()};\n${error.method} at ${error.path}`)
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Plugins[getInfo]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

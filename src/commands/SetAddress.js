@@ -35,7 +35,9 @@ class Command extends CommandBase {
         settings.set("ip", ip)
         settings.set("port", port)
 
-        Util.replyMessage(message, `Ip set to \`\`${ip}\`\` and Port set to \`\`${port}\`\``).catch(console.error)
+        Util.replyMessage(message, `Ip set to \`\`${ip}\`\` and Port set to \`\`${port}\`\``).catch(e => {
+            console.error(`SetAddress[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

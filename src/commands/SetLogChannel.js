@@ -22,13 +22,17 @@ class Command extends CommandBase {
         let channel = inputs[0] == "here" ? message.channel : Util.parseChannel(message.guild, inputs[0])
         
         if (inputs[0] == "clear") {
-            Util.replyMessage(message, `Removed log channel`).catch(console.error)
+            Util.replyMessage(message, `Removed log channel`).catch(e => {
+                console.error(`SetLogChannel[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            })
             return settings.set("logchannel", "0")
         } else if (!channel) {
             return Util.couldNotFind(message, "channel", inputs[0], "guild")
         } else if (!Util.doesMemberHavePermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])) return Util.replyError(message, "I do not have permission to send messages in that channel!");
         
-        Util.replyMessage(message, `Log channel set to <#${channel.id}>`).catch(console.error)
+        Util.replyMessage(message, `Log channel set to <#${channel.id}>`).catch(e => {
+            console.error(`SetLogChannel[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
         settings.set("logchannel", channel.id)
     }
 }

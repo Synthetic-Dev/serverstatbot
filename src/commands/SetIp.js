@@ -25,7 +25,9 @@ class Command extends CommandBase {
 
         settings.set("ip", ip)
 
-        Util.replyMessage(message, `${port ? `:warning: Found port in ip, to set the port do \`\`${await settings.get("prefix")}setport ${port}\`\`\n` : ""}Ip set to \`\`${ip}\`\``).catch(console.error)
+        Util.replyMessage(message, `${port ? `:warning: Found port in ip, to set the port do \`\`${await settings.get("prefix")}setport ${port}\`\`\n` : ""}Ip set to \`\`${ip}\`\``).catch(e => {
+            console.error(`SetIp[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

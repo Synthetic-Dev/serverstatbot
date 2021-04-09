@@ -28,7 +28,9 @@ class Command extends CommandBase {
                 timestamp: Date.now(),
                 footer: Util.getFooter(this.client)
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Donate[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

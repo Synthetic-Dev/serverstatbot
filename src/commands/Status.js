@@ -19,7 +19,9 @@ class Command extends CommandBase {
     }
 
     displayInfo(message, ip, port, additionals) {
-        Util.startTyping(message).catch(console.error)
+        Util.startTyping(message).catch(e => {
+            console.error(`Status[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
 
         Protocol.getInfo(ip, port).then(data => {
             Util.stopTyping(message)
@@ -119,10 +121,14 @@ ansiMap.set('r', ansi_styles_1.default.reset);
                         url: "attachment://favicon.png"
                     }
 
-                    Util.sendMessage(message, content).catch(console.error)
+                    Util.sendMessage(message, content).catch(e => {
+                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 }
                 favicon.onerror = () => {
-                    Util.sendMessage(message, content).catch(console.error)
+                    Util.sendMessage(message, content).catch(e => {
+                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 }
                 if (data.favicon) {
                     favicon.src = data.favicon
@@ -141,15 +147,19 @@ ansiMap.set('r', ansi_styles_1.default.reset);
                             color: 5145560,
                             timestamp: Date.now()
                         }
-                    }).catch(console.error)
+                    }).catch(e => {
+                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 } else if (error.code == "ENOTFOUND") {
                     return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
                 }
                 
                 Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
-                console.error(error)
+                console.error(`Status[error]: ${error.toString()};\n${error.method} at ${error.path}`)
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Status[getInfo]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     async execute(message) {

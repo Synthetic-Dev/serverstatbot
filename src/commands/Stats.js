@@ -25,7 +25,9 @@ class Command extends CommandBase {
         let cpu = OSUtils.cpu
         let network = OSUtils.netstat
 
-        Util.startTyping(message).catch(console.error)
+        Util.startTyping(message).catch(e => {
+            console.error(`Stats[startTyping:botStats]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
 
         let osName = await os.oos()
         let cpuUsage = await cpu.usage()
@@ -89,13 +91,17 @@ class Command extends CommandBase {
                 timestamp: Date.now(),
                 footer: Util.getFooter(this.client)
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Stats[sendMessage:botStats]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     async hypixelStats(message, inputs) {
         const types = {
             players: () => {
-                Util.startTyping(message).catch(console.error)
+                Util.startTyping(message).catch(e => {
+                    console.error(`Stats[startTyping:hypixelStats]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
                 this.client.hypixel.counts().then(counts => {
                     Util.stopTyping(message)
 

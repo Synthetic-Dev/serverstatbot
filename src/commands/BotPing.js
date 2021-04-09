@@ -10,7 +10,9 @@ class Command extends CommandBase {
     }
 
     async execute(message) {
-        Util.replyMessage(message, `Pong! ${Math.abs(Util.ping(message))}ms`).catch(console.error)
+        Util.replyMessage(message, `Pong! ${Math.abs(Util.ping(message))}ms`).catch(e => {
+            console.error(`BotPing[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

@@ -16,7 +16,9 @@ class Command extends CommandBase {
         const heroku = this.client.heroku
         this.client.destroy()
         
-        heroku.delete("/apps/serverstatbot/dynos/Worker").then(data => {console.log(`Internal restart, ${data.toString()}`)}).catch(console.error)
+        heroku.delete("/apps/serverstatbot/dynos/Worker").then(data => {console.log(`Internal restart, ${data.toString()}`)}).catch(e => {
+            console.error(`Restart[deleteWorker]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     async execute() {

@@ -14,7 +14,6 @@ class Command extends CommandBase {
     }
 
     async execute(message) {
-
         Util.sendMessage(message, {
             embed: {
                 title: "Supported Versions",
@@ -23,7 +22,9 @@ class Command extends CommandBase {
                 timestamp: Date.now(),
                 footer: Util.getFooter(this.client)
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Versions[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

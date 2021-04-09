@@ -24,13 +24,17 @@ class Command extends CommandBase {
         const ip = await settings.get("ip")
         const port = await settings.get("port")
 
-        Util.startTyping(message).catch(console.error)
+        Util.startTyping(message).catch(e => {
+            console.error(`Players[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
 
         Protocol.getInfo(ip, port).then(async data => {
             Util.stopTyping(message)
 
             if (data.online) {
-                if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online").catch(console.error);
+                if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online").catch(e => {
+                    console.error(`Players[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                });
                 if (!data.players.sample || data.players.sample.length == 0) {
                     return Util.sendMessage(message, {
                         embed: {
@@ -39,7 +43,9 @@ class Command extends CommandBase {
                             color: 5145560,
                             timestamp: Date.now()
                         }
-                    }).catch(console.error)
+                    }).catch(e => {
+                        console.error(`Players[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 }
 
                 const columns = 7
@@ -74,7 +80,9 @@ class Command extends CommandBase {
                         } else {
                             loadImage(`https://mc-heads.net/avatar/${player.name.clean}/22`).then(head => {
                                 context.drawImage(head, 2 + (maxWidth * column) + (5 * column), 2 + (i - breakpoint * column) * 28, 22, 22)
-                            }).catch(console.error).finally(() => {
+                            }).catch(e => {
+                                console.error(`Players[loadImage:player]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            }).finally(() => {
                                 context.fillText(player.name.clean, 32 + (maxWidth * column) + (5 * column), (i - breakpoint * column) * 28 - 2, maxWidth - 32)
                                 done++
                                 if (done >= amountInList) resolve();
@@ -97,20 +105,26 @@ class Command extends CommandBase {
                         },
                         timestamp: Date.now()
                     }
-                }).catch(console.error)
+                }).catch(e => {
+                    console.error(`Players[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
             } else {
                 let error = data.error
 
                 if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                    return Util.replyMessage(message, "Server is not online").catch(console.error)
+                    return Util.replyMessage(message, "Server is not online").catch(e => {
+                        console.error(`Players[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    })
                 } else if (error.code == "ENOTFOUND") {
                     return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
                 }
                 
                 Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
-                console.error(error)
+                console.error(`Players[error]: ${error.toString()};\n${error.method} at ${error.path}`)
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Players[getInfo]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

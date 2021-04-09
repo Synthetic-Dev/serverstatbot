@@ -68,7 +68,9 @@ class Command extends CommandBase {
             }
         }
 
-        if (pages.length == 1) Util.sendMessage(message, pages[0]).catch(console.error);
+        if (pages.length == 1) Util.sendMessage(message, pages[0]).catch(e => {
+            console.error(`Help[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        });
         else Util.sendPages(message, pages);
     }
 
@@ -123,7 +125,9 @@ class Command extends CommandBase {
     
         Util.replyMessage(message, {
             embed: embed
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Help[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 
     async execute(message, inputs) {

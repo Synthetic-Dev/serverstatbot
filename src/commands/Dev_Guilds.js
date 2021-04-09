@@ -202,16 +202,26 @@ class Command extends CommandBase {
             }
         }
 
-        Util.startTyping(message).catch(console.error)
+        Util.startTyping(message).catch(e => {
+            console.error(`Guilds[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
 
         let promise = new Promise((resolve, reject) => {
             let pages = []
             let done = 0
             cache.forEach(async guild => {
-                let page = await this.getServer(message.guild, guild, check)
-                if (page) pages.push(page);
-                done++
-                if (pages.length >= 75 || done == cache.size) resolve(pages)
+                if (pages.length >= 75) return;
+                
+                this.getServer(message.guild, guild, check).then(page => {
+                    if (pages.length >= 75) return;
+                    if (page) {
+                        done++
+                        pages.push(page)
+                    }
+                    if (pages.length >= 75 || done == cache.size) resolve(pages)
+                }).catch(e => {
+                    console.error(`Guilds[getServer]: ${e.toString()};\n${e.method} at ${e.path}`)
+                })
             })
         })
 
@@ -222,7 +232,9 @@ class Command extends CommandBase {
             if (pages.length == 0) return Util.sendWarning(message.channel, "No servers found");
 
             Util.sendPages(message, pages)
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Guilds[getGuilds]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 

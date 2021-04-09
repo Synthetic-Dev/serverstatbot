@@ -20,7 +20,9 @@ class Command extends CommandBase {
                 description: `${Math.floor(this.client.uptime / 1000 / 3600)} hours ${Math.floor((this.client.uptime / 1000 / 60) % 60)} minutes and ${Math.floor(this.client.uptime / 1000 % 60)} seconds`,
                 timestamp: Date.now()
             }
-        }).catch(console.error)
+        }).catch(e => {
+            console.error(`Uptime[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+        })
     }
 }
 
