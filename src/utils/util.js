@@ -160,10 +160,10 @@ class Util {
      * @param {number} count
      * @returns {Promise}
      */
-    static startTyping(medium, count = null) {
+    static startTyping(medium, count = 1) {
         let isMessage = medium instanceof Discord.Message
         let channel = isMessage ? medium.channel : medium
-        return channel.startTyping(count)
+        return count > 1 ? channel.startTyping(count) : channel.startTyping()
     }
 
     /**
