@@ -429,6 +429,14 @@ function updateStats() {
                 server_count: client.guilds.cache.size
             })
         },
+        {
+            hostname: "api.discordextremelist.xyz",
+            path: "/v2/bot/759415210628087841/stats",
+            token: process.env.DELTOKEN,
+            data: JSON.stringify({
+                guildCount: client.guilds.cache.size
+            })
+        },
     ]
 
     apis.forEach(api => {
