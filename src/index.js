@@ -239,7 +239,7 @@ function serverLogs() {
                                 let context = image.getContext("2d")
 
                                 context.imageSmoothingEnabled = false
-                                context.font = "17px 'Minecraft'"
+                                context.font = "20px 'Minecraft'"
                                 context.textBaseline = "top"
                                 context.textAlign = "left"
                                 context.fillStyle = "#fff"
