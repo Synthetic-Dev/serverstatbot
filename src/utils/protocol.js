@@ -40,7 +40,6 @@ class Protocol {
             function query(statusResponse) {
                 if (statusResponse) statusResponse.bedrock = statusResponse.bedrock ? true : false;
 
-                args[1].sessionID = 1
                 args[1].timeout = 5000
                 MinecraftUtil.queryFull(...args).then(queryResponse => {
                     queryResponse.query = true;
@@ -127,7 +126,7 @@ class Protocol {
                 desc.text.raw.push(d.toString())
                 desc.text.clean.push(d.toRaw())
             })
-            desc.text.raw = desc.text.raw.join("\n").trim()
+            desc.text.raw = desc.text.raw.join("\n")
             desc.text.clean = desc.text.clean.join("\n").trim()
 
             if (desc.text.raw != "") {
@@ -141,8 +140,8 @@ class Protocol {
         if (result.bedrock || !verify) {
             return [true, result]
         }
-        /*
-        let verifyData = new Promise((resolve, reject) => {
+        
+        /*let verifyData = new Promise((resolve, reject) => {
             const dataVersion = result.version.match(/(\d+\.)?(\d+\.)?(\d)/g).filter(match => match.length > 0)[0] || "1.16.5"
             const mcData = MinecraftData(dataVersion)
             const version = mcData.version
@@ -250,8 +249,8 @@ class Protocol {
                     }
                 }
             }
-        }
-        */
+        }*/
+        
 
         return [true, result]
     }
