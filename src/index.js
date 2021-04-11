@@ -17,7 +17,11 @@ const Protocol = require("./utils/protocol.js")
  */
 require("dotenv").config()
 OSUtils.options.INTERVAL = 2000
-Canvas.registerFont("./assets/botfont.ttf", {family: "Pixel Font"})
+
+Canvas.registerFont("./assets/fonts/MinecraftRegular.otf", {family: "Minecraft", weight: "normal", style: "normal"})
+Canvas.registerFont("./assets/fonts/MinecraftBold.otf", {family: "Minecraft", weight: "bold", style: "normal"})
+Canvas.registerFont("./assets/fonts/MinecraftItalic.otf", {family: "Minecraft", weight: "normal", style: "italic"})
+Canvas.registerFont("./assets/fonts/MinecraftBoldItalic.otf", {family: "Minecraft", weight: "bold", style: "italic"})
 
 const client = new Discord.Client({
     messageCacheMaxSize: 50,
@@ -39,7 +43,6 @@ client.globalSettings = client.globalSettings ? client.globalSettings : new Sett
 console.log(`Loaded global settings`)
 
 client.globalSettings.get("supportServer").then(id => {
-    //console.log(id)
     client.donations = new DonateAPI({
         serverID: id,
         apiKey: process.env.DONATETOKEN
@@ -76,7 +79,7 @@ function createHeapSnapshot() {
  * Server Logs
  */
 function serverLogs() {
-    if (process.env.ISDEV == "TRUE") return;
+    //if (process.env.ISDEV == "TRUE") return;
 
     const statusContents = {
         online: "<:green_circle_with_tick:818512512500105249> Server is online",
@@ -236,7 +239,7 @@ function serverLogs() {
                                 let context = image.getContext("2d")
 
                                 context.imageSmoothingEnabled = false
-                                context.font = "17px 'Pixel Font'"
+                                context.font = "17px 'Minecraft'"
                                 context.textBaseline = "top"
                                 context.textAlign = "left"
                                 context.fillStyle = "#fff"
@@ -497,6 +500,8 @@ client.on("ready", () => {
     })
     console.log(`Loaded settings for ${Object.values(client.settings).length} guild(s)`)
 
+    client.commandsProcessed = 0;
+    client.lastCommandTime = null;
     client.commands = Util.loadmodules("commands", (command, commands) => {
         command = new command(client)
         commands.set(command.name(true), command)
@@ -539,18 +544,44 @@ client.on("rateLimit", info => {
 /**
  * Guild joining and leaving
  */
-client.on("guildCreate", guild => {
+client.on("guildCreate", async guild => {
     if (!client.settings) client.settings = [];
-    client.settings[guild.id] = client.settings[guild.id] ? client.settings[guild.id] : new Settings.Guild(guild);
+    const settings = client.settings[guild.id] ? client.settings[guild.id] : new Settings.Guild(guild);
+    client.settings[guild.id] = settings
+    console.log(`[${guild.id}] Added to guild ${guild.name}`)
+
+    let priorityChannel = Util.getPriorityChannel(guild, chl => Util.doesMemberHavePermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
+    if (priorityChannel) {
+        const prefix = await settings.get("prefix")
+        Util.sendMessage(priorityChannel, {
+            embed: {
+                title: `Thank you for adding ${client.user.username}!`,
+                description: `If you need a reminder on how to use the bot at anytime do: \`\`@${client.user.username}\`\`\n\n**How do I get started?**\nTo run a command you can do \`\`${prefix}<command>\`\` or \`\`@${client.user.username} <command>\`\`!\nIf you would like to view a list of all commands you can do:\n\`\`${prefix}help\`\` or \`\`@${client.user.username} help\`\`.\n\nIf you would like to support the bot and its development, [Click here!](https://donatebot.io/checkout/797779595852120064)\n\n**Need help?**\nJoin our support server, [here!](https://discord.gg/uqVp2XzUP8)`,
+                thumbnail: {
+                    url: client.user.avatarURL({
+                        size: 64,
+                        dynamic: true,
+                        format: "png"
+                    })
+                },
+                color: 5145560,
+                timestamp: Date.now(),
+                footer: {
+                    text: `${client.user.username} • ${process.env.npm_package_version}`
+                }
+            }
+        })
+    }
 })
 
 client.on("guildDelete", guild => {
-    if (process.env.ISDEV == "TRUE") return;
+    console.log(`[${guild.id}] Removed from guild ${guild.name}`)
 
     if (client.settings) {
         let settings = client.settings[guild.id]
         settings.clear()
         delete client.settings[guild.id];
+        console.log(`[${guild.id}] Settings deleted from database`)
     }
 })
 
@@ -562,7 +593,7 @@ const commandUsageCache = new NodeCache({
     checkperiod: 300,
     useClones: false
 });
-const commandsWithinTimeout = 3;
+const commandsWithinTimeout = 4;
 const commandTimeoutTime = 15*1000;
 
 async function parseCommand(message) {
@@ -666,6 +697,9 @@ async function parseCommand(message) {
             Promise.resolve(command.execute(message, inputs)).catch(e => {
                 Util.replyError(message, "An error occured while trying to execute that command, please report this to the developer!")
                 console.error(e)
+            }).finally(() => {
+                client.lastCommandTime = Date.now()
+                client.commandsProcessed++
             })
         })
     }
