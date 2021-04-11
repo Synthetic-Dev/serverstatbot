@@ -1,4 +1,5 @@
 const Discord = require("discord.js")
+const Canvas = require("canvas")
 const HTTPS = require("https")
 const HTTP = require("http")
 const FileSystem = require("fs");
@@ -140,19 +141,115 @@ class Util {
         return modules
     }
 
-    static fillMixedText(context, splitText, x, y) {
+    /**
+     * Decorate text with underlines and strikethroughs
+     * @param {Canvas.CanvasRenderingContext2D} context 
+     * @param {string} text 
+     * @param {string} style
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} thickness
+     */
+    static decorateText(context, text, style, x, y, thickness) {
+        context.save()
+        style = style.toLowerCase()
+
+        let metrics = context.measureText(text)
+        let width = metrics.width
+        let height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent
+        switch(context.textAlign){
+            case "center":
+                x -= (width / 2); break;
+            case "right":
+                x -= width; break;
+        }
+        thickness = thickness ? thickness : height / 8
+        thickness = context.font.toLowerCase().includes("bold") ? thickness * 1.5 : thickness
+        
+        if (style.includes("underline")) {
+            context.fillRect(x, y + metrics.actualBoundingBoxDescent, width, thickness)
+        }
+
+        if (style.includes("strikethrough")) {
+            context.fillRect(x, y + metrics.actualBoundingBoxDescent - height / 2, width, thickness * 1.2)
+        }
+
+        context.restore();
+    }
+
+    /**
+     * Write multi-colored text onto a canvas
+     * @param {Canvas.CanvasRenderingContext2D} context 
+     * @param {(string[])[]} splitText 
+     * @param {number} x 
+     * @param {number} y 
+     */
+    static fillMixedText(context, splitText, x, y, maxWidth) {
         let defaultFillStyle = context.fillStyle
         let defaultFont = context.font
         context.save()
 
-        splitText.forEach(({text, fillStyle, font}) => {
+        splitText.forEach(({text, fillStyle, font, extras}) => {
             context.fillStyle = fillStyle || defaultFillStyle;
             context.font = font || defaultFont;
-            context.fillText(text, x, y);
+            context.fillText(text, x, y, maxWidth);
+            if (extras && (extras.underline || extras.strikethrough)) {
+                let style = ""
+                if (extras.underline) style += "underline ";
+                if (extras.strikethrough) style += "strikethrough ";
+                this.decorateText(context, text, style.trim(), x, y);
+            }
             x += context.measureText(text).width;
         });
-        ctx.restore();
-    };
+        context.restore();
+    }
+
+    /**
+     * Auto crops a canvas to only contain its contents
+     * @param {Canvas.CanvasRenderingContext2D} context 
+     * @param {number} padding
+     */
+    static autoCropCanvas(context, padding = 0) {
+        let canvas = context.canvas, 
+        w = canvas.width, h = canvas.height,
+        pixels = {
+            x: [],
+            y: []
+        },
+        imageData = context.getImageData(0, 0, canvas.width, canvas.height),
+        x, y, index;
+      
+        for (y = 0; y < h; y++) {
+          for (x = 0; x < w; x++) {
+            index = (y * w + x) * 4;
+            if (imageData.data[index + 3] > 0) {
+              pixels.x.push(x);
+              pixels.y.push(y);
+            } 
+          }
+        }
+
+        pixels.x.sort((a, b) => {return a - b});
+        pixels.y.sort((a, b) => {return a - b});
+        let n = pixels.x.length - 1;
+      
+        w = Math.min(w, 1 + pixels.x[n] - pixels.x[0] + padding*2);
+        h = Math.min(h, 1 + pixels.y[n] - pixels.y[0] + padding*2);
+        let cropped = context.getImageData(Math.max(0, pixels.x[0] - padding), Math.max(0, pixels.y[0] - padding), w, h);
+      
+        canvas.width = w;
+        canvas.height = h;
+        context.putImageData(cropped, 0, 0);
+      }
+
+    static toTitleCase(string, allWords = false) {
+        string = string.toLowerCase().split(" ")
+        if (!allWords) return this.toTitleCase(string.shift(), true) + " " + string.join(" ")
+        string.forEach((word, index) => {
+            string[index] = word.substr(0, 1).toUpperCase() + word.substr(1)
+        })
+        return string.join(" ")
+    }
 
     /**
      * Start typing
@@ -679,6 +776,7 @@ class Util {
      */
     static getRecentMessage(channel, ...text) {
         return new Promise((resolve, reject) => {
+            if (!channel.viewable) return reject(new Error("Not viewable"));
             channel.messages.fetch({limit: 5}).then((messages) => {
                 let find
                 messages.each(message => {
@@ -700,6 +798,7 @@ class Util {
      */
     static getRecentMessageContaining(channel, ...text) {
         return new Promise((resolve, reject) => {
+            if (!channel.viewable) return reject(new Error("Not viewable"));
             channel.messages.fetch({limit: 5}).then(messages => {
                 let find
                 messages.each(message => {
@@ -726,6 +825,7 @@ class Util {
      */
     static getRecentMessagesFrom(channel, user, count = 1, check) {
         return new Promise(async (resolve, reject) => {
+            if (!channel.viewable) return reject(new Error("Not viewable"));
             let messages = []
             let cycle = 0
             let leastMessage
@@ -769,6 +869,7 @@ class Util {
      */
      static getRecentMessagesAfter(channel, user, timestamp, check) {
         return new Promise(async (resolve, reject) => {
+            if (!channel.viewable) return reject(new Error("Not viewable"));
             let messages = []
             let cycle = 0
             let leastMessage
