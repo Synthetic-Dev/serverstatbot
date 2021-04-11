@@ -25,7 +25,7 @@ class Command extends CommandBase {
         let [ip, port] = inputs[0].split(":")
         port = port ? port : 25565
 
-        let maxPort = 32768
+        let maxPort = 65536
         port = Number(port)
         if (typeof(port) != "number" || port == null || isNaN(port)) return Util.replyError(message, "Port must be a number");
 

@@ -22,7 +22,7 @@ class Command extends CommandBase {
     async execute(message, inputs) {
         const settings = this.client.settings[message.guild.id]
 
-        let maxPort = 32768
+        let maxPort = 65536
         let port = Number(inputs[0])
         if (typeof(port) != "number" || port == null || isNaN(port)) return Util.replyError(message, "Port must be a number");
 
