@@ -61,7 +61,7 @@ class Command extends CommandBase {
                 let context = image.getContext("2d")
 
                 context.imageSmoothingEnabled = false
-                context.font = "20px 'Pixel Font'"
+                context.font = "27px 'Minecraft'"
                 context.textBaseline = "top"
                 context.textAlign = "left"
                 context.fillStyle = "#fff"
