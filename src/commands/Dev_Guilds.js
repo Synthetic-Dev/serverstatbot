@@ -30,6 +30,7 @@ class Command extends CommandBase {
         let logchannel = await settings.get("logchannel")
         let disabledCommands = await settings.get("disabledCommands")
         let owner = guild.owner ? guild.owner : await Util.getMember(guild, guild.ownerID)
+        let priorityChannel = Util.getPriorityChannel(guild, chl => Util.doesMemberHavePermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
         
         let ip = await settings.get("ip");
         let port = await settings.get("port");
@@ -44,7 +45,7 @@ class Command extends CommandBase {
                     name: guild.name,
                     icon_url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
                 },
-                description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n**Members:** \`\`${guild.memberCount}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\nSettings:\n• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${ip}\`\`\n• **Port:** \`\`${port}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `${await settings.get("logchannel")}`}\n• **Disabled commands:** ${disabledCommands.length > 0 ? disabledCommands.join(", ") : "None"}\n\nPermissions:\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
+                description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n**Members:** \`\`${guild.memberCount}\`\`\n**Priority Channel:** \`\`${priorityChannel ? `${priorityChannel.id}` : "None"}\`\`\n\n**Settings:**\n• Prefix: \`\`${await settings.get("prefix")}\`\`\n• Ip: \`\`${ip}\`\`\n• Port: \`\`${port}\`\`\n• Log channel: \`\`${logchannel == "0" ? "None" : `${await settings.get("logchannel")}`}\`\`\n• Disabled commands: \`\`${disabledCommands.length > 0 ? disabledCommands.join("``, ``") : "None"}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\n**Permissions:**\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
                 color: 927567,
                 timestamp: Date.now()
             }
@@ -92,7 +93,7 @@ class Command extends CommandBase {
                 needValue: true,
                 check: async (guild, value) => {
                     let ip = await this.client.settings[guild.id].get("ip");
-                    return ip.toLowerCase() == value;
+                    return ip.toLowerCase().includes(value);
                 }
             },
             port: {
@@ -207,20 +208,21 @@ class Command extends CommandBase {
         })
 
         let promise = new Promise((resolve, reject) => {
+            const maxPages = 75
             let pages = []
             let done = 0
             cache.forEach(async guild => {
-                if (pages.length >= 75) return;
+                if (pages.length >= maxPages) return;
                 
                 this.getServer(message.guild, guild, check).then(page => {
-                    if (pages.length >= 75) return;
-                    if (page) {
-                        done++
+                    if (page && pages.length < maxPages) {
                         pages.push(page)
                     }
-                    if (pages.length >= 75 || done == cache.size) resolve(pages)
                 }).catch(e => {
                     console.error(`Guilds[getServer]: ${e.toString()};\n${e.method} at ${e.path}`)
+                }).finally(() => {
+                    done++
+                    if (pages.length >= maxPages || done == cache.size) resolve(pages)
                 })
             })
         })
