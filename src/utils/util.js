@@ -700,7 +700,7 @@ class Util {
             attemptNames.forEach(name => {
                 if (channel) return;
                 channel = this.getChannel(guild, name, "text")
-                if (!channel.viewable || (check && !check(channel))) channel = null;
+                if (channel && (!channel.viewable || (check && !check(channel)))) channel = null;
             })
             return channel
         } catch(e) {
