@@ -11,6 +11,7 @@ const requestCache = new NodeCache({
     checkperiod: cacheTime / 2,
     stdTTL: cacheTime
 });
+let sessionCount = 0
 
 class Protocol {
     constructor() {
@@ -40,7 +41,8 @@ class Protocol {
             function query(statusResponse) {
                 if (statusResponse) statusResponse.bedrock = statusResponse.bedrock ? true : false;
 
-                args[1].sessionID = 1
+                sessionCount++
+                args[1].sessionID = sessionCount
                 args[1].timeout = 5000
                 MinecraftUtil.queryFull(...args).then(queryResponse => {
                     queryResponse.query = true;
