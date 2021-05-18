@@ -185,13 +185,18 @@ class GuildSettings {
 
         if (!key) {
             if (!(value instanceof Mongoose.Document)) throw new Error(`Tried setting '${name}' to non-document value`);
-            value.save()
+
+            this.transactions[name] = true
+
             this.cache.set(name, value);
+            value.save().catch(console.error).finally(() => {
+                delete this.transactions[name]
+            })
             return
         }
 
         let cachedData = this.cache.get(name)
-        if (cachedData[key] === value) return;
+        if (cachedData && cachedData[key] === value) return;
 
         this.transactions[name] = true
 
