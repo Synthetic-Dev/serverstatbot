@@ -1,18 +1,19 @@
 const Util = require("../utils/util.js")
+const Protocol = require("../utils/protocol.js")
 const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "setaddress",
-            desc: "Sets the server address used by the bot, alternative to using .setip and .setport",
+            descId: "COMMAND_SETADDRESS",
             aliases: [
                 "setaddr",
                 "address"
             ],
             args: [{
                 name: "address",
-                desc: "The address of the server e.g. ``mc.hypixel.net``, ``play.hivemc.net:25565`` or ``172.16.254.1:25665``"
+                descId: "EXAMPLE_ADDRESS"
             }],
             perms: [
                 "ADMINISTRATOR"
@@ -20,22 +21,23 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message, inputs) {
-        const settings = this.client.settings[message.guild.id]
-        let [ip, port] = inputs[0].split(":")
-        port = port ? port : 25565
+    async execute(options) {
+        let [ip, port] = options.inputs[0].split(":")
+        if (!Protocol.isIpValid(ip)) return Util.replyError(options.message, options.lang.INVALID_IP.format(ip));
+        port = port ?? 25565
 
-        let maxPort = 65536
         port = Number(port)
-        if (typeof(port) != "number" || port == null || isNaN(port)) return Util.replyError(message, "Port must be a number");
-
+        if (typeof(port) != "number" || port == null || isNaN(port)) return Util.replyError(options.message, options.lang.MUST_NUMBER.format("port"));
         port = Math.abs(port)
-        if (port > maxPort) return Util.replyError(message, `Port cannot exceed ${maxPort}`)
+        if (port > Protocol.maxPort) return Util.replyError(options.message, options.lang.CANNOT_EXCEED.format("port", Protocol.maxPort))
 
-        settings.set("ip", ip)
-        settings.set("port", port)
+        options.settings.update("server", data => {
+            data.Ip = ip
+            data.Port = port
+            return data
+        })
 
-        Util.replyMessage(message, `Ip set to \`\`${ip}\`\` and Port set to \`\`${port}\`\``).catch(e => {
+        Util.replyMessage(options.message, options.lang.COMMAND_SETADDRESS_CONTENT.format(ip, port)).catch(e => {
             console.error(`SetAddress[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
     }

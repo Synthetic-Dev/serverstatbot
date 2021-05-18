@@ -5,17 +5,18 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "vote",
-            desc: "Help the bot by upvoting on these sites",
+            descId: "COMMAND_VOTE",
             aliases: [
-                "upvote"
+                "upvote",
+                "votes"
             ]
         })
     }
 
-    async execute(message) {
-        Util.sendMessage(message, {
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
-                description: `Voting for the bot helps to support the bot grow and encourages the release of new updates and features.\n**Vote for the bot at these links:**\n• [top.gg/vote](https://top.gg/bot/759415210628087841/vote)\n• [discordbotlist.com/vote](https://discordbotlist.com/bots/server-stat/upvote)`,
+                description: options.lang.COMMAND_VOTE_DESC.format("• [top.gg/vote](https://top.gg/bot/759415210628087841/vote)\n• [discordbotlist.com/vote](https://discordbotlist.com/bots/server-stat/upvote)\n• [botsfordiscord.com/vote](https://botsfordiscord.com/bot/759415210628087841/vote)\n• [discordextremelist.xyz/vote](https://discordextremelist.xyz/en-US/bots/759415210628087841/upvote)"),
                 author: {
                     name: this.client.user.username,
                     icon_url: this.client.user.avatarURL({
@@ -26,7 +27,7 @@ class Command extends CommandBase {
                 },
                 color: 5145560,
                 timestamp: Date.now(),
-                footer: Util.getFooter(this.client)
+                footer: Util.getFooter(options.message)
             }
         }).catch(e => {
             console.error(`Vote[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)

@@ -5,13 +5,12 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "setprefix",
-            desc: "Sets the prefix used by the bot",
+            descId: "COMMAND_SETPREFIX",
             aliases: [
                 "prefix"
             ],
             args: [{
-                name: "prefix",
-                desc: "The prefix"
+                name: "prefix"
             }],
             perms: [
                 "MANAGE_MESSAGES"
@@ -19,13 +18,11 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message, inputs) {
-        const settings = this.client.settings[message.guild.id]
+    async execute(options) {
+        if (options.inputs[0].length > 3) return Util.replyError(options.message, options.lang.COMMAND_SETPREFIX_LIMIT)
 
-        if (inputs[0].length > 3) return Util.replyError(message, "Prefix can only be up to 3 characters long")
-
-        settings.set("prefix", inputs[0])
-        Util.replyMessage(message, `Prefix set to '${inputs[0]}'`).catch(e => {
+        options.settings.set("prefix", options.inputs[0], "Prefix")
+        Util.replyMessage(options.message, options.lang.COMMAND_SETPREFIX_CONTENT.format(options.inputs[0])).catch(e => {
             console.error(`SetPrefix[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
     }

@@ -5,7 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "guilds",
-            desc: "View and search connected guilds and details",
+            descId: "COMMAND_DEV_GUILDS",
             args: [
                 {
                     name: "search",
@@ -19,25 +19,19 @@ class Command extends CommandBase {
         })
     }
 
-    async getServer(toGuild, guild, check) {
+    async getServer(options, guild, check) {
         if (check) {
             let result = await Promise.resolve(check(guild))
             if (!result) return;
         }
 
-        const settings = this.client.settings[guild.id]
+        const settingsCommand = this.client.commands.get("settings")
         
-        let logchannel = await settings.get("logchannel")
-        let disabledCommands = await settings.get("disabledCommands")
-        let owner = guild.owner ? guild.owner : await Util.getMember(guild, guild.ownerID)
-        let priorityChannel = Util.getPriorityChannel(guild, chl => Util.doesMemberHavePermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
-        
-        let ip = await settings.get("ip");
-        let port = await settings.get("port");
+        let owner = guild.owner ?? await Util.getMember(guild, guild.ownerID)
+        let priorityChannel = Util.getPriorityChannel(guild, chl => Util.hasPermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
 
-        const localSettings = this.client.settings[toGuild.id]
-
-        let prefix = await localSettings.get("prefix")
+        const localSettings = this.client.settings[options.guild.id]
+        let prefix = await localSettings.get("prefix", "Prefix")
 
         return {
             embed: {
@@ -45,17 +39,23 @@ class Command extends CommandBase {
                     name: guild.name,
                     icon_url: `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
                 },
-                description: `**Id:** \`\`${guild.id}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n**Members:** \`\`${guild.memberCount}\`\`\n**Priority Channel:** \`\`${priorityChannel ? `${priorityChannel.id}` : "None"}\`\`\n\n**Settings:**\n• Prefix: \`\`${await settings.get("prefix")}\`\`\n• Ip: \`\`${ip}\`\`\n• Port: \`\`${port}\`\`\n• Log channel: \`\`${logchannel == "0" ? "None" : `${await settings.get("logchannel")}`}\`\`\n• Disabled commands: \`\`${disabledCommands.length > 0 ? disabledCommands.join("``, ``") : "None"}\`\`\n\`\`${prefix}ping ${ip}:${port}\`\`\n\n**Permissions:**\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
-                color: 927567,
+                description: `**Id:** \`\`${guild.id}\`\`\n**Locale:** \`\`${guild.preferredLocale}\`\`\n**Owner:** \`\`${owner && owner.user ? owner.user.tag : "Unknown"}\`\`\n**Members:** \`\`${guild.memberCount}\`\`\n**Channels:** \`\`${guild.channels.cache.size}\`\`\n**Priority Channel:** \`\`${priorityChannel ? `${priorityChannel.id}` : "None"}\`\`\n\n**Settings:**\n${await settingsCommand.formatSettings(options, guild)}\n\n**Permissions:**\n\`\`${guild.me.permissions.toArray().join("``, ``")}\`\``,
+                color: 4317012,
                 timestamp: Date.now()
             }
         }
     }
 
-    async execute(message, inputs) {
+    async execute(options) {
         let cache = this.client.guilds.cache
 
         const propertyChecks = {
+            id: {
+                needValue: true,
+                check: (guild, value) => {
+                    return guild.id == value;
+                }
+            },
             name: {
                 needValue: true,
                 check: (guild, value) => {
@@ -65,7 +65,7 @@ class Command extends CommandBase {
             owner: {
                 needValue: true,
                 check: async (guild, value) => {
-                    let owner = guild.owner ? guild.owner : await Util.getMember(guild, guild.ownerID)
+                    let owner = guild.owner ?? await Util.getMember(guild, guild.ownerID)
                     if (!owner || !owner.user) return false;
                     return owner.user.username.toLowerCase().includes(value);
                 }
@@ -85,35 +85,42 @@ class Command extends CommandBase {
             prefix: {
                 needValue: true,
                 check: async (guild, value) => {
-                    let prefix = await this.client.settings[guild.id].get("prefix");
+                    let prefix = await this.client.settings[guild.id].get("prefix", "Prefix");
                     return prefix.toLowerCase() == value;
                 }
             },
             ip: {
                 needValue: true,
                 check: async (guild, value) => {
-                    let ip = await this.client.settings[guild.id].get("ip");
+                    let ip = await this.client.settings[guild.id].get("server", "Ip");
                     return ip.toLowerCase().includes(value);
                 }
             },
             port: {
                 needValue: true,
                 check: async (guild, value) => {
-                    let port = await this.client.settings[guild.id].get("port");
+                    let port = await this.client.settings[guild.id].get("server", "Port");
                     return port == value;
                 }
             },
-            haslogchannel: {
+            queryport: {
+                needValue: true,
+                check: async (guild, value) => {
+                    let port = await this.client.settings[guild.id].get("server", "QueryPort");
+                    return port == value;
+                }
+            },
+            hasstatuschannel: {
                 needValue: false,
                 check: async (guild) => {
-                    let logchannel = await this.client.settings[guild.id].get("logchannel")
-                    return logchannel != "0"
+                    let statuschannel = await this.client.settings[guild.id].get("statuschannel")
+                    return statuschannel.ChannelId != "0"
                 }
             },
             hasserver: {
                 needValue: false,
                 check: async (guild) => {
-                    let ip = await this.client.settings[guild.id].get("ip");
+                    let ip = await this.client.settings[guild.id].get("server", "Ip");
                     return ip != "0.0.0.0"
                 }
             },
@@ -129,9 +136,9 @@ class Command extends CommandBase {
         }
 
         let check
-        if (inputs[0]) {
+        if (options.inputs[0]) {
             const AND = ["+", "&"]
-            const search = inputs[0].toLowerCase().split(" ")
+            const search = options.inputs[0].toLowerCase().split(" ")
             let checks = []
             
             let isValue = false
@@ -150,7 +157,7 @@ class Command extends CommandBase {
                     if (!AND.includes(string)) {
                         if (propertyChecks[string]) {
                             error = true
-                            Util.sendError(message, `Expected "+" or "&" before next property`)
+                            Util.sendError(options.message, `Expected "+" or "&" before next property`)
                         } else {
                             let value = checks[checks.length - 1].value
                             if (!value) value = "";
@@ -167,20 +174,20 @@ class Command extends CommandBase {
                 let property = propertyChecks[string]
                 if (!property) {
                     error = true
-                    return Util.sendError(message, `Invalid property '${string}', properties: \`\`${Object.keys(propertyChecks).join("``, ``")}\`\``)
+                    return Util.sendError(options.message, `Invalid property '${string}', properties: \`\`${Object.keys(propertyChecks).join("``, ``")}\`\``)
                 }
 
                 let value = search[index + 1]
                 if (property.needValue && (!value || AND.includes(value))) {
                     error = true
-                    return Util.sendError(message, `Search argument required for '${string}' property`)
+                    return Util.sendError(options.message, `Search argument required for '${string}' property`)
                 } else if (property.needValue) {
                     isValue = true
                     value = value.toLowerCase().trim()
                 }
 
                 checks.push({
-                    amplifier: amplifier ? amplifier : amplifiers["="],
+                    amplifier: amplifier ?? amplifiers["="],
                     propertyCheck: property.check,
                     value: value
                 })
@@ -203,7 +210,7 @@ class Command extends CommandBase {
             }
         }
 
-        Util.startTyping(message).catch(e => {
+        Util.startTyping(options.message).catch(e => {
             console.error(`Guilds[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
 
@@ -214,7 +221,7 @@ class Command extends CommandBase {
             cache.forEach(async guild => {
                 if (pages.length >= maxPages) return;
                 
-                this.getServer(message.guild, guild, check).then(page => {
+                this.getServer(options, guild, check).then(page => {
                     if (page && pages.length < maxPages) {
                         pages.push(page)
                     }
@@ -228,12 +235,12 @@ class Command extends CommandBase {
         })
 
         promise.then(pages => {
-            Util.stopTyping(message)
+            Util.stopTyping(options.message)
             pages = pages.filter(value => value != null)
 
-            if (pages.length == 0) return Util.sendWarning(message.channel, "No servers found");
-
-            Util.sendPages(message, pages)
+            if (pages.length == 0) return Util.sendWarning(options.message, "No servers found");
+            if (pages.length == 1) return Util.sendMessage(options.message, pages[0]);
+            Util.sendPages(options.message, pages)
         }).catch(e => {
             console.error(`Guilds[getGuilds]: ${e.toString()};\n${e.method} at ${e.path}`)
         })

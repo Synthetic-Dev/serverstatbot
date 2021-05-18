@@ -4,7 +4,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "stop",
-            desc: "Takes the bot offline",
+            descId: "COMMAND_DEV_STOP",
             perms: [
                 "DEV"
             ],

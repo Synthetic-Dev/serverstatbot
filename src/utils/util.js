@@ -2,23 +2,42 @@ const Discord = require("discord.js")
 const Canvas = require("canvas")
 const HTTPS = require("https")
 const HTTP = require("http")
-const FileSystem = require("fs");
+const FileSystem = require("fs")
 
-const unicodeEmojis = require("./unicodeEmojis.json");
-const DevId = "255733848162304002"
+const LocaleManager = require("./localeManager.js")
+
+const unicodeEmojis = require("../unicodeEmojis.json")
+const LocalSettings = require("../localSettings.json")
+
+if (!String.prototype.format) {
+    String.prototype.format = function() {
+        let args = arguments;
+        return this.replace(/{(\d+)}/g, function (match, number) {
+            return typeof args[number] != 'undefined' ? args[number] : match;
+        });
+    };
+}
+
+if (!String.prototype.toTitleCase) {
+    String.prototype.toTitleCase = function(allWords = false) {
+        let string = this.toLowerCase().split(" ")
+        if (!allWords) return this.toTitleCase(string.shift(), true) + " " + string.join(" ")
+        string.forEach((word, index) => {
+            string[index] = word.substr(0, 1).toUpperCase() + word.substr(1)
+        })
+        return string.join(" ")
+    }
+}
+
+if (!Math.clamp) {
+    Math.clamp = function(value, min, max) {
+        return Math.max(min, Math.min(max, value))
+    }
+}
 
 class Util {
     constructor() {
         console.error(`The ${this.constructor.name} class cannot be constructed.`);
-    }
-
-    /**
-     * Gets the ping between the bot and discord relative to the time the message was created
-     * @param {Discord.Message} message A recently recieved discord message
-     * @return {number}
-     */
-    static ping(message) {
-        return Date.now() - message.createdTimestamp
     }
 
     /**
@@ -38,6 +57,7 @@ class Util {
     static request(options, callback) {
         const isUrl = typeof options == "string"
         const method = isUrl ? (options.toLowerCase().slice(0, 5) == "https" ? HTTPS : HTTP) : (options.protocol == "HTTP" ? HTTP : HTTPS)
+        delete options.protocol
 
         let handler = response => {
             let data = ""
@@ -163,7 +183,7 @@ class Util {
             case "right":
                 x -= width; break;
         }
-        thickness = thickness ? thickness : height / 8
+        thickness = thickness ?? height / 8
         thickness = context.font.toLowerCase().includes("bold") ? thickness * 1.5 : thickness
         
         if (style.includes("underline")) {
@@ -240,15 +260,218 @@ class Util {
         canvas.width = w;
         canvas.height = h;
         context.putImageData(cropped, 0, 0);
-      }
+    }
 
-    static toTitleCase(string, allWords = false) {
-        string = string.toLowerCase().split(" ")
-        if (!allWords) return this.toTitleCase(string.shift(), true) + " " + string.join(" ")
-        string.forEach((word, index) => {
-            string[index] = word.substr(0, 1).toUpperCase() + word.substr(1)
+    /**
+     * Create a graph
+     * @param {{x: number, y: number}[]} graphData 
+     * @param {{start?: number, max?: number, increment?: number, name: string, formatter: (value: number) => string | number}} xAxis 
+     * @param {{start?: number, max?: number, increment?: number, name: string, formatter: (value: number) => string | number}} yAxis 
+     * @returns {Canvas.Canvas}
+     */
+    static createGraph(graphData, xAxis, yAxis) {
+        xAxis.increment = xAxis.increment ?? 1
+        yAxis.increment = yAxis.increment ?? 1
+        xAxis.clamp = xAxis.clamp ?? false
+        yAxis.clamp = yAxis.clamp ?? true
+
+        let smallestX = xAxis.start
+        let smallestY = yAxis.start
+        let largestX = xAxis.max ?? 0
+        let largestY = yAxis.max ?? 0
+        graphData.forEach(({x, y}, index) => {
+            let remove = false
+            if ((xAxis.start && x < xAxis.start) || (yAxis.start && y < yAxis.start)) remove = true;
+
+            if (!remove) {
+                if (!xAxis.max) largestX = x > largestX ? x : largestX
+                else if (x > xAxis.max) {
+                    remove = true
+                }
+            }
+            if (!remove) {
+                if (!yAxis.max) largestY = y > largestY ? y : largestY
+                else if (y > yAxis.max) {
+                    remove = true
+                }
+            }
+            if (!remove && !xAxis.start) smallestX = smallestX == null || x < smallestX ? x : smallestX
+            if (!remove && !yAxis.start) smallestY = smallestY == null || y < smallestY ? y : smallestY
+
+            if (remove) graphData.slice(index, 1);
         })
-        return string.join(" ")
+
+        if (xAxis.clamp) {
+            xAxis.start = Math.floor(smallestX / xAxis.increment) * xAxis.increment
+            xAxis.max = Math.ceil(largestX / xAxis.increment) * xAxis.increment
+        } else {
+            xAxis.start = smallestX
+            xAxis.max = largestX
+        }
+
+        if (yAxis.clamp) {
+            yAxis.start = Math.floor(smallestY / yAxis.increment) * yAxis.increment
+            yAxis.max = Math.ceil(largestY / yAxis.increment) * yAxis.increment
+        } else {
+            yAxis.start = smallestY
+            yAxis.max = largestY
+        }
+
+        const font = "Arial"
+
+        const graphWidth = 800
+        const graphHeight = 500
+        const labelPadding = 60
+        const midPadding = 10
+        const numberPadding = 30
+        const totalPadding = labelPadding + numberPadding + midPadding
+
+        let graph = Canvas.createCanvas(graphWidth, graphHeight)
+        let context = graph.getContext("2d")
+
+        context.quality = "best"
+        context.fillStyle = "#fff"
+        context.imageSmoothingEnabled = false
+
+        context.strokeStyle = "#fff"
+        context.lineWidth = 3
+
+        context.beginPath()
+        context.moveTo(totalPadding, totalPadding - numberPadding / 2)
+        context.lineTo(totalPadding, graphHeight - totalPadding)
+        context.lineTo(graphWidth - totalPadding + numberPadding / 2, graphHeight - totalPadding)
+        context.stroke()
+        context.closePath()
+
+        context.textAlign = "center"
+        let fontSize = labelPadding / 2 - 2
+        context.font = `bold ${fontSize}px '${font}'`
+        context.fillText(xAxis.name, graphWidth / 2, graphHeight - labelPadding / 2 + fontSize / 2, graphWidth - labelPadding * 2)
+
+        context.save()
+        context.translate(graphWidth, 0)
+        context.rotate(-Math.PI/2)
+        context.fillText(yAxis.name, -graphHeight / 2, labelPadding / 2 - graphWidth, graphHeight - labelPadding * 2)
+        context.restore()
+
+        context.translate(totalPadding, graphHeight - totalPadding)
+
+        fontSize = numberPadding * 0.8
+        context.font = `${fontSize}px '${font}'`
+
+        const maxIndexX = Math.round((xAxis.max - xAxis.start) / xAxis.increment)
+        const maxIndexY = Math.round((yAxis.max - yAxis.start) / yAxis.increment)
+
+        context.save()
+        context.lineWidth = 2
+        context.globalAlpha = 0.1
+        context.beginPath()
+        for (let x = xAxis.start; x < xAxis.max + xAxis.increment / 2.1; x += xAxis.increment) {
+            let index = Math.round((x - xAxis.start) / xAxis.increment) - 0.5
+            if (index <= 0) continue;
+
+            let percentage = index / maxIndexX
+            let x1 = (graphWidth - totalPadding * 2) * percentage
+            context.moveTo(x1, 0)
+            context.lineTo(x1, -(graphHeight - totalPadding * 2 + numberPadding / 2))
+        }
+
+        for (let y = yAxis.start; y < yAxis.max + yAxis.increment / 2.1; y += yAxis.increment) {
+            let index = Math.round((y - yAxis.start) / yAxis.increment) - 0.5
+            if (index <= 0) continue;
+
+            let percentage = index / maxIndexY
+            let y1 = -(graphHeight - totalPadding * 2) * percentage
+            context.moveTo(0, y1)
+            context.lineTo(graphWidth - totalPadding * 2 + numberPadding / 2, y1)
+        }
+        context.stroke()
+        context.closePath()
+
+        context.lineWidth = 3
+        context.globalAlpha = 0.2
+        context.beginPath()
+        for (let x = xAxis.start; x < xAxis.max + xAxis.increment / 2.1; x += xAxis.increment) {
+            let index = Math.round((x - xAxis.start) / xAxis.increment)
+            if (index == 0) continue;
+
+            let percentage = index / maxIndexX
+            let x1 = (graphWidth - totalPadding * 2) * percentage
+            context.moveTo(x1, 0)
+            context.lineTo(x1, -(graphHeight - totalPadding * 2 + numberPadding / 2))
+        }
+
+        for (let y = yAxis.start; y < yAxis.max + yAxis.increment / 2.1; y += yAxis.increment) {
+            let index = Math.round((y - yAxis.start) / yAxis.increment)
+            if (index == 0) continue;
+
+            let percentage = index / maxIndexY
+            let y1 = -(graphHeight - totalPadding * 2) * percentage
+            context.moveTo(0, y1)
+            context.lineTo(graphWidth - totalPadding * 2 + numberPadding / 2, y1)
+        }
+        context.stroke()
+        context.closePath()
+        context.restore()
+
+        const angle = Math.PI/6
+        const sa = Math.sin(angle), ca = Math.cos(angle), ta = Math.tan(angle)
+
+        context.save()
+        context.textAlign = "left"
+        context.rotate(angle)
+        for (let x = xAxis.start; x < xAxis.max + xAxis.increment / 2.1; x += xAxis.increment) {
+            let index = Math.round((x - xAxis.start) / xAxis.increment)
+            let percentage = index / maxIndexX
+            let value = xAxis.formatter ? xAxis.formatter(x) : Math.round(x)
+
+            let w = (graphWidth - totalPadding * 2) * percentage + context.lineWidth / 2
+            let x1 = w / ca
+            let y1 = x1 * ta
+
+            let k = y1 * sa
+            let x2 = k * ca
+            let y2 = k * sa
+
+            let o = context.lineWidth + 3 + fontSize / 2
+            let o1 = o * sa
+            let o2 = o * ca
+
+            context.fillText(value, x1 - x2 + o1, -(y1 - y2 - o2), (numberPadding * 1.2) / ta)
+        }
+        context.restore()
+
+        context.save()
+        context.textAlign = "right"
+        for (let y = yAxis.start; y < yAxis.max + yAxis.increment / 2.1; y += yAxis.increment) {
+            let index = Math.round((y - yAxis.start) / yAxis.increment)
+            let percentage = index / maxIndexY
+            let value = yAxis.formatter ? yAxis.formatter(y) : Math.round(y)
+            context.fillText(value, -context.lineWidth - 3, -(graphHeight - totalPadding * 2) * percentage + fontSize / 2 - context.lineWidth / 2, numberPadding * 1.2)
+        }
+        context.restore()
+
+        context.fillStyle = "#71C1FF"
+        context.strokeStyle = "#71C1FF"
+
+        context.beginPath()
+        graphData.forEach(({x, y}, index) => {
+            let indexX = (x - xAxis.start) / xAxis.increment
+            let indexY = (y - yAxis.start) / yAxis.increment
+
+            let percentageX = indexX / maxIndexX
+            let percentageY = indexY / maxIndexY
+            let localX = (graphWidth - totalPadding * 2) * percentageX
+            let localY = -(graphHeight - totalPadding * 2) * percentageY
+            if (index == 0) context.moveTo(localX, localY);
+            else context.lineTo(localX, localY);
+        })
+        context.stroke()
+        context.closePath()
+
+        this.autoCropCanvas(context, 10)
+
+        return graph
     }
 
     /**
@@ -303,12 +526,10 @@ class Util {
             if (channel instanceof Discord.DMChannel) {
                 message.reply(content).then(resolve).catch(reject)
             } else {
-                let hasPerms = this.doesMemberHavePermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])
-                if (!hasPerms) {
-                    //this.cannotSendMessages(message.author, channel).then(reject)
-                } else {
+                let hasPerms = this.hasPermissionsInChannel(message.guild.me, channel, ["SEND_MESSAGES"])
+                if (hasPerms) {
                     message.reply(content).then(resolve).catch(e => {
-                        reject(e) //this.dmUser(message.author, `:stop_sign: Failed to reply with message in <#${channel.id}>!\n` + (stringAble ? content : ""), !stringAble ? content : null).then(() => {reject(e)}).catch(reject)
+                        reject(e)
                     })
                 }
             }
@@ -331,29 +552,13 @@ class Util {
             if (channel instanceof Discord.DMChannel) {
                 channel.send(...content).then(resolve).catch(reject)
             } else {
-                let hasPerms = this.doesMemberHavePermissionsInChannel(channel.guild.me, channel, ["SEND_MESSAGES"])
-                if (isMessage && !hasPerms) {
-                    //this.cannotSendMessages(medium.author, channel).then(reject)
-                } else if(hasPerms) {
+                let hasPerms = this.hasPermissionsInChannel(channel.guild.me, channel, ["SEND_MESSAGES"])
+                if (hasPerms) {
                     channel.send(...content).then(resolve).catch(e => {
-                        reject(e) //if (isMessage) this.dmUser(medium.author, `:stop_sign: Failed to send message in <#${channel.id}>!`).then(() => {reject(e)}).catch(reject);
+                        reject(e)
                     })
                 }
             }
-        })
-    }
-
-    /**
-     * Sends a message to a user messages are missing to send messages in the given channel
-     * @param {Discord.User} user
-     * @param {Discord.TextChannel | Discord.DMChannel} channel 
-     * @returns {Promise<Discord.Message>}
-     */
-    static cannotSendMessages(user, channel) {
-        return new Promise((resolve, reject) => {
-            this.dmUser(user, `:stop_sign: I don't have permission to send messages in <#${channel.id}>!`).then(() => {
-                resolve(new Error(`Missing permissions to send message in channel ${channel.id}`))
-            }).catch(resolve)
         })
     }
 
@@ -434,10 +639,12 @@ class Util {
      * @param {Discord.Message} message 
      * @param {string} type 
      * @param {string} input 
-     * @param {boolean} inObject
+     * @param {string} inObject
      */
-    static couldNotFind(message, type, input, inObject) {
-        this.replyError(message, `Could not find ${type.toLowerCase()} '${input}'` + (inObject ? ` in this ${inObject}` : ""))
+    static couldNotFind(message, type, input, inObject = null) {
+        const locale = message.guild ? message.guild.preferredLocale ?? "en-us" : "en-us"
+        const lang = LocaleManager.getLang(locale)
+        this.replyError(message, inObject ? lang.COULDNOTFIND.format(type.toLowerCase(), input) : lang.COULDNOTFIND_IN.format(type.toLowerCase(), input, inObject))
     }
 
     /**
@@ -446,21 +653,29 @@ class Util {
      * @param {(Discord.APIMessageContentResolvable | Discord.MessageAdditions | (Discord.MessageOptions & {split?: false;}))[]} pages
      * @param {number} startPage
      */
-    static sendPages(message, pages, startPage = 0) {
-        let author = message.author
-        let guild = message.guild
+    static sendPages(message, pages, startPage = 0, timeout = 30, maxTime = 300) {
+        if (timeout < 0) timeout = null;
+        if (maxTime < 0) maxTime = null;
+
+        console.assert(timeout || maxTime, "'timeout' and 'maxTime' cannot both be null.")
+
+        const locale = message.guild ? message.guild.preferredLocale ?? "en-us" : "en-us"
+        const lang = LocaleManager.getLang(locale)
+
+        const client = message.client
+        const author = message.author
 
         pages.forEach((page, index) => {
             if (!page.embed) return;
 
-            page.embed.footer = {
-                text: `Page ${index + 1}/${pages.length}`,
-                icon_url: author.avatarURL({
-                    size: 32,
-                    dynamic: true,
-                    format: "png"
-                })
-            }
+            page.embed.footer = page.embed.footer ?? {}
+
+            page.embed.footer.text = lang.PAGE_NUM.format(index + 1, pages.length) + (page.embed.footer.text ? " | " + page.embed.footer.text : "")
+            page.embed.footer.icon_url = author.avatarURL({
+                size: 32,
+                dynamic: true,
+                format: "png"
+            })
         })
 
         let page = startPage
@@ -468,9 +683,12 @@ class Util {
             try {
                 if (!botMessage || pages.length == 1 || botMessage.channel instanceof Discord.DMChannel) return;
 
-                let emojis = ["arrow_backward", "arrow_forward", "previous_track", "next_track"]
+                let emojis = ["arrow_backward", "arrow_forward"]
+                if (pages.length > 2) {
+                    emojis.push("previous_track", "next_track")
+                }
                 emojis.forEach((name, index) => {
-                    let emoji = this.getEmoji(guild, name)
+                    let emoji = this.getEmoji(client, name)
                     emojis[index] = emoji
                     if (!botMessage || botMessage.deleted) return;
                     botMessage.react(emoji).catch(e => {
@@ -479,7 +697,7 @@ class Util {
                 })
 
                 if (!botMessage || botMessage.deleted) return;
-                let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: 300000, idle: 30000, dispose: true})
+                let collector = botMessage.createReactionCollector((reaction, user) => user.id == author.id, {time: maxTime * 1000, idle: timeout * 1000, dispose: true})
 
                 collector.on("collect", (reaction, user) => {
                     if (!botMessage || botMessage.deleted) {
@@ -540,9 +758,9 @@ class Util {
      * @param {Array} permissions 
      * @returns {boolean}
      */
-    static doesMemberHavePermission(member, permissions = []) {
+    static hasPermissions(member, permissions = []) {
         try {
-            if (member.id == DevId) {
+            if (this.isDeveloper(member.user)) {
                 return true
             }
 
@@ -551,7 +769,7 @@ class Util {
                 if (!flag) return;
 
                 if (permission == "DEV") {
-                    if (member.id != DevId) flag = false;
+                    if (member.id != this.isDeveloper(member.user)) flag = false;
                 } else if (permission == "OWNER") {
                     if (member.id != member.guild.ownerID) flag = false;
                 } else {
@@ -573,7 +791,7 @@ class Util {
      * @param {Array} permissions 
      * @returns {boolean}
      */
-    static doesMemberHavePermissionsInChannel(member, channel, permissions = []) {
+    static hasPermissionsInChannel(member, channel, permissions = []) {
         try {
             let flag = true
             let memberPermissions = channel.permissionsFor(member)
@@ -588,6 +806,26 @@ class Util {
             console.error(e)
         }
         return false
+    }
+
+    /**
+     * Checks if the user is a developer
+     * @param {Discord.User} user
+     * @returns {boolean} 
+     */
+    static isDeveloper(user) {
+        return LocalSettings.developers.includes(user.id)
+    }
+
+    /**
+     * Checks whether the user is active on mobile
+     * @param {Discord.User} user
+     * @returns {boolean} 
+     */
+    static isOnMobile(user) {
+        let status = user.presence.clientStatus
+        if (!status) return false;
+        return status.mobile && (!status.desktop || status.desktop == "dnd") && (!status.web || status.web == "dnd")
     }
 
     /**
@@ -676,12 +914,12 @@ class Util {
 
     /**
      * Gets a channel by id
-     * @param {Discord.Guild} guild
+     * @param {Discord.ChannelManager | Discord.GuildChannelManager} channels
      * @param {string} id
      * @returns {Discord.GuildChannel?} 
      */
-    static getChannelById(guild, id) {
-        let channel = guild.channels.cache.get(id)
+    static getChannelById(channels, id) {
+        let channel = channels.cache.get(id)
         if (channel && channel.viewable) return channel;
     }
 
@@ -692,7 +930,7 @@ class Util {
      */
     static getPriorityChannel(guild, check) {
         try {
-            let channel = this.getChannelById(guild, guild.systemChannelID)
+            let channel = this.getChannelById(guild.channels, guild.systemChannelID)
             if (channel && channel.viewable && ((check && check(channel)) || !check)) return channel;
             channel = null
             
@@ -709,30 +947,6 @@ class Util {
     }
 
     /**
-     * Like channel.messages.fetch() but consults cache first with reduced api spam
-     * @param {Discord.TextChannel} channel 
-     * @param {string | Discord.ChannelLogsQueryOptions | null} options 
-     * @param {boolean?} cache
-     * @param {boolean?} force
-     *//*
-    static async getMessages(channel, options, cache, force) {
-        return new Promise((resolve, reject) => {
-            let cached = channel.messages.cache
-            let last = cached.array().pop()
-            if (last && last.createdTimestamp + 180*1000 >= Date.now()) {
-                if (typeof options == "string") {
-                    let message = cached.get(options)
-                    if (message) resolve(message);
-                    else reject(new Error("Message not found"));
-                } else {
-                    let message = cached.get(options)
-                    //not finished
-                }
-            } else channel.messages.fetch(options, cache, force).then(resolve).catch(reject);
-        })
-    }*/
-
-    /**
      * Gets a message from a channel by id
      * @param {Discord.TextChannel} channel
      * @param {string} id
@@ -740,12 +954,11 @@ class Util {
      */
     static getMessageInChannel(channel, id) {
         return new Promise((resolve, reject) => {
+            const messages = channel.messages
             if (!channel.viewable) return reject(new Error("Not viewable"));
-            channel.messages.fetch().then(messages => {
-                let message = messages.get(id)
-                if (!message) return reject(new Error("Message does not exist"))
-                resolve(message)
-            }).catch(reject)
+            let message = messages.cache.get(id)
+            if (message) resolve(message);
+            messages.fetch(id).then(resolve).catch(reject)
         })
     }
 
@@ -923,9 +1136,12 @@ class Util {
      * @param {Discord.Client} client 
      * @returns {Object}
      */
-    static getFooter(client) {
+    static getFooter(message, hasUptime = true) {
+        const client = message.client
+        const locale = message.guild ? message.guild.preferredLocale ?? "en-us" : "en-us"
+        const lang = LocaleManager.getLang(locale)
         return {
-            text: `Uptime: ${Math.floor(client.uptime / 1000 / 3600)}h ${Math.floor((client.uptime / 1000 / 60) % 60)}m ${Math.floor(client.uptime / 1000 % 60)}s | Copyright ${(new Date()).getUTCFullYear()} © All rights reserved.`
+            text: `${hasUptime ? `${lang.UPTIME}: ${lang.TIME_FORMAT.format(Math.floor(client.uptime / 1000 / 3600), Math.floor((client.uptime / 1000 / 60) % 60), Math.floor(client.uptime / 1000 % 60))} | ` : ""}${lang.COPYRIGHT.format((new Date()).getUTCFullYear())} (${lang.language_native})`
         }
     }
 
@@ -965,7 +1181,7 @@ class Util {
      */
     static parseChannel(guild, input) {
         input = input.replace(/^<#/, "").replace(/>$/, "")
-        let find = this.getChannelById(guild, input)
+        let find = this.getChannelById(guild.channels, input)
         if (find) return find;
         return this.getChannel(guild, input)
     }
@@ -1014,10 +1230,14 @@ class Util {
         if (!date) {
             let currentDate = new Date()
             let namedDates = {
-                "today": new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate()),
-                "yesterday": new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - 1),
+                lasthalfhour: new Date(Date.now() - 1800000),
+                lasthour: new Date(Date.now() - 3600000),
+                today: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate()),
+                yesterday: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - 1),
+                thisweek: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - currentDate.getUTCDay()),
+                lastweek: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - currentDate.getUTCDay() - 7),
             }
-            date = namedDates[input.toLowerCase()]
+            date = namedDates[input.toLowerCase().trim().replace(/ /g, "")]
         }
 
         return date

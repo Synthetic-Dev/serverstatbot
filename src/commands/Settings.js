@@ -1,30 +1,49 @@
 const Util = require("../utils/util.js")
 const CommandBase = require("../classes/CommandBase.js")
 
+const LocalSettings = require("../localSettings.json")
+
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "settings",
-            desc: "Gets the current server settings",
+            descId: "COMMAND_SETTINGS",
             perms: [
                 "ADMINISTRATOR"
             ]
         })
     }
 
-    async execute(message) {
-        const settings = this.client.settings[message.guild.id]
-        
-        let logchannel = await settings.get("logchannel")
-        let disabledCommands = await settings.get("disabledCommands")
+    async formatSettings(options, guild) {
+        const settings = this.client.settings[guild.id]
 
-        Util.sendMessage(message, {
+        const statuschannel = await settings.get("statuschannel")
+        const disabledCommands = await settings.get("disabledCommands", "Commands")
+        
+        const prefix = await settings.get("prefix", "Prefix")
+        const serverData = await settings.get("server");
+
+        let typeIndex = Object.values(LocalSettings.statuschannels.types.ids).indexOf(statuschannel.Type)
+        let type = typeIndex >= 0 ? Object.keys(LocalSettings.statuschannels.types.ids)[typeIndex] : null
+
+        const sameGuild = options.guild.id == guild.id
+
+        return options.lang.COMMAND_SETTINGS_FORMAT.format(
+            prefix, serverData.Ip, serverData.Port, serverData.QueryPort,
+            serverData.Discovery, serverData.DiscoveryInvite != "" ? serverData.DiscoveryInvite : options.lang.NONE,
+            (!statuschannel.ChannelId || statuschannel.ChannelId == "0") ? `\`\`${options.lang.NONE}\`\`` : (sameGuild ? `<#${statuschannel.ChannelId}>` : `\`\`${statuschannel.ChannelId}\`\``), type ?? options.lang.UNKNOWN,
+            disabledCommands.length > 0 ? disabledCommands.join("``, ``") : options.lang.NONE
+        )
+    }
+
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
-                title: "Settings",
-                description: `• **Prefix:** \`\`${await settings.get("prefix")}\`\`\n• **Ip:** \`\`${await settings.get("ip")}\`\`\n• **Port:** \`\`${await settings.get("port")}\`\`\n• **Log channel:** ${logchannel == "0" ? "None" : `<#${await settings.get("logchannel")}>`}\n• **Disabled commands:** \`\`${disabledCommands.length > 0 ? disabledCommands.join("``, ``") : "None"}\`\``,
+                title: options.lang.COMMAND_SETTINGS_TITLE,
+                description: await this.formatSettings(options, options.guild),
                 color: 16760391,
                 timestamp: Date.now(),
-                footer: Util.getFooter(this.client)
+                footer: Util.getFooter(options.message)
             }
         }).catch(e => {
             console.error(`Settings[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)

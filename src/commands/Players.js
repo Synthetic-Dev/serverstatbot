@@ -1,13 +1,16 @@
-const {createCanvas, loadImage} = require("canvas")
 const Util = require("../utils/util.js")
 const Protocol = require("../utils/protocol.js")
 const CommandBase = require("../classes/CommandBase.js")
+const Mojang = require("../utils/mojang.js")
+const ImageManager = require("../utils/imageManager.js")
+
+const playerListCache = ImageManager.getManager("playerlists")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "players",
-            desc: "Gets all the players currently online",
+            descId: "COMMAND_PLAYERS",
             aliases: [
                 "getplayers",
                 "plrs"
@@ -18,108 +21,80 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message) {
-        const settings = this.client.settings[message.guild.id]
+    async execute(options) {
+        const serverData = await options.settings.get("server")
 
-        const ip = await settings.get("ip")
-        const port = await settings.get("port")
-
-        Util.startTyping(message).catch(e => {
+        Util.startTyping(options.message).catch(e => {
             console.error(`Players[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
 
-        Protocol.getInfo(ip, port).then(async data => {
-            Util.stopTyping(message)
+        Protocol.getInfo(serverData.Ip, serverData.Port, serverData.QueryPort).then(async data => {
+            Util.stopTyping(options.message)
 
             if (data.online) {
-                if (data.players.online == 0) return Util.sendMessage(message, "Nobody is currently online").catch(e => {
+                if (data.players.online == 0) return Util.sendMessage(options.message, options.lang.SERVER_EMPTY).catch(e => {
                     console.error(`Players[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
                 });
-                if (!data.players.sample || data.players.sample.length == 0) {
-                    return Util.sendMessage(message, {
-                        embed: {
-                            title: "Playerlist",
-                            description: `**${data.players.online}/${data.players.max} players**\nThere is too many players online or the server does not have \`\`enable-query=true\`\`.`,
-                            color: 5145560,
-                            timestamp: Date.now()
-                        }
-                    }).catch(e => {
-                        console.error(`Players[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
-                    })
-                }
 
-                const columns = 7
-                const breakpoint = 30
-                const maxInList = (breakpoint * columns) - 1
-                const amountInList = Math.min(maxInList, data.players.sample.length)
-                const height = Math.min(breakpoint, amountInList)
-
-                const maxWidth = 256
-                const columnCount = Math.ceil(amountInList / breakpoint)
-
-                let image = createCanvas((32 + maxWidth) * columnCount + (5 * (columnCount - 1)), height * 28)
-                let context = image.getContext("2d")
-
-                context.imageSmoothingEnabled = false
-                context.font = "27px 'Minecraft'"
-                context.textBaseline = "top"
-                context.textAlign = "left"
-                context.fillStyle = "#fff"
-
-                await new Promise((resolve, reject) => {
-                    let done = 0
-                    data.players.sample.forEach((player, i) => {
-                        const column = Math.floor(i / breakpoint)
-
-                        if (i >= maxInList) {
-                            if (i == maxInList) {
-                                context.fillText(`and ${data.players.sample.length - maxInList} more...`, 2 + (maxWidth * column) + (5 * column), (i - breakpoint * column) * 28 - 2, maxWidth - 2)
-                            }
-
-                            if (done >= amountInList) resolve();
-                        } else {
-                            loadImage(`https://mc-heads.net/avatar/${player.name.clean}/22`).then(head => {
-                                context.drawImage(head, 2 + (maxWidth * column) + (5 * column), 2 + (i - breakpoint * column) * 28, 22, 22)
-                            }).catch(e => {
-                                console.error(`Players[loadImage:player]: ${e.toString()};\n${e.method} at ${e.path}`)
-                            }).finally(() => {
-                                context.fillText(player.name.clean, 32 + (maxWidth * column) + (5 * column), (i - breakpoint * column) * 28 - 2, maxWidth - 32)
-                                done++
-                                if (done >= amountInList) resolve();
-                            })
-                        }
-                    })
-                })
-
-                Util.sendMessage(message, {
-                    files: [{
-                        attachment: image.toBuffer("image/png"),
-                        name: "playerlist.png"
-                    }],
+                let content = {
                     embed: {
-                        title: "Playerlist",
-                        description: `**${data.players.online}/${data.players.max} players**` + (!data.query ? "\nThis may not be all the players set ``enable-query=true`` to get all players." : "") + (data.bedrock ? "\n:warning: Bedrock servers may not show all players online." : ""),
+                        description: options.lang.SERVER_PLAYERS.format(data.players.online, data.players.max) + (!data.query ? "\n" + options.lang.SERVER_NOQUERY : "") + (data.bedrock ? "\n:warning: " + options.lang.SERVER_BEDROCK : ""),
                         color: 5145560,
-                        image: {
-                            url: "attachment://playerlist.png"
-                        },
                         timestamp: Date.now()
                     }
-                }).catch(e => {
+                }
+
+                let playerListKey = ""
+                data.players.sample.forEach(player => {
+                    playerListKey += player.name.clean
+                })
+
+                let playerListLink = playerListCache.get(playerListKey)
+                if (!playerListLink) {
+                    if (!data.players.sample || data.players.sample.length == 0) {
+                        return Util.sendMessage(options.message, {
+                            embed: {
+                                description: options.lang.SERVER_PLAYERS.format(data.players.online, data.players.max) + "\n\n" + options.lang.COMMAND_PLAYERS_TOOMANY,
+                                color: 5145560,
+                                timestamp: Date.now()
+                            }
+                        }).catch(e => {
+                            console.error(`Players[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        })
+                    }
+                    
+                    playerListLink = "attachment://playerlist.png"
+
+                    let image = await Mojang.generatePlayerList(data.players.sample, options.lang, 30, 7, 256)
+                    content.files = [{
+                        attachment: image.toBuffer("image/png"),
+                        name: "playerlist.png"
+                    }]
+                }
+
+                content.embed.image = {
+                    url: playerListLink
+                }
+
+                Util.sendMessage(options.message, content).catch(e => {
                     console.error(`Players[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
                 })
             } else {
                 let error = data.error
 
                 if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                    return Util.replyMessage(message, "Server is not online").catch(e => {
+                    return Util.replyMessage(options.message, options.lang.SERVER_OFFLINE).catch(e => {
                         console.error(`Players[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
                     })
                 } else if (error.code == "ENOTFOUND") {
-                    return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
+                    return Util.replyError(options.message, options.lang.SERVER_COULDNOTFIND);
+                } else if (error.message == "Server sent an invalid packet type") {
+                    return Util.replyError(options.message, options.lang.SERVER_WRONGPORT)
+                } else if (error.message == "Blocked host") {
+                    return Util.replyError(options.message, options.lang.SERVER_BLOCKED);
                 }
                 
-                Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
+                Util.replyError(options.message, options.lang.SERVER_ERROR)
                 console.error(`Players[error]: ${error.toString()};\n${error.method} at ${error.path}`)
             }
         }).catch(e => {

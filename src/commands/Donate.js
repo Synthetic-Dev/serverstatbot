@@ -6,12 +6,12 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "donate",
-            desc: "Donation info for the bot"
+            descId: "COMMAND_DONATE"
         })
     }
 
-    async execute(message) {
-        Util.sendMessage(message, {
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
                 author: {
                     name: this.client.user.username,
@@ -22,11 +22,11 @@ class Command extends CommandBase {
                     })
                 },
                 color: 5145560,
-                title: "Donate",
+                title: options.lang.COMMAND_DONATE_TITLE,
                 url: "https://donatebot.io/checkout/797779595852120064",
-                description: "Donating helps to keep the bot up, working and online 24/7!\n\nSubscriptions will give you access to amazing additional features supplied by the bot. Find out more information on the donation page.",
+                description: options.lang.COMMAND_DONATE_DESC,
                 timestamp: Date.now(),
-                footer: Util.getFooter(this.client)
+                footer: Util.getFooter(options.message)
             }
         }).catch(e => {
             console.error(`Donate[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)

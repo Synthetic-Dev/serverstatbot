@@ -5,12 +5,12 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "botping",
-            desc: "Returns the bot's ping"
+            descId: "COMMAND_BOTPING"
         })
     }
 
-    async execute(message) {
-        Util.replyMessage(message, `Pong! ${Math.abs(Util.ping(message))}ms`).catch(e => {
+    async execute(options) {
+        Util.replyMessage(options.message, `${options.lang.PONG} ${this.client.ping}ms`).catch(e => {
             console.error(`BotPing[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
     }

@@ -5,7 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "invite",
-            desc: "Get invite links for the bot",
+            descId: "COMMAND_INVITE",
             aliases: [
                 "invs",
                 "inv"
@@ -13,13 +13,10 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message) {
-        const settings = this.client.settings[message.guild.id]
-        let prefix = await settings.get("prefix")
-        
-        Util.sendMessage(message, {
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
-                description: `**You can invite the bot from one of these sites:**\n• [top.gg](https://top.gg/bot/759415210628087841)\n• [bots.gg](https://discord.bots.gg/bots/759415210628087841)\n• [discordbotlist.com](https://discordbotlist.com/bots/server-stat)\nDo \`\`${prefix}vote\`\` to get direct links to vote on these sites.`,
+                description: options.lang.COMMAND_INVITE_DESC.format("• [top.gg](https://top.gg/bot/759415210628087841)\n• [bots.gg](https://discord.bots.gg/bots/759415210628087841)\n• [discordbotlist.com](https://discordbotlist.com/bots/server-stat)\n• [botsfordiscord.com](https://botsfordiscord.com/bot/759415210628087841)\n• [discordextremelist.xyz](https://discordextremelist.xyz/en-US/bots/759415210628087841)", options.prefix),
                 author: {
                     name: this.client.user.username,
                     icon_url: this.client.user.avatarURL({
@@ -30,7 +27,7 @@ class Command extends CommandBase {
                 },
                 color: 5145560,
                 timestamp: Date.now(),
-                footer: Util.getFooter(this.client)
+                footer: Util.getFooter(options.message)
             }
         }).catch(e => {
             console.error(`Invite[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)

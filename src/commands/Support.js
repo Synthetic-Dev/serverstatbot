@@ -6,7 +6,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "support",
-            desc: "Support info for the bot",
+            descId: "COMMAND_SUPPORT",
             aliases: [
                 "suprt",
                 "spt"
@@ -14,8 +14,8 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message) {
-        Util.sendMessage(message, {
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
                 author: {
                     name: this.client.user.username,
@@ -28,22 +28,22 @@ class Command extends CommandBase {
                 color: 5145560,
                 fields: [
                     {
-                        name: "Donate",
-                        value: "[Help support by donating](https://donatebot.io/checkout/797779595852120064)",
+                        name: options.lang.COMMAND_SUPPORT_FIELD1,
+                        value: `[${options.lang.COMMAND_SUPPORT_FIELD1_VAL}](https://donatebot.io/checkout/797779595852120064)`,
                         inline: true
                     },
                     {
-                        name: "Support server",
-                        value: "[Join support server](https://discord.gg/uqVp2XzUP8)",
+                        name: options.lang.COMMAND_SUPPORT_FIELD2,
+                        value: `[${options.lang.COMMAND_SUPPORT_FIELD2_VAL}](https://discord.gg/uqVp2XzUP8)`,
                         inline: true
                     },
                     {
-                        name: "Supported Minecraft Versions",
-                        value: `Java ${Protocol.getMinSupportedVersion()}+ and all official Bedrock versions`
+                        name: options.lang.COMMAND_SUPPORT_FIELD3,
+                        value: options.lang.COMMAND_SUPPORT_FIELD3_VAL.format(Protocol.getMinSupportedVersion())
                     }
                 ],
                 timestamp: Date.now(),
-                footer: Util.getFooter(this.client)
+                footer: Util.getFooter(options.message)
             }
         }).catch(e => {
             console.error(`Support[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)

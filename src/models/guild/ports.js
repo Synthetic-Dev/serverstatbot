@@ -1,13 +1,25 @@
 const Mongoose = require("mongoose")
 
 const Schema = new Mongoose.Schema({
-    Value: {
+    Port: {
         type: Number,
         default: 25565
     },
-    GuildID: {
+    QueryPort: {
+        type: Number,
+        default: -1
+    },
+    _guildId: {
         type: String,
         required: [true, "Needs an associated guild"]
+    },
+
+    // OLD
+    Value: {
+        type: Number
+    },
+    GuildID: {
+        type: String
     }
 })
 

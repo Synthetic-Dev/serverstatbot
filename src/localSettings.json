@@ -1,0 +1,36 @@
+{
+    "developers": [
+        "255733848162304002"
+    ],
+    "translators": [
+
+    ],
+
+    "botserver": {
+        "id": "797779595852120064",
+        "channels": {
+            "playerlists": "843131642842185748",
+            "motds": "843131664753492018",
+            "favicons": "843140503854776360",
+            "random": "843454394585972786",
+            "votes": "797793423750594571"
+        }
+    },
+
+    "images": {
+        "textures": {
+            "grass": "https://cdn.discordapp.com/attachments/843140503854776360/843204318928306176/grass64x.png",
+            "bedrock": "https://cdn.discordapp.com/attachments/843140503854776360/843204315811938305/bedrock64x.png"
+        }
+    },
+
+    "statuschannels": {
+        "types": {
+            "ids": {
+                "logs": 0,
+                "panel": 2,
+                "panel-players": 3
+            }
+        }
+    }
+}

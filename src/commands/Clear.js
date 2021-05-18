@@ -5,17 +5,17 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "clear",
-            desc: "Clears messages from the bot",
+            descId: "COMMAND_CLEAR",
             aliases: [
                 "clr"
             ],
             args: [{
                 name: "type",
-                desc: "The clearing action type"
+                descId: "COMMAND_CLEAR_ARG1"
             },
             {
                 name: "value",
-                desc: "The value for the type of clearing",
+                descId: "COMMAND_CLEAR_ARG2",
                 optional: true
             }],
             perms: [
@@ -24,29 +24,24 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message, inputs) {
-        let channel = message.channel
+    async execute(options) {
+        let channel = options.channel
 
         let deleteMessages = messages => {
             if (!messages || messages == null || messages.length == 0) {
-                return Util.replyWarning(channel, `No messages found!`).catch(e => {
-                    console.error(`Clear[replyWarning]: ${e.toString()};\n${e.method} at ${e.path}`)
-                })
+                return Util.replyWarning(options.message, options.lang.COMMAND_CLEAR_NOMESSAGES)
             }
 
             const maxMessages = 100
             if (messages.length > maxMessages) {
-                Util.sendWarning(channel, `More than 100 messages found, only deleting the first 100. To delete more messages run this command again.`).catch(e => {
-                    console.error(`Clear[sendWarning]: ${e.toString()};\n${e.method} at ${e.path}`)
-                })
-
+                Util.sendWarning(channel, options.lang.COMMAND_CLEAR_FOUND_MORE_THAN_MAX.format(maxMessages))
                 messages = messages.slice(0, maxMessages - 1)
             }
 
             let deleted = 0
             let deleting = true
             channel.bulkDelete(messages, true).then((deletedMessages) => {deleted += deletedMessages.size; deleting = false}).catch(e => {
-                Util.replyMessage(message, `Deleting messages manually, this may take some time. In order to increase deletion time please give the bot permissions to manage messages.`).catch(e => {
+                Util.replyMessage(options.message, options.lang.COMMAND_CLEAR_DELETING_MANUALLY).catch(e => {
                     console.error(`Clear[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
                 })
 
@@ -74,7 +69,7 @@ class Command extends CommandBase {
                 })
             }).finally(async () => {
                 while (deleting) await Util.sleep(1000);
-                Util.sendMessage(channel, `Deleted ${deleted} message(s)`).then(botMessage => {
+                Util.sendMessage(channel, options.lang.COMMAND_CLEAR_DELETED.format(deleted)).then(botMessage => {
                     botMessage.delete({
                         timeout: 5000
                     }).catch(e => {
@@ -84,8 +79,8 @@ class Command extends CommandBase {
                     console.error(`Clear[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
                 })
 
-                if (message && !message.deleted && Util.doesMemberHavePermissionsInChannel(channel.guild.me, channel, ["MANAGE_MESSAGES"])) {
-                    message.delete().then(() => {deleted++}).catch(e => {
+                if (options.message && !options.message.deleted && Util.hasPermissionsInChannel(channel.guild.me, channel, ["MANAGE_MESSAGES"])) {
+                    options.message.delete().then(() => {deleted++}).catch(e => {
                         console.error(`Clear[deleteMessage:command]: ${e.toString()};\n${e.method} at ${e.path}`)
                     })
                 }
@@ -94,11 +89,11 @@ class Command extends CommandBase {
 
         let types = {
             after: value => {
-                if (!value) return Util.replyError(message, "Must specifiy a date and/or time, e.g. ``today``, ``yesterday``, ``last week``, ``yyyy/mm/dd``");
+                if (!value) return Util.replyError(options.message, options.lang.COMMAND_CLEAR_NEED_DATE);
                 let date = Util.parseDate(value)
-                if (!date) return Util.replyError(message, "Invalid date");
+                if (!date) return Util.replyError(options.message, options.lang.INVALID_DATE);
 
-                Util.sendMessage(channel, `Deleting messages after ${date.toDateString()}`).then(botMessage => {
+                Util.sendMessage(channel, options.lang.COMMAND_CLEAR_DELETING_AFTER.format(date.toLocaleString(options.locale, {hour12: false}))).then(botMessage => {
                     botMessage.delete({
                         timeout: 5000
                     }).catch(e => {
@@ -108,19 +103,16 @@ class Command extends CommandBase {
                     console.error(`Clear[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
                 })
 
-                if (Date.now() - date.getTime() < 0) return Util.replyError(message, "Cannot delete messages from the future!");
-                if (Date.now() - date.getTime() > 14*24*60*60*1000) return Util.replyError(message, "Cannot delete messages older than 2 weeks");
+                if (Date.now() - date.getTime() < 0) return Util.replyError(options.message, options.lang.COMMAND_CLEAR_CANT_DELETE_IN_FUTURE);
+                if (Date.now() - date.getTime() > 14*24*60*60*1000) return Util.replyError(options.message, options.lang.COMMAND_CLEAR_CANNOT_DELETE_2WEEKS);
                 Util.getRecentMessagesAfter(channel, this.client.user, date.getTime()).then(deleteMessages).catch(e => {
                     console.error(`Clear[getRecentMessagesAfter]: ${e.toString()};\n${e.method} at ${e.path}`)
                 })
             },
             count: value => {
-                let maxCount = 200
-                let count = Number(value ? value : 1)
-                if (typeof(count) != "number" || count == null || isNaN(count)) return Util.replyError(message, "Count must be a number");
-
+                let count = Number(value ?? 1)
+                if (typeof(count) != "number" || count == null || isNaN(count)) return Util.replyError(options.message, options.lang.MUST_NUMBER.format("value"));
                 count = Math.abs(count)
-                if (count > maxCount) return Util.replyError(message, `Count cannot exceed ${maxCount}`)
 
                 Util.getRecentMessagesFrom(channel, this.client.user, count).then(deleteMessages).catch(e => {
                     console.error(`Clear[getRecentMessagesFrom]: ${e.toString()};\n${e.method} at ${e.path}`)
@@ -133,9 +125,9 @@ class Command extends CommandBase {
             }
         }
 
-        let method = types[inputs[0].toLowerCase()]
-        if (!method) return Util.replyError(message, `${inputs[0]} is not a clearing type, types are: \`\`${Object.keys(types).join("``, ``")}\`\``);
-        method(inputs[1])
+        let method = types[options.inputs[0].toLowerCase()]
+        if (!method) return Util.replyError(options.message, options.lang.COMMAND_CLEAR_NOT_TYPE.format(options.inputs[0], Object.keys(types).join("``, ``")));
+        method(options.inputs[1])
     }
 }
 

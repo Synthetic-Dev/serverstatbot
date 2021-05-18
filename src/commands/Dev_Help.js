@@ -4,7 +4,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "devhelp",
-            desc: "Displays all commands and bot details",
+            descId: "COMMAND_DEV_HELP",
             aliases: [
                 "dhelp"
             ],
@@ -15,13 +15,13 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message) {
+    async execute(options) {
         const help = this.client.commands.get("help")
         let commands = help.getCommands(this.client.commands, () => {
             return true;
         })
 
-        help.postCommands(message, commands)
+        help.postCommands(options, commands, "", 4317012)
     }
 }
 

@@ -1,0 +1,315 @@
+key,en-us,fr,es-es,pl,ru
+language,English,French,Spanish,,Russian
+language_native,English,Français,Español,,Русский
+STATUS_MESSAGE_ONLINE,<:green_circle_with_tick:818512512500105249> Server is online,<:green_circle_with_tick:818512512500105249> Le serveur est en ligne,<:green_circle_with_tick:818512512500105249> El servidor está en línea,,<:green_circle_with_tick:818512512500105249> Сервер онлайн
+STATUS_MESSAGE_OFFLINE,<:red_circle_with_cross:818512512764084265> Server is offline,<:red_circle_with_cross:818512512764084265> Le serveur est hors ligne,<:red_circle_with_cross:818512512764084265> El servidor está sin conexión,,<:red_circle_with_cross:818512512764084265> Сервер оффлайн
+STATUS_MESSAGE_RESTART,:arrows_counterclockwise: Server restarted,:arrows_counterclockwise: Le serveur a redémarré,:arrows_counterclockwise: Servidor reiniciado,,:arrows_counterclockwise: Сервер перезапустился
+STATUS_MESSAGE_TOOMANYPLAYERS,Server has too many players online to log activity,Le serveur a trop de joueurs en ligne pour enregistrer l'activité,El servidor tiene demasiados jugadores en línea para registrar la actividad,,На сервере слишком много человек для ведения лога активности
+STATUS_MESSAGE_NOQUERY,``enable-query=true`` must be set and query port must be set to the ``query.port`` in server.properties for join logs,``enable-query=true`` doit être défini et le port de requêtes doit être défini sur ``query.port`` dans server.properties pour les journaux d'entrées,``enable-query=true`` debe establecerse y el puerto de consulta debe establecerse en ``query.port`` en server.properties para los registros de combinación,,Должен быть настроен параметр ``enable-query=true`` и установлено значение порта у параметра ``query.port`` в server.properties для ведения лога
+STATUS_MESSAGE_ERROR,:stop_sign: An error occured when trying to get server info,:stop_sign: Une erreur s'est produite lors de la tentative d'obtention des informations sur le serveur,:stop_sign: Se ha producido un error al intentar obtener información del servidor,,":stop_sign: При попытке получить информацию о сервере, произошла ошибка"
+STATUS_CHANNEL_NOPERMS,I do not have permission to send messages in the status channel! Status channel has been removed.,Je n'ai pas la permission d'envoyer des messages dans le canal de statut! Le canal de statut a été supprimé.,¡No tengo permiso para enviar mensajes en el canal de estado! Se ha eliminado el canal de estado.,,Нет возможности писать в статус-канал! Он был удален.
+STATUS_PLAYER_FAILEDIMAGE,[Failed to load image] {0},[Échec du chargement de l'image] {0},[No se pudo cargar la imagen] {0},,[Не удалось загрузить изображение] {0}
+STATUS_PLAYER_JOINED,{0} has joined the game.,{0} a rejoint le jeu.,{0} se ha unido al juego.,,{0} присоединился к игре.
+STATUS_PLAYER_LEFT,{0} has left the game.,{0} a quitté la partie.,{0} ha dejado el juego.,,{0} покинул игру.
+SERVER_EMPTY,Nobody is currently online,Personne n'est actuellement en ligne,Nadie está en línea actualmente,,"На данный момент, никого нет в сети"
+SERVER_PLAYERS,Players: **{0}/{1}**,Joueurs: **{0}/{1}**,Jugadores: **{0}/{1}**,,Игроки: **{0}/{1}**
+SERVER_PLAYERS_SGL,Players: **{0}**,Joueurs: **{0}**,Jugadores: **{0}**,,Игроки: **{0}**
+SERVER_PLAYERS_REV,**{0}** players,**{0}** joueurs,**{0}** jugadores,,Игроков: **{0}**
+SERVER_LATENCY,Latency: **{0}ms**,,,,
+SERVER_GAMEMODE,Gamemode: **{0}**,,,,
+SERVER_GAMETYPE,Gametype: **{0}**,,,,
+SERVER_SEED,Seed: ``{0}``,,,,
+SERVER_OFFLINE,Server is not online,Le serveur n'est pas en ligne,El servidor no está en línea,,Сервер оффлайн
+SERVER_IFONLINE,"If the server is online, check that ``enable-status=true`` or ``enable-query=true``","Si le serveur est en ligne, vérifiez que ``enable-status=true`` ou ``enable-query=true``","Si el servidor está en línea, compruebe que ``enable-status=true`` o ``enable-query=true``",,"Если сервер онлайн, проверьте ``enable-status=true`` или ``enable-query=true``"
+SERVER_WRONGPORT,"A minecraft server is not hosted on the set port, please change to the correct port","Un serveur minecraft n'est pas hébergé sur le port défini, veuillez changer pour le bon port","Un servidor minecraft no está alojado en el puerto establecido, por favor cambie al puerto correcto",,"Сервер Minecraft недоступен по заданному порту, укажите верный."
+SERVER_NOQUERY,"This may not be all players, ``enable-query=true`` must be set and query port must be set to the ``query.port`` in server.properties","Il se peut que ce ne soit pas tous les joueurs, ``enable-query=true`` doit être défini et le port de requête doit être défini sur ``query.port`` dans server.properties","Puede que no sean todos los jugadores, ``enable-query=true`` debe establecerse y el puerto de consulta debe establecerse en ``query.port`` en server.properties",,"Могут быть указаны не все игроки, должен быть настроен параметр ``enable-query=true`` и установлено значение порта у параметра ``query.port`` в server.properties"
+SERVER_BLOCKED,The server ip cannot be pinged as it has been blocked,L'IP du serveur ne peut pas recevoir de ping car elle a été bloquée,"El ip del servidor no se puede hacer ping, ya que ha sido bloqueado",,"Ответ от сервера по заданному IP не может быть получен, так как заблокирован"
+SERVER_BEDROCK,Bedrock servers do not return all players online.,Les serveurs Bedrock ne renvoient pas tous les joueurs en ligne.,Los servidores Bedrock no devuelven a todos los jugadores en línea.,,Bedrock сервера могут указывать не всех игроков онлайн
+SERVER_COULDNOTFIND,"Could not find server, check that a valid ip and port is set, and is the server running a supported version?","Impossible de trouver le serveur, vérifiez qu'une adresse IP et un port valides sont définis et que le serveur exécute une version prise en charge?","¿No se pudo encontrar el servidor, comprobar que se establece un ip y un puerto válidos y el servidor está ejecutando una versión compatible?",,"Невозможно найти сервер, проверьте корректность указанного IP и порта. Удостоверьтесь, что сервер работает на поддерживаемой версии."
+SERVER_ERROR,"An error occured, please contact the developer via our support server!","Une erreur s'est produite, veuillez contacter le développeur via notre serveur de support!","Se ha producido un error, póngase en contacto con el desarrollador a través de nuestro servidor de soporte!",,"Произошла ошибка, пожалуйста, свяжитесь с разработчиком через наш сервер!"
+COMMAND_BASE,A Command,Une commande,Un orden,,Команда
+OPTIONS_NOT_IMPLEMENTED,Option is not implemented,L'option n'est pas implémentée,La opción no se implementa,,Опция еще не реализована
+OPTIONS_UNEXPECTED_INPUT,"Unexpected input ``{0}``, valid inputs: ``{1}``","Entrée inattendue ``{0}``, entrées valides: ``{1}``","Entrada inesperada ``{0}``, entradas válidas: ``{1}``",,
+OPTIONS_EXPECTED_INPUT,Expected an input: ``{0}``,Attendu une entrée: ``{0}``,Se espera una entrada: ``{0}``,,
+OPTIONS_LIST,Available options: ``{0}``,,,,
+COMMAND_ABOUT,Information about the bot,Informations sur le bot,Información sobre el bot,,Информация о боте
+COMMAND_ABOUT_TITLE,About,À propos,Sobre,,Информация о боте
+COMMAND_ABOUT_FIELD1,Version,Version,Versión,,Версия
+COMMAND_ABOUT_FIELD2,Developed by,Developpé par,Desarrollada por,,Разработчик
+COMMAND_ABOUT_FIELD3,Credit to,Crédit à,Crédito a,,
+COMMAND_ABOUT_FIELD4,Servers,Serveurs,Servidores,,Серверов
+COMMAND_ABOUT_FIELD5,Library,Librairie,Bibleoteca,,Библиотека
+COMMAND_ABOUT_FIELD6,Support,Support,Soporte ,,Поддержка
+COMMAND_ABOUT_FIELD6_VAL,Join support server,Rejoindre le serveur de support,Unirse al servidor de soporte,,Присоединиться к серверу поддержки
+COMMAND_BOTPING,Returns the bot's ping,Renvoie le ping du bot,Devuelve el ping del bot,,Показывает пинг бота
+COMMAND_CLEAR,Clears messages from the bot,Efface les messages du bot,Borra los mensajes del bot,,Очищает сообщения бота
+COMMAND_CLEAR_ARG1,The clearing action type,Le type d'action de supression,El tipo de acción de compensación,,
+COMMAND_CLEAR_ARG2,The value for the type of clearing,La valeur pour le type de supression,El valor del tipo de compensación,,
+COMMAND_CLEAR_NOMESSAGES,No messages found!,Aucun message trouvé!,¡No se han encontrado mensajes!,,Сообщения не найдены!
+COMMAND_CLEAR_FOUND_MORE_THAN_MAX,"More than {0} messages found, only deleting the first {0}. To delete more messages run this command again.","Plus de {0} messages trouvés, pour supprimer uniquement le premier {0}. Pour supprimer plus de messages, exécutez à nouveau cette commande.","Se han encontrado más de {0} mensajes, solo eliminando el primer {0}. Para eliminar más mensajes ejecute este comando de nuevo.",,"Найдено сообщений больше чем {0}, удаленны только первые {0}. Чтобы удалить больше, запустите команду снова."
+COMMAND_CLEAR_CANNOT_DELETE_2WEEKS,Cannot delete messages older than 2 weeks,Impossible de supprimer les messages datant de plus de 2 semaines,No se pueden eliminar mensajes de más de 2 semanas,,Невозможно удалить сообщения старше 2 недель
+COMMAND_CLEAR_DELETING_MANUALLY,"Deleting messages manually, this may take some time. In order to increase deletion time please give the bot permissions to manage messages.","La suppression manuelle des messages peut prendre un certain temps. Afin de réduire le temps de suppression, veuillez donner au bot les autorisations de gérer les messages.","Eliminar mensajes manualmente, esto puede llevar algún tiempo. Con el fin de aumentar el tiempo de eliminación, por favor dé al bot permisos para administrar los mensajes.",,"Удаление сообщений вручную может занять некоторое время. Чтобы увеличить время удаления, пожалуйста, предоставьте боту разрешения на управление сообщениями."
+COMMAND_CLEAR_DELETING_AFTER,Deleting messages after {0},Suppression des messages après {0},Eliminación de mensajes después de {0},,
+COMMAND_CLEAR_DELETED,Deleted {0} message(s),{0} message (s) supprimé (s),Mensajes de {0} eliminado(s),,Удалено сообщений: {0}
+COMMAND_CLEAR_CANT_DELETE_IN_FUTURE,Cannot delete messages from the future!,Impossible de supprimer les messages du futur!,¡No se pueden eliminar mensajes del futuro!,,Невозможно удалить сообщения из будущего!
+COMMAND_CLEAR_NEED_DATE,"Must specifiy a date and/or time, e.g. ``today``, ``yesterday``, ``last week``, ``yyyy/mm/dd``","Doit spécifier une date et / ou une heure, par ex. ``aujourd'hui``, ``hier``, ``la semaine dernière``, ``aaaa / mm / jj``","Debe especificar una fecha y/o hora, por ejemplo, ''hoy''', ''ayer'', ''última semana'', ''aaaa/mm/dd''",,"Необходимо указать дату и/или время, например: ``сегодня``, ``вчера``, ``прошлая неделя``, ``гггг/мм/дд``"
+COMMAND_CLEAR_NOT_TYPE,"`{0} is not a clearing type, types are: ``{1}``","``{0}`` n'est pas un type de supression, les types sont: ``{1}``","{0} no es un tipo de compensación, los tipos son: ``{1}``",,
+COMMAND_CREATEMOTD,"Generates an motd image, use either '§' or '&' for format codes and use '\n' to create a new line","Génère une image motd, utilisez «§» ou «&» pour les codes de format et utilisez «\n» pour créer une nouvelle ligne","Genera una imagen motd, usa '§' o '&' para códigos de formato y usa '\n' para crear una nueva línea",,
+COMMAND_CREATEMOTD_ARG1,The formatted motd text see [Formatting codes](https://minecraft.fandom.com/wiki/Formatting_codes) for usage,Le texte motd formaté voir [Codes de mise en forme] (https://minecraft.fandom.com/wiki/Formatting_codes) pour l'utilisation,El texto motd con formato consulte [Códigos de formato](https://minecraft.fandom.com/wiki/Formatting_codes) para su uso,,
+COMMAND_CREATEMOTD_CONTENT,Client: ``{0}``\nServer: ``{1}``,Client: ``{0}``\nServeur: ``{1}``,Cliente: ''{0}'''\nServidor: ''{1}'',,
+COMMAND_DEV_CHANNEL,Gets information about a channel,,,,
+COMMAND_DEV_CHANNEL_ARG1,Id for the channel,,,,
+COMMAND_DEV_CHANNEL_TITLE,Channel: {0},,,,
+COMMAND_DEV_CHANNEL_DESC,**Id:** ``{0}``\n**Guild:** ``{1}``\n**Viewable:** ``{2}``\n**Messages (Cached):** ``{3}``\n\n**Permissions:**\n``{4}``,,,,
+COMMAND_DEV_EMBED,Send/edit an embed in the channel,,,,
+COMMAND_DEV_EMBED_ARG1,Whether to send or edit an embed,,,,
+COMMAND_DEV_GUILDS,View and search connected guilds and details,,,,
+COMMAND_DEV_HELP,Displays all commands and bot details,,,,
+COMMAND_DEV_LEAVE,Makes the bot leave a server,,,,
+COMMAND_DEV_LEAVE_ARG1,GuildId for the server,,,,
+COMMAND_DEV_MAINTENANCE,Enables/disables maintenance mode,,,,
+COMMAND_DEV_PERMISSIONS,Get bot permissions in current guild,,,,
+COMMAND_DEV_PING,Pings a server with the given details,,,  ,
+COMMAND_DEV_RESTART,Restarts the bot,,,,
+COMMAND_DEV_STOP,Takes the bot offline,,,,
+COMMAND_DEV_WELCOME,Sends the bot welcome message that is sent when the bot joins the guild,,,,
+COMMAND_DISABLED,Disables/enables a command in the guild,Désactive / active une commande dans la guilde,,,
+COMMAND_DISABLED_ARG1,Whether to add or remove the command from being disabled,Ajouter ou supprimer une commande,,,
+COMMAND_DISABLED_ARG2,The command to disable,La commande à désactiver,,,
+COMMAND_DISABLED_DISABLED,:lock: ``{0}`` command has been disabled,:lock: La commande ``{0}`` a été désactivée,,,
+COMMAND_DISABLED_ENABLED,:unlock: ``{0}`` command has been enabled,:unlock: La commande ``{0}`` a été activée,,,
+COMMAND_DISABLED_ALREADY_DISABLED,That command is already disabled,Cette commande est déjà désactivée,,,
+COMMAND_DISABLED_ALREADY_ENABLED,That command is already enabled,Cette commande est déjà activée,,,
+COMMAND_DISABLED_CANNOT_DISABLE,That command cannot be disabled,Cette commande ne peut pas être désactivée,,,
+COMMAND_DISABLED_ENABLE_ALL,:unlock: All commands have been enabled,:unlock: Toutes les commandes ont été activées,,,
+COMMAND_DISCOVER,Get a list of servers who have discovery enabled,Obtenir une liste des serveurs sur lesquels la découverte est activée,,,
+COMMAND_DISCOVER_NONE_TITLE,There are no servers on discovery!,,,,
+COMMAND_DISCOVER_NONE_DESC,No servers could be found with discovery enabled.\n\nYou can enable discovery for your server by running ``{0}setserverdiscovery display on`` so that others can find your server!,,,,
+COMMAND_DISCOVER_TITLE,Server Discovery,,,,
+COMMAND_DISCOVER_ERROR,There was an error retreiving the server discovery list!,,,,
+COMMAND_DONATE,Donation info for the bot,Informations de don pour le bot,,,
+COMMAND_DONATE_TITLE,Donate,Faire un don,,,
+COMMAND_DONATE_DESC,"Donating helps to keep the bot up, working and online 24/7!\n\nSubscriptions will give you access to amazing additional features supplied by the bot. Find out more information on the donation page.",Faire un don permet au bot de rester opérationnel et en ligne 24h / 24 et 7j / 7!\n\nLes abonnements vous donneront accès à des fonctionnalités supplémentaires incroyables fournies par le bot. Découvrez plus d'informations sur la page des dons.,,,
+COMMAND_HELP,Displays all permitted commands,Affiche toutes les commandes autorisées,,,
+COMMAND_HELP_ARG1,A command to get help about,Une commande pour obtenir de l'aide,,,
+COMMAND_HELP_FIELD1,Command,Commande,,,
+COMMAND_HELP_FIELD2,Description,Description,,,Описание
+COMMAND_HELP_DETAILS,":bell: Requires a minecraft server running a supported version, to see supported versions do ``{0}versions``\n\n:memo: To get more information about a command do ``{0}help [command]``",":bell: Nécessite un serveur Minecraft exécutant une version prise en charge, pour voir les versions prises en charge, faites ``{0}versions``\n\n:memo: pour obtenir plus d'informations sur une commande, faites ``{0}help [command]``",,,
+COMMAND_HELP_HEADER1,Description,Description,,,Описание
+COMMAND_HELP_HEADER2,Aliases,Alias,,,Другие команды
+COMMAND_HELP_HEADER3,Arguments,Arguments,,,Аргументы
+COMMAND_HELP_HEADER4,Options,Options,,,Опции
+COMMAND_INVITE,Get invite links for the bot,Obtenez des liens d'invitation pour le bot,,,Показывает ссылки для приглашения бота
+COMMAND_INVITE_DESC,**You can invite the bot from one of these sites:**\n{0}\nDo ``{1}vote`` to get direct links to vote on these sites.,**Vous pouvez inviter le bot depuis l'un de ces sites:**\n{0}\nFaites ``{1}vote`` pour obtenir des liens directs pour voter sur ces sites.,,,Вы можете пригласить бота с одного из этих сайтов:
+COMMAND_LANGUAGE,List of languages that the bot is translated for and a list of the translators,,,,
+COMMAND_LANGUAGE_TITLE,Languages and Translators,,,,
+COMMAND_LANGUAGE_DESC,"To set the language in your server you must first make sure your server has ""Community"" enabled, goto the **""Enable Community""** tab in server settings to get started.\n\nOnce community is enabled, under **""Community"" > ""Overview""** you can set your **""Server Primary Language""** to your desired language.\n\n*Only the languages below are supported, if your server language is not supported it will default to english.*",,,,
+COMMAND_LANGUAGE_DESC_UD,The bot is currently being translated so the bot will only display messages in english.,,,,
+COMMAND_LANGUAGE_FIELD1,Supported Languages,,,,
+COMMAND_LANGUAGE_FIELD2,Translators,,,,
+COMMAND_MODS,Displays the mods that are on the server,Affiche les mods qui sont sur le serveur,,,
+COMMAND_MODS_ARG1,The starting page to display,La page de départ à afficher,,,
+COMMAND_MODS_NOMODS,The server does not have any mods,Le serveur n'a pas de mods,,,
+COMMAND_MODS_TITLE,Server Mods,Mods de serveur,,,
+COMMAND_MODS_DESC,Mods: **{0}**\nType: **{1}**\n{2},Mods: **{0}**\nType: **{1}**\n{2},,,
+COMMAND_PINGSERVER,Pings a server with the given details,Ping un serveur avec les détails donnés,,,
+COMMAND_PINGSERVER_ARG2,The port to send query requests to e.g. ``25566``,"Le port auquel envoyer les demandes de requête, par exemple ``25566``",,,
+COMMAND_PLAYERS,Gets all the players currently online,Obtient tous les joueurs actuellement en ligne,,,
+COMMAND_PLAYERS_TOOMANY,There many be too many players online OR ``enable-query=true`` is not set in server.properties,Il y a trop de joueurs en ligne OU ``enable-query=true`` n'est pas défini dans server.properties,,,
+COMMAND_PLUGINS,Displays the plugins that are on the server,Affiche les plugins qui se trouvent sur le serveur,,,
+COMMAND_PLUGINS_ARG1,The starting page to display,La page de départ à afficher,,,
+COMMAND_PLUGINS_NOPLUGINS,The server does not have any plugins,Le serveur n'a pas de plugins,,,
+COMMAND_PLUGINS_TITLE,Server Plugins,Plugins du serveur,,,
+COMMAND_PLUGINS_DESC,Plugins: **{0}**\n{1},Plugins: **{0}**\n{1},,,
+COMMAND_PRIVACY,View our privacy policy,Consultez notre politique de confidentialité,,,
+COMMAND_PRIVACY_TITLE,Privacy Policy,Politique de confidentialité,,,
+COMMAND_PRIVACY_DESC,*We reserve the right to make changes and updates to our privacy policy without notifying any of our users.*,* Nous nous réservons le droit d'apporter des modifications et des mises à jour à notre politique de confidentialité sans en informer aucun de nos utilisateurs. *,,,
+COMMAND_PRIVACY_FIELD1,What data do we store?,Quelles données stockons-nous?,,,
+COMMAND_PRIVACY_FIELD1_VAL,"• Your guild's id is used to store all settings so we can link the data to your guild.\n• The custom prefix in your server is stored\n• If you add a server address, that ip/hostname and port are stored\n• If you setup a status channel the channel id, status message id and stutus channel type are stored\n• If you add an invite to server discovery the invite will be stored, also whether you have discovery enabled will also be stored\n• If you disable any commands the list of disabled commands is stored",,,,
+COMMAND_PRIVACY_FIELD2,Why do we store your information?,Pourquoi stockons-nous vos informations?,,,
+COMMAND_PRIVACY_FIELD2_VAL,• We store your custom prefix in order for you to run commands with the prefix you specifiy\n• Your server address and port are used in order to get information from your minecraft server without the information being typed-in every time\n• Status channel id's are stored so we know where to send status messages and the status message id and type is stored so we know what message to update and how to display your server information\n• Your server discovery settings are stored so we know if we should display your server on discovery and the discord invite to display\n• Disabled commands are stored so we know what commands to deny users from running in your guild,,,,
+COMMAND_PRIVACY_FIELD3,Who can view this data?,Qui peut consulter ces données?,,,
+COMMAND_PRIVACY_FIELD3_VAL,• You can view all of your settings using the ``{0}settings`` command\n• Only the developer and high level admins of the bot can view your data,,,,
+COMMAND_PRIVACY_FIELD4,How do I delete data?,,,,
+COMMAND_PRIVACY_FIELD4_VAL,"You can delete all of your data by either, removing the bot from your discord server. Or by running ``{0}resetsettings`` which will set all of your settings to their default values.",,,,
+COMMAND_PRIVACY_FIELD5,Do you have any questions?,Avez-vous des questions?,,,
+COMMAND_PRIVACY_FIELD5_VAL,If you would like information or help on a specific matter [join our support server](https://discord.gg/uqVp2XzUP8),,,,
+COMMAND_RESETSETTINGS,Remove all of your settings and reset them to default,,,,
+COMMAND_RESETSETTINGS_CONTENT,All of your settings have been removed and reset to their default values.,,,,
+COMMAND_SETADDRESS,"Sets the server address used by the bot, alternative to using ``setip`` and ``setport``","Définit l'adresse du serveur utilisée par le bot, alternative à l'utilisation de ``setip`` et ``setport``",,,
+COMMAND_SETADDRESS_CONTENT,Ip set to ``{0}`` and Port set to ``{1}``,Ip défini sur ``{0}`` et Port défini sur ``{1}``,,,Установлен IP: ``{0}`` и порт ``{1}``
+COMMAND_SETIP,Sets the server ip used by the bot,Définit l'adresse IP du serveur utilisée par le bot,,,Устанавливает IP для сервера
+COMMAND_SETIP_PORTWARNING,":warning: Found port in ip, to set the port do ``{0}setport {1}`` OR ``{0}setaddr {2}:{1}``\n",":warning: Port trouvé dans ip, pour définir le port, faites ``{0}setport {1}`` OU ``{0}setaddr {2}:{1}``\n",,,
+COMMAND_SETIP_CONTENT,Ip set to ``{0}``,Ip défini sur ``{0}``,,,Установлен IP: ``{0}``
+COMMAND_SETPORT,"Sets the server port used by the bot, default is 25565","Définit le port du serveur utilisé par le bot, la valeur par défaut est 25565",,,"Устанавливает порт для сервера, по умолчанию используется 25565"
+COMMAND_SETPORT_CONTENT,Port set to ``{0}``,Port défini sur ``{0}``,,,Установлен порт: ``{0}``
+COMMAND_SETPREFIX,Sets the prefix used by the bot,Définit le préfixe utilisé par le bot,,,Устанавливает префикс используемый ботом
+COMMAND_SETPREFIX_LIMIT,Prefix can only be up to 3 characters long,Le préfixe ne peut comporter que 3 caractères maximum,,,Префикс может состоять не более чем из 3 символов
+COMMAND_SETPREFIX_CONTENT,Prefix set to ``{0}``,Préfixe défini sur ``{0}``,,,Установлен префикс: ``{0}``
+COMMAND_SETQUERYPORT,"Sets the server port used by the bot to send query requests, defaults to the normal port","Définit le port du serveur utilisé par le bot pour envoyer des requêtes pour recevoir des informations, par défaut sur le port normal",,,"Устанавливает query порт используемый ботом для получения информации о сервере, по умолчанию используется обычный порт"
+COMMAND_SETQUERYPORT_ARG1,The port that your server queries are handled from e.g. ``25566``,"Le port à partir duquel les requêtes de votre serveur sont gérées, par exemple ``25566``",,,
+COMMAND_SETQUERYPORT_CONTENT,Query port set to ``{0}``,Port de requête défini sur ``{0}``,,,
+COMMAND_SETQUERYPORT_REMOVED,"Query port removed, the server port will be used instead.","Le port de requête a été supprimé, le port du serveur sera utilisé à la place.",,,
+COMMAND_SETSERVERDISCOVERY,Sets whether the server should be displayed on the discovery list,Définit si le serveur doit être affiché dans la liste de découverte,,,
+COMMAND_SETSERVERDISCOVERY_ARG1,The setting to change about your server's discovery,Le paramètre à modifier concernant la découverte de votre serveur,,,
+COMMAND_SETSERVERDISCOVERY_CONTENT,Server discovery has been ``{0}``,La découverte du serveur a été ``{0}``,,,
+COMMAND_SETSERVERDISCOVERY_INVITE_ADD,Server discovery invite code has been set to ``{0}``,,,,
+COMMAND_SETSERVERDISCOVERY_INVITE_REMOVE,Server discovery invite has been removed.,,,,
+COMMAND_SETSERVERDISCOVERY_INVITE_NOCODE,Could not find invite code in invite.,,,,
+COMMAND_SETSERVERDISCOVERY_INVITE_INVALID,``{0}`` is not a valid Discord invite.,,,,
+COMMAND_SETSTATUSCHANNEL,Sets the text channel that server status messages will be sent,Définit le canal de texte auquel les messages d'état du serveur seront envoyés,,,"Устанавливает текстовый канал, куда будет отправляться информация о сервере"
+COMMAND_SETSTATUSCHANNEL_ARG1,The setting to change about the status channel,"Peut être un nom de canal, un identifiant ou un tag",,,
+COMMAND_SETSTATUSCHANNEL_SET,<:green_circle_with_tick:818512512500105249> Status channel set to <#{0}>,<:green_circle_with_tick:818512512500105249> Canal d'état défini sur <#{0}>,,,<:green_circle_with_tick:818512512500105249> <#{0}> установлен как канал для логов
+COMMAND_SETSTATUSCHANNEL_REMOVE,<:red_circle_with_cross:818512512764084265> Status channel (<#{0}>) removed,<:red_circle_with_cross:818512512764084265> Canal d'état (<#{0}>) supprimé,,,Канал для ведения логов (<#{0}>) removed
+COMMAND_SETSTATUSCHANNEL_TYPE,Status channel type has been set to ``{0}``,,,,
+COMMAND_SETSTATUSCHANNEL_TYPE_NOID,Could not find id for status channel type.,,,,
+COMMAND_SETSTATUSCHANNEL_MESSAGE,Status channel message set to message with id ``{0}``,,,,
+COMMAND_SETSTATUSCHANNEL_MESSAGE_BADID,``{0}`` is not a valid message id,,,,
+COMMAND_SETSTATUSCHANNEL_MESSAGE_NOCHANNEL,No status channel exists in this guild,,,,
+COMMAND_SETSTATUSCHANNEL_MESSAGE_NOMESSAGE,No message exists in the status channel with that id,,,,
+COMMAND_SETSTATUSCHANNEL_MESSAGE_NOTBOT,Cannot set status message to message not posted by this bot,,,,
+COMMAND_SETTINGS,Gets the current server settings,Obtient les paramètres actuels du serveur,,,Показывает текущие настройки сервера
+COMMAND_SETTINGS_TITLE,Settings,Paramètres,,,Настройки
+COMMAND_SETTINGS_FORMAT,• Prefix: ``{0}``\n• Ip: ``{1}``\n• Port: ``{2}``\n• Query Port: ``{3}``\n• Server Discovery: ``{4}`` ``(Invite: {5})``\n• Status channel: {6} ``(Type: {7})``\n• Disabled commands: ``{8}``,• Préfixe: ``{0}``\n• Ip: ``{1}``\n• Port: ``{2}``\n• Port de requête: ``{3}``\n• Découverte du serveur: ``{4}`` ``(D'invitation: {5})``\n• Canal de status: {6} ``(Type: {7})``\n• Commandes désactivés: ``{8}``,,,• Префикс: ``{0}``\n• IP: ``{1}``\n• Порт: ``{2}``\n• Query порт: ``{3}``\n• Server Discovery: ``{4}`` ``(Invite: {5})``\n• Status channel: {6} ``(Type: {7})``\n• Отключены команды: ``{8}``
+COMMAND_SETUP,A walkthrough on how to setup up the server,Une procédure pas à pas pour la configuration du serveur,,,
+COMMAND_SETUP_ARG1,The setup page to display,,,,
+COMMAND_SETUP_PAGE1_TITLE,Getting setup,,,,
+COMMAND_SETUP_PAGE1_DESC,"Let's get your server setup! First there is a few commands that you are going to have to run.\n\n**Customizing your prefix**\nYou can give your server a custom prefix by running ``{0}prefix <prefix>``!\n\n**Connecting your server**\nSet the server address for this guild by running ``{0}setaddress <server address>``, for example ``{0}setaddress mc.hypixel.net:25565``.\n\nIf your server uses the default port ``25565`` then you do not have to add the ``:25565`` onto the end, otherwise you should.\n\n**Tweaking the address**\nIf you ever want to change the port at anytime you can use ``{0}setport <port>`` to change the port used by the bot without having to write out the server ip.\n\nYou can also do the same for the server ip by doing ``{0}setip <server ip>`` without having to write out the server port.\n\n*(You can use the arrows below to flick between pages)*",,,,
+COMMAND_SETUP_PAGE2_TITLE,Viewing your settings,,,,
+COMMAND_SETUP_PAGE2_DESC,"You can check the settings for your server at anytime by running ``{0}settings``, this will show you a list of all the settings stored about your server.\n\n**What are these settings used for?**\nMany commands use these settings to reduce the amount of typing needed when wanting to see information about your server.\n\nYou can test some of these commands that use your server settings:\n• ``{0}status``\n• ``{0}players``\n• ``{0}mods``\n• ``{0}plugins``\n\n**Advanced settings**\nTurn to the next page for a guide on more advanced features and settings!\n\n**Our privacy policy**\nIf you would like to find out what we do with your data in detail then you can read our privacy policy by running ``{0}policy``",,,,
+COMMAND_SETUP_PAGE3_TITLE,Advanced setup,,,,
+COMMAND_SETUP_PAGE3_DESC,"Here is a guide on more advanced settings and features of the bot.\n\n**Server querying**\nSome servers may have the ``query.port`` setting in their ``server.properties`` file set to a different port compared to the port used to connect to the server.\nThis port is needed in order to get details such as **players**, **mods** and **plugins** from the server.\nYou must also ensure that ``enable-query=true`` is set in the ``server.properties`` file.\n\nBy default the query port is set to ``-1`` and will instead use the port used to connect to the server, run ``{0}queryport <port>`` to change the query port.\n\n**Status channels**\nA status channel is where live updates about your server will be posted.\nYou can set your status channel by doing ``{0}setstatuschannel <channel>``, updates will be sent to this channel every 60 seconds.\n\nYou can change the look and way that this information is displayed by running ``{0}setstatuschannel display <type>``.\nThe ``panel`` types will post a single message that is constantly updated with server information.",,,,
+COMMAND_SETUP_PAGE4_TITLE,Server Discovery,,,,
+COMMAND_SETUP_PAGE4_DESC,"Server discovery allows other people from other servers, that have this bot, to find your server and for you to find their server!\n\nYou can view the list of these servers by doing ``{0}discover``.\n\nIf you would like to add your server to the discovery list then you can run ``{0}setserverdiscovery display on`` and your server should appear in the list!\nYour server will appear in **bold** with the :diamond_shape_with_a_dot_inside: symbol next to it.\n\nYou can also attach a discord invite next to your server address so that people can join your discord server, add the invite by running ``{0}setserverdiscovery invite <invite>``. The invite must be a full discord invite link.\n\nYou can at anytime remove your server from the discovery list or remove your discord invite by running the commands as such:\n• ``{0}setserverdiscovery display off``\n• ``{0}setserverdiscovery invite remove``.",,,,
+COMMAND_SETUP_PAGE5_TITLE,Additional features,,,,
+COMMAND_SETUP_PAGE5_DESC,"Here are some additional features you can use!\n\n**Disabling commands**\nIf you would like to disable certain commands within your server then you can! To disable a command you can do ``{0}disabled add <command>``, this will add the command to a list of disabled commands for your server. For example ``{0}disabled add createmotd`` will disable the ``{0}createmotd`` command.\n\nIf you ever want to re-enable a command then run ``{0}disabled remove <command>`` this will remove the command from the disabled list.\nYou can also re-enable all disabled commands by running ``{0}disabled removeall``.\n\n**Removing bot messages**\nIf you want to clean messages specifically from this bot from a channel then you can use the ``{0}clear`` command.\n\nTo remove a certain number of messages you can use ``{0}clear count <number>``.\n\nIf you would like to clear messages posted after a certain date and time you can use ``{0}clear after <date>``, you should represent dates as yyyy/mm/dd, 'today', 'yesterday' and 'this week' also work.\n\nYou can also just remove the previous message by running ``{0}clear previous``",,,,
+COMMAND_STATS,View statistics,Voir les statistiques,,,Показать статистику
+COMMAND_STATS_ARG1,The type of statistics you would like to see,Le type de statistiques que vous souhaitez voir,,,
+COMMAND_STATS_BOT_TITLE,Stats,Statistiques,,,
+COMMAND_STATS_BOT_FIELD1,Servers,Serveurs,,,
+COMMAND_STATS_BOT_FIELD2,Users,Utilisateurs,,,
+COMMAND_STATS_BOT_FIELD3,Channels,Canaux,,,
+COMMAND_STATS_BOT_FIELD4,Ping,Ping,,,
+COMMAND_STATS_BOT_FIELD5,Commands Ran,Commandes Ran,,,
+COMMAND_STATS_BOT_FIELD6,Last Command,Dernière commande,,,
+COMMAND_STATS_BOT_FIELD7,Server,Serveur,,,
+COMMAND_STATS_BOT_FIELD7_VAL,Heroku - OS: {0} - Uptime: {1},Heroku - OS: {0} - Uptime: {1},,,Heroku - OS: {0} - аптайм: {1}
+COMMAND_STATS_BOT_FIELD8,CPU,CPU,,,
+COMMAND_STATS_BOT_FIELD8_VAL,{0} - {1} core(s) ({2}%),{0} - {1} coeur(s) ({2}%),,,
+COMMAND_STATS_BOT_FIELD9,Memory Usage,Utilisation Mémoire,,,
+COMMAND_STATS_BOT_FIELD10,Network Average,Moyenne du réseau,,,
+COMMAND_STATS_BOT_FIELD10_VAL,"In: {0}Mb, Out: {1}Mb","Entrée: {0} Mo, sortie: {1} Mo",,,
+COMMAND_STATS_BOT_GRAPH_COUNT_X,Past week,,,,
+COMMAND_STATS_BOT_GRAPH_COUNT_Y,Server count,,,,
+COMMAND_STATS_BOT_GRAPH_MEM_X,Time,,,,
+COMMAND_STATS_BOT_GRAPH_MEM_Y,Memory (MB),,,,
+COMMAND_STATS_HYPIXEL_PLAYERS_FAIL_TITLE,Problem getting players!,Problème pour obtenir les info du joueurs!,,,
+COMMAND_STATS_HYPIXEL_PLAYERS_FAIL_DESC,There was a problem that occured when trying\nto get the player counts for that gamemode!,Un problème est survenu lors de la tentative\nd’obtenir le nombre de joueurs pour ce mode de jeu!,,,
+COMMAND_STATS_HYPIXEL_PLAYERS_TITLE,{0} Player Counts,{0} Nombre de joueurs,,,
+COMMAND_STATS_HYPIXEL_PLAYER_FAIL_TITLE,Error getting player information!,Erreur lors de l'obtention des informations sur le joueur!,,,
+COMMAND_STATS_HYPIXEL_PLAYER_FAIL_DESC,Could not get hypixel stats for '{0}',Impossible d'obtenir les statistiques d'hypixel pour '{0}',,,
+COMMAND_STATS_HYPIXEL_PLAYER_TITLE,{0}'s Stats,{0}'s Statistiques,,,
+COMMAND_STATS_HYPIXEL_PLAYER_ONLINE,<:green_circle_with_tick:818512512500105249> **Online**\nOnline For: **{0}**,<:green_circle_with_tick:818512512500105249> **En ligne**\nEn ligne pendant: **{0}**,,,
+COMMAND_STATS_HYPIXEL_PLAYER_OFFLINE,<:red_circle_with_cross:818512512764084265> **Offline**\nLast Online: **{0}**,<:red_circle_with_cross:818512512764084265> **Hors ligne**\nDernière connexion: **{0}**,,,
+COMMAND_STATS_HYPIXEL_PLAYER_DESC,Status: {0}\nFirst Played: **{1}**\n\n**User Info:**\n• Id: ``{2}``\n• UUID: ``{3}``\n• Language: ``{4}``\n• Rank: ``{5}``\n• Friend Requests: ``{6}``,État: {0}\nPremière connexion: **{1}**\n\n**Informations utilisateur:**\n• Id: ``{2}``\n• UUID: ``{3}``\n• Langue: ``{4}``\n• Rang: ``{5}``\n• Demandes d'amis: ``{6}``,,,
+COMMAND_STATS_HYPIXEL_PLAYER_NETSTATS,**Network Stats:**\n• Experience: ``{0}``\n• Karma: ``{1}``\n• Achievement Points: ``{2}``\n• One-Time Achievements: ``{3}``\n• Most Recent Game: ``{4}``\n• Most Recent Version: ``{5}``,**Statistiques du réseau:**\n• Expérience: ``{0}``\n• Karma: ``{1}``\n• Points de réussite: ``{2}``\n• Première Réalisations: ``{3}``\n• Jeu le plus récent: ``{4}``\n• Version la plus récente: ``{5}``,,,
+COMMAND_STATS_HYPIXEL_COMPARE_TITLE,{0}'s and {1}'s Stats,Statistiques de {0} et {1},,,
+COMMAND_STATS_HYPIXEL_COMPARE_RANK_SAME,Both have the same rank ``{0}``,Les deux ont le même rang ``{0}``,,,
+COMMAND_STATS_HYPIXEL_COMPARE_RANK_DIFF,{0} has the rank ``{1}``\n{2} has the rank ``{3}``,{0} a le rang ``{1}``\n{2} a le rang: ``{3}``,,,
+COMMAND_STATS_HYPIXEL_COMPARE_JOINED_BOTH,{0} joined first on {1}\n{2} joined after on {3},{0} a rejoint le premier le {1}\n{2} a rejoint après le {3},,,
+COMMAND_STATS_HYPIXEL_COMPARE_JOINED_ONE,{0} joined on {1}\n{2} has never joined,{0} a rejoint le {1}\n{2} n'a jamais rejoint,,,
+COMMAND_STATS_HYPIXEL_COMPARE_JOINED_NEITHER,Neither have ever joined,Ni l'un ni l'autre n'ont jamais rejoint,,,
+COMMAND_STATS_HYPIXEL_COMPARE_DESC,{0}\n\n**User Info:**\n• Rank: {1}\n\n{2},{0}\n\n**Informations utilisateur: **\n• Classement: {1}\n\n{2},,,
+COMMAND_STATS_HYPIXEL_LEADERBOARDS_FAIL_TITLE,Problem getting leaderboard!,Problème pour obtenir le classement!,,,
+COMMAND_STATS_HYPIXEL_LEADERBOARDS_FAIL_DESC,There was a problem that occured when trying\nto get the leaderboard for that gamemode!,Un problème est survenu lors de la tentative\nd'obtenir le classement pour ce mode de jeu!,,,
+COMMAND_STATS_HYPIXEL_LEADERBOARDS_TITLE,{0} Leaderboards,{0} Classements,,,
+COMMAND_STATUS,Displays current information about the server,Affiche les informations actuelles sur le serveur,,,Показывает актуальную информацию о сервере
+COMMAND_STATUS_TITLE,Server Info {0},Informations sur le serveur {0},,,Информация о сервере {0}
+COMMAND_STATUS_DESC,Address: **{0}**\nStatus: <:green_circle_with_tick:818512512500105249> **Online**{1}\nPlayers: **{2}/{3}**{4}{5},Adresse: **{0}**\nStatut: <:green_circle_with_tick:818512512500105249> **En ligne**{1}\nJoueurs: **{2}/{3}**{4}{5},,,Адрес: **{0}**\nСтатус: <:green_circle_with_tick:818512512500105249> **Онлайн**{1}\nИгроков: **{2}/{3}**{4}{5}
+COMMAND_STATUS_FAIL_DESC,Address: **{0}:{1}**\nStatus: <:red_circle_with_cross:818512512764084265> **Offline**{2},Adresse: **{0}:{1}**\nStatut: <:red_circle_with_cross:818512512764084265> **Hors ligne**{2},,,Адрес: **{0}:{1}**\nСтатус: <:red_circle_with_cross:818512512764084265> **Оффлайн**{2}
+COMMAND_STATUS_FIELD1,Minecraft Version:,Version de Minecraft:,,,Версия Minecraft:
+COMMAND_STATUS_FIELD2,Minecraft Edition:,Édition Minecraft:,,,
+COMMAND_STATUS_FIELD3,Map:,Map:,,,Карта:
+COMMAND_SUPPORT,Support info for the bot,Informations d'assistance pour le bot,,,
+COMMAND_SUPPORT_FIELD1,Donate,Faire un don,,,
+COMMAND_SUPPORT_FIELD1_VAL,Help support us by donating,Aidez-nous à nous soutenir en faisant un don,,,
+COMMAND_SUPPORT_FIELD2,Support server,Serveur de support,,,
+COMMAND_SUPPORT_FIELD2_VAL,Join our support server,Rejoindre notre serveur de support,,,
+COMMAND_SUPPORT_FIELD3,Supported Minecraft Versions,Versions de Minecraft prises en charge,,,
+COMMAND_SUPPORT_FIELD3_VAL,Java {0}+ and all official Bedrock versions,Java {0} + et toutes les versions officielles de Bedrock,,,
+COMMAND_UPTIME,Returns the bot's uptime,Renvoie le temps de fonctionnement du bot,,,Показывает время работы бота
+COMMAND_VERSIONS,Lists all minecraft versions that the bot supports,Répertorie toutes les versions de Minecraft prises en charge par le bot,,,Список всех поддерживаемых ботом версий Minecraft
+COMMAND_VERSIONS_TITLE,Supported Versions,Versions prises en charge,,,Поддерживаемые версии
+COMMAND_VERSIONS_DESC,Minecraft Java versions {0}+ and all official Minecraft Bedrock versions are supported.,Les versions Java de Minecraft {0} + et toutes les versions officielles de Minecraft Bedrock sont prises en charge.,,,Поддерживается Minecraft версий Java {0}+ и все официальные сервера Minecraft Bedrock.
+COMMAND_VOTE,Help the bot by upvoting on these sites,Aidez le bot en votant pour ces sites,,,
+COMMAND_VOTE_DESC,Voting for the bot helps to support the bot grow and encourages the release of new updates and features.\n\n**Vote for the bot at these links:**\n{0},Voter pour le bot aide à soutenir la croissance du bot et encourage la publication de nouvelles mises à jour et fonctionnalités.\n\n**Votez pour le bot à ces liens:**\n{0},,,
+COMMAND_WHOIS,Get information about a player,Obtenir des informations sur un joueur,,,Показывает информацию об игроке
+COMMAND_WHOIS_ARG1,The username or uuid of the player you want to get information about,Le nom d'utilisateur ou uuid du joueur sur lequel vous souhaitez obtenir des informations,,,
+COMMAND_WHOIS_FIELD1,Usernames,Noms d'utilisateur,,,
+COMMAND_WHOIS_FIELD2,Skin,Skin,,,
+COMMAND_WHOIS_FIELD2_VAL,[Download skin](https://mc-heads.net/download/{0})\n[Apply skin](https://mc-heads.net/change/{0})\nProvided by [mc-heads.net](https://mc-heads.net/),[Télécharger le skin](https://mc-heads.net/download/{0})\n[Appliquer le skin](https://mc-heads.net/change/{0})\nFourni par [mc- heads.net](https://mc-heads.net/),,,
+COMMAND_WHOIS_AVAILABLE_TITLE,<:green_circle_with_tick:818512512500105249> Available account,<:green_circle_with_tick:818512512500105249> Compte disponible,,,
+COMMAND_WHOIS_AVAILABLE_DESC,No account with the identifier ``{0}`` exists.,Aucun compte avec l'identifiant ``{0}`` n'existe.,,,
+EXAMPLE_IP,The ip of your server e.g. ``172.16.254.1`` or ``mc.hypixel.net``,"L'adresse IP de votre serveur, par ex. ``172.16.254.1`` ou ``mc.hypixel.net``",,,
+EXAMPLE_PORT,The port that your server is served from e.g. ``25565``,"Le port à partir duquel votre serveur est servi, par exemple «25565» ",,,
+EXAMPLE_ADDRESS,"The address of the server e.g. ``mc.hypixel.net``, ``mc.hypixel.net:25565`` or ``172.16.254.1:25665``","L'adresse du serveur, par ex. ``mc.hypixel.net``, ``mc.hypixel.net:25565`` ou ``172.16.254.1:25665``",,,
+INVALID_IP,``{0}`` is not a valid ip address,,,,
+INVALID_DATE,Invalid date,Date invalide,,,
+INVALID_USER,Invalid user,Utilisateur invalide,,,
+INVALID_CHANNEL,Invalid channel,Canal invalide,,,
+INVALID_MESSAGE,Invalid message,Message invalide,,,
+INVALID_GUILD,Invalid guild,Guilde invalide,,,
+INVALID_ROLE,Invalid role,Role invalide,,,
+INVALID_EMOJI,Invalid emoji,emoji invalide,,,
+MUST_NUMBER,``{0}`` must be a number,``{0}`` doit être un nombre,,,
+MUST_STRING,``{0}`` must be a string,``{0}`` doit être une chaîne,,,
+MUST_DATE,``{0}`` must be a date,``{0}`` doit être une date,,,
+MUST_USER,``{0}`` must be a user,``{0}`` doit être un utilisateur,,,
+MUST_MESSAGE,``{0}`` must be a message,``{0}`` doit être un message,,,
+MUST_CHANNEL,``{0}`` must be a channel,``{0}`` doit être un canal,,,
+MUST_GUILD,``{0}`` must be a guild,``{0}`` doit être une guilde,,,
+MUST_ROLE,``{0}`` must be a role,``{0}`` doit être un rôle,,,
+MUST_EMOJI,``{0}`` must be an emoji,``{0}`` doit être un emoji,,,
+CANNOT_EXCEED,``{0}`` cannot exceed {1},``{0}`` ne peut pas dépasser {1},,,
+GUILD_JOIN_THANKS,Thank you for adding {0}!,Merci d'avoir ajouté {0}!,,,
+GUILD_JOIN_DESC,"If you need a reminder on how to use the bot at anytime do: ``@{1}``\n\n**How do I get started?**\nTo run a command you can do ``{0}<command>`` or ``{1} <command>``!\n\nIn order to get your server setup and connected you can run the ``{0}setup`` command, it will give you an up-to-date detailed walkthrough for setting up your server.\n\nIf you would like to view a list of all commands you can do:\n``{0}help`` or ``@{1} help``.\n\nIf you would like to support the bot and its development, [Click here!](https://donatebot.io/checkout/797779595852120064)\n\n**Need help?**\nJoin our support server, [here!](https://discord.gg/uqVp2XzUP8)","Si vous avez besoin d'un rappel sur la façon d'utiliser le bot à tout moment, faites: ``@{1}``\n\n**Comment commencer?**\nPour exécuter une commande, vous pouvez faire ``{0}<commande>`` ou ``{1}<commande>``!\n\nPour que votre serveur soit configuré et connecté, vous pouvez exécuter la commande ``{0}setup``, cela vous donnera un une  procédure pas à pas détaillée à jour pour la configuration de votre serveur.\n\nSi vous souhaitez afficher une liste de toutes les commandes que vous pouvez effectuer:\n``{0}help`` ou ``@{1} help``.\n\nSi vous souhaitez prendre en charge le bot et son développement, [Cliquez ici!](https://donatebot.io/checkout/797779595852120064)\n\n** Besoin d'aide? **\nRejoignez notre serveur d'assistance, [ici!](https://discord.gg/uqVp2XzUP8)",,,
+SEND_MESSAGES_NOPERMS,I do not have permission to send messages in that channel!,Je n'ai pas la permission d'envoyer des messages sur ce canal!,,,
+NOPERMS,You don't have permission to do that,Tu n'as pas la permission de faire ça,,,
+TOOMANYCOMMANDS,Running too many commands!,Vous éxecutez trop de commandes!,,,
+TOOMANYCOMMANDS_DESC,Please wait {0} seconds before running another command.,Veuillez patienter {0} secondes avant d'exécuter une autre commande.,,,
+DISABLED_COMMAND,That command is disabled in this server,Cette commande est désactivée sur ce serveur,,,
+ERROR_COMMAND,"An error occured while trying to execute that command, please report this to the developer!","Une erreur s'est produite lors de la tentative d'exécution de cette commande, veuillez le signaler au développeur!",,,
+ARGUMENTS_EXPECTED,"{0}' expects atleast {1} argument(s), got {2}","{0}' attend au moins {1} argument (s), a obtenu {2}",,,
+GETTING_STARTED,Getting started,Commencer,,,
+GETTING_STARTED_DESC,My **prefix** in this server is: **``{0}``**\n\nTo run a command you can do ``{0}<command>`` or ``@{1} <command>``!\nIf you would like to view a list of all commands you can do:\n``{0}help`` or ``@{1} help``.,"Mon **préfixe** sur ce serveur est: **``{0}``**\n\nPour exécuter une commande, vous pouvez faire ``{0}<commande>`` ou ``@{1} <commande>``!\nSi vous souhaitez afficher une liste de toutes les commandes, vous pouvez faire:\n``{0}help`` ou ``@{1} help``.",,,
+MAINTENANCE_MODE,Maintenance mode is currently enabled,Le mode de maintenance est actuellement activé,,,
+COULDNOTFIND,Could not find {0} '{1}',Impossible de trouver {0} '{1}',,,
+COULDNOTFIND_IN,Could not find {0} '{1}' in this {2},Impossible de trouver {0} '{1}' dans ce {2},,,
+AND_MORE,and {0} more...,et {0} plus ...,,,
+PAGE_NUM,Page {0}/{1},Page {0}/{1},,,
+TIME_FORMAT,{0}h {1}m {2}s,{0}h {1}m {2}s,,,{0}ч {1}м {2}с
+TIME_FORMAT_LONG,{0} hours {1} minutes and {2} seconds,{0} heures {1} minutes et {2} secondes,,,
+TIME_FORMAT_AGO,{0}s ago,il y a {0} secondes,,,
+JAVA,Java,Java,Java,,Java
+BEDROCK,Bedrock,Bedrock,,,Bedrock
+VANILLA,Vanilla,Vanilla,,,Vanilla
+MODS,Modded ({0} mods),Moddé ({0} mods),,,Модифицировано (модов: {0})
+PLUGINS,({0} plugins),({0} plugins),,,(плагины: {0})
+AUTOMATED,Automated,,,,
+CHANNEL,channel,canal,,,
+MESSAGE,message,message,,,
+GUILD,guild,guilde,,,
+NOT_PROVIDED,Not provided,Non fourni,,,
+PONG,Pong!,Pong!,,,Понг!
+ORIGINAL,Original,Original,,,
+COPYRIGHT,Copyright {0} © All rights reserved.,Copyright {0} © Tous droits réservés.,,,Copyright {0} © Все права защищены
+UPTIME,Uptime,Temps de fonctionnement,,,Аптайм
+MOBILE,Mobile,Mobile,,,
+COMMANDS,Commands,Commandes,,,Команды
+PREFIX,Prefix,Préfixe,,,Префикс
+UNKNOWN,Unknown,Inconnu,,,
+ENABLED,Enabled,Activé,,,
+DISABLED,Disabled,Désactivé,,,
+NEVER,Never,Jamais,,,
+EMPTY,Empty,Vide,,,
+NONE,None,None,,,None

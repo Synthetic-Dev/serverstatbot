@@ -1,13 +1,21 @@
 const Mongoose = require("mongoose")
 
 const Schema = new Mongoose.Schema({
-    Value: {
+    Ip: {
         type: String,
         default: "0.0.0.0"
     },
-    GuildID: {
+    _guildId: {
         type: String,
         required: [true, "Needs an associated guild"]
+    },
+
+    // OLD
+    Value: {
+        type: String
+    },
+    GuildID: {
+        type: String
     }
 })
 

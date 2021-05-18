@@ -1,13 +1,21 @@
 const Mongoose = require("mongoose")
 
 const Schema = new Mongoose.Schema({
-    Value: {
+    Prefix: {
         type: String,
         default: process.env.ISDEV == "TRUE" ? "--" : "."
     },
-    GuildID: {
+    _guildId: {
         type: String,
         required: [true, "Needs an associated guild"]
+    },
+
+    // OLD
+    Value: {
+        type: String
+    },
+    GuildID: {
+        type: String
     }
 })
 

@@ -5,7 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "about",
-            desc: "Information about the bot",
+            descId: "COMMAND_ABOUT",
             aliases: [
                 "version",
                 "abt"
@@ -13,10 +13,10 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message) {
-        Util.sendMessage(message, {
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
-                title: "About",
+                title: options.lang.COMMAND_ABOUT_TITLE,
                 color: 5145560,
                 author: {
                     name: this.client.user.username,
@@ -28,38 +28,38 @@ class Command extends CommandBase {
                 },
                 fields: [
                     {
-                        name: "Version",
+                        name: options.lang.COMMAND_ABOUT_FIELD1,
                         value: process.env.npm_package_version,
                         inline: true
                     },
                     {
-                        name: "Developed by",
+                        name: options.lang.COMMAND_ABOUT_FIELD2,
                         value: "SyntheticDev",
                         inline: true
                     },
                     {
-                        name: "Credit to",
+                        name: options.lang.COMMAND_ABOUT_FIELD3,
                         value: "[mc-heads.net](https://mc-heads.net/)",
                         inline: true
                     },
                     {
-                        name: "Servers",
+                        name: options.lang.COMMAND_ABOUT_FIELD4,
                         value: this.client.guilds.cache.size,
                         inline: true
                     },
                     {
-                        name: "Library",
+                        name: options.lang.COMMAND_ABOUT_FIELD5,
                         value: `[discord.js](https://discord.js.org/)`,
                         inline: true
                     },
                     {
-                        name: "Support",
-                        value: "[Join support server](https://discord.gg/uqVp2XzUP8)",
+                        name: options.lang.COMMAND_ABOUT_FIELD6,
+                        value: `[${options.lang.COMMAND_ABOUT_FIELD6_VAL}](https://discord.gg/uqVp2XzUP8)`,
                         inline: true
                     }
                 ],
                 timestamp: Date.now(),
-                footer: Util.getFooter(this.client)
+                footer: Util.getFooter(options.message)
             }
         }).catch(e => {
             console.error(`About[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)

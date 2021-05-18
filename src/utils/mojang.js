@@ -1,5 +1,10 @@
 const Canvas = require("canvas")
+const NodeCache = require("node-cache")
 const Util = require("./util.js");
+
+const playerCache = new NodeCache({
+    stdTTL: 3600
+});
 
 class Mojang {
     constructor() {
@@ -69,9 +74,16 @@ class Mojang {
         return this.effects
     }
 
+    /**
+     * Generate an motd image
+     * @param {string} text 
+     * @param {number} spacing 
+     * @param {number} padding 
+     * @returns {Canvas.Canvas}
+     */
     static generateMOTD(text, spacing, padding) {
         let lines = text.split("\n")
-        const tempPadding = padding*1.5
+        const tempPadding = padding * 1.5
 
         let motd = Canvas.createCanvas(1024 + tempPadding * 2, 20 * lines.length + spacing * (lines.length - 1) + tempPadding * 2)
         let context = motd.getContext("2d")
@@ -186,6 +198,57 @@ class Mojang {
     }
 
     /**
+     * Generate a playerlist image
+     * @param {{name: string, id?: string}[]} players 
+     * @param {Object<string, string>} lang 
+     * @param {number} columnLength 
+     * @param {number} maxColumns 
+     * @param {number} maxColumnWidth 
+     * @returns {Promise<Canvas.Canvas>}
+     */
+    static async generatePlayerList(players, lang, columnLength = 20, maxColumns = 4, maxColumnWidth = 256) {
+        const maxInList = (columnLength * maxColumns) - 1
+        const amountInList = Math.min(maxInList, players.length)
+        const height = Math.min(columnLength, amountInList)
+        const columnCount = Math.ceil(amountInList / columnLength)
+
+        let image = Canvas.createCanvas((32 + maxColumnWidth) * columnCount + (5 * (columnCount - 1)), height * 28)
+        let context = image.getContext("2d")
+
+        context.imageSmoothingEnabled = false
+        context.font = "27px 'Minecraft'"
+        context.textBaseline = "top"
+        context.textAlign = "left"
+        context.fillStyle = "#fff"
+
+        await new Promise((resolve, reject) => {
+            let done = 0
+            players.forEach((player, i) => {
+                const column = Math.floor(i / columnLength)
+
+                if (i >= maxInList) {
+                    if (i == maxInList) {
+                        context.fillText(lang.AND_MORE.format(players.length - maxInList), 2 + (maxColumnWidth * column) + (5 * column), (i - columnLength * column) * 28 - 2, maxColumnWidth - 2)
+                    }
+                    if (done >= amountInList) resolve();
+                } else {
+                    Canvas.loadImage(`https://mc-heads.net/avatar/${player.name.clean}/22`).then(head => {
+                        context.drawImage(head, 2 + (maxColumnWidth * column) + (5 * column), 2 + (i - columnLength * column) * 28, 22, 22)
+                    }).catch(e => {
+                        console.error(`Mojang[loadImage:generatePlayerList]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    }).finally(() => {
+                        context.fillText(player.name.clean, 32 + (maxColumnWidth * column) + (5 * column), (i - columnLength * column) * 28 - 2, maxColumnWidth - 32)
+                        done++
+                        if (done >= amountInList) resolve();
+                    })
+                }
+            })
+        })
+
+        return image
+    }
+
+    /**
      * Get the status of one or all mojang services
      * @param {string} checkDomain 
      * @returns {Promise<Object | string>}
@@ -200,7 +263,7 @@ class Mojang {
         })
 
         if (!checkDomain) return statuses;
-        return statuses[checkDomain] ? statuses[checkDomain] : "grey"
+        return statuses[checkDomain] ?? "grey"
     }
 
     /**
@@ -220,14 +283,19 @@ class Mojang {
      * @param {string} username 
      */
     static async getUUID(username) {
+        let cacheKey = username.toLowerCase()
+        if (playerCache.has(cacheKey)) return playerCache.get(cacheKey);
         let result = await Util.requestAsync(`https://api.mojang.com/users/profiles/minecraft/${username}`);
         if (!result) return null;
 
         result = JSON.parse(result);
+        playerCache.set(cacheKey, result.id);
         return result.id;
     }
 
     static async getNameHistory(uuid) {
+        let cacheKey = uuid.replace(/-/g, "").toLowerCase()
+        if (playerCache.has(cacheKey)) return playerCache.get(cacheKey);
         let result = await Util.requestAsync(`https://api.mojang.com/user/profiles/${uuid}/names`);
         result = JSON.parse(result);
         if (!result) return null;
@@ -237,6 +305,7 @@ class Mojang {
             original: result[0].name,
             changes: result.reverse()
         }
+        playerCache.set(cacheKey, history);
         return history;
     }
 

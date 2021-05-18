@@ -5,7 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "permissions",
-            desc: "Get bot permissions in current guild",
+            descId: "COMMAND_DEV_PERMISSIONS",
             aliases: [
                 "perms"
             ],
@@ -16,12 +16,12 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message) {
-        Util.sendMessage(message, {
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
-                title: "PERMISSIONS",
-                description: "``" + message.guild.me.permissions.toArray().join("``, ``") + "``",
-                color: 927567,
+                title: "Permissions",
+                description: "``" + options.guild.me.permissions.toArray().join("``, ``") + "``",
+                color: 4317012,
                 timestamp: Date.now()
             }
         }).catch(e => {

@@ -5,7 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "maintenance",
-            desc: "Enables/disables maintenance mode",
+            descId: "COMMAND_DEV_MAINTENANCE",
             perms: [
                 "DEV"
             ],
@@ -13,15 +13,14 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message) {
-        const settings = this.client.globalSettings
-
-        settings.update("maintenance", (enabled) => {
-            Util.replyMessage(message, `${enabled ? "Disabled :octagonal_sign:" : "Enabled :white_check_mark:"} maintenance mode.`).catch(e => {
+    async execute(options) {
+        this.client.globalSettings.update("Maintenance", value => {
+            value = !value
+            Util.replyMessage(options.message, `${value ? "Enabled :white_check_mark:" : "Disabled :octagonal_sign:"} maintenance mode.`).catch(e => {
                 console.error(`Maintenance[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
             })
 
-            return !enabled
+            return value
         })
     }
 }

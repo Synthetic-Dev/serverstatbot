@@ -5,9 +5,14 @@ const Schema = new Mongoose.Schema({
         type: String,
         default: "0"
     },
-    GuildID: {
+    _guildId: {
         type: String,
         required: [true, "Needs an associated guild"]
+    },
+
+    // OLD
+    GuildID: {
+        type: String
     }
 })
 

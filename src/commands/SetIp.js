@@ -1,17 +1,18 @@
 const Util = require("../utils/util.js")
+const Protocol = require("../utils/protocol.js")
 const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "setip",
-            desc: "Sets the server ip used by the bot",
+            descId: "COMMAND_SETIP",
             aliases: [
                 "ip"
             ],
             args: [{
                 name: "ip",
-                desc: "The ip of your server e.g. ``172.16.254.1`` or ``mc.hypixel.net``"
+                descId: "EXAMPLE_IP"
             }],
             perms: [
                 "ADMINISTRATOR"
@@ -19,13 +20,13 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message, inputs) {
-        const settings = this.client.settings[message.guild.id]
-        let [ip, port] = inputs[0].split(":")
+    async execute(options) {
+        let [ip, port] = options.inputs[0].split(":")
+        if (!Protocol.isIpValid(ip)) return Util.replyError(options.message, options.lang.INVALID_IP.format(ip));
 
-        settings.set("ip", ip)
+        options.settings.set("server", ip, "Ip")
 
-        Util.replyMessage(message, `${port ? `:warning: Found port in ip, to set the port do \`\`${await settings.get("prefix")}setport ${port}\`\`\n` : ""}Ip set to \`\`${ip}\`\``).catch(e => {
+        Util.replyMessage(options.message, (port ? options.lang.COMMAND_SETIP_PORTWARNING.format(options.prefix, port, ip) : "") + options.lang.COMMAND_SETIP_CONTENT.format(ip)).catch(e => {
             console.error(`SetIp[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
     }

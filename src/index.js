@@ -5,12 +5,15 @@ const { HypixelAPI } = require("hypixel-api-v2")
 
 const Mongoose = require("mongoose")
 const Discord = require("discord.js")
-const NodeCache = require("node-cache")
 const Heroku = require('heroku-client')
 
 const Util = require("./utils/util.js")
 const Settings = require("./utils/settings.js")
-const Protocol = require("./utils/protocol.js")
+const Parser = require("./utils/commandParser.js")
+const LocaleManager = require("./utils/localeManager.js")
+const ServerLogger = require("./utils/serverLogger.js")
+
+const LocalSettings = require("./localSettings.json")
 
 /**
  * Startup
@@ -24,29 +27,28 @@ Canvas.registerFont("./assets/fonts/MinecraftItalic.otf", {family: "Minecraft", 
 Canvas.registerFont("./assets/fonts/MinecraftBoldItalic.otf", {family: "Minecraft", weight: "bold", style: "italic"})
 
 const client = new Discord.Client({
-    messageCacheMaxSize: 50,
+    messageCacheMaxSize: 30,
     messageCacheLifetime: 60*60,
     messageSweepInterval: 60*10,
     messageEditHistoryMaxSize: 1,
     presence: {
         status: "idle",
         activity: {
-            name: "Starting...",
+            name: "startup...",
             type: "PLAYING"
         }
     }
 });
 
+client.parser = new Parser(client)
 client.hypixel = new HypixelAPI(process.env.HYPIXELTOKEN)
 
-client.globalSettings = client.globalSettings ? client.globalSettings : new Settings.Global();
-console.log(`Loaded global settings`)
+client.globalSettings = client.globalSettings ?? new Settings.Global();
+console.log(`[Setup] Loaded global settings`)
 
-client.globalSettings.get("supportServer").then(id => {
-    client.donations = new DonateAPI({
-        serverID: id,
-        apiKey: process.env.DONATETOKEN
-    })
+client.donations = new DonateAPI({
+    serverID: LocalSettings.botserver.id,
+    apiKey: process.env.DONATETOKEN
 })
 
 if (process.env.HEROKUAPIKEY) {
@@ -76,263 +78,6 @@ function createHeapSnapshot() {
 
 
 /**
- * Server Logs
- */
-function serverLogs() {
-    //if (process.env.ISDEV == "TRUE") return;
-
-    const statusContents = {
-        online: "<:green_circle_with_tick:818512512500105249> Server is online",
-        offline: "<:red_circle_with_cross:818512512764084265> Server is offline",
-        restart: ":arrows_counterclockwise: Server restarted"
-    }
-
-    const statuses = [
-        {
-            content: statusContents.online,
-            type: "online"
-        },
-        {
-            content: statusContents.restart,
-            type: "online"
-        },
-        {
-            content: statusContents.offline,
-            type: "offline"
-        }
-    ]
-
-    const intervalTime = 60*1000
-    const restartTime = 24*60*60*1000
-
-    client.servers = []
-    client.setInterval(async () => {
-        if (client.uptime >= restartTime) {
-            const restartCommand = client.commands.get("restart")
-            restartCommand.restart()
-            return
-        }
-
-        if (await client.globalSettings.get("maintenance")) return;
-
-        client.guilds.cache.forEach(async guild => {
-            let settings = client.settings[guild.id]
-
-            let channelId = await settings.get("logchannel")
-            let channel = Util.getChannelById(guild, channelId)
-            if (!channel) return;
-
-            if (!Util.doesMemberHavePermissionsInChannel(guild.me, channel, ["SEND_MESSAGES"])) {
-                settings.set("logchannel", "0")
-
-                let priorityChannel = Util.getPriorityChannel(guild, chl => Util.doesMemberHavePermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
-                if (priorityChannel) {
-                    Util.sendError(priorityChannel, "I do not have permission to send messages in the log channel! Log channel has been removed.")
-                } else {
-                    console.log(`Did not have permissions to send messages in (${guild.id}) ${guild.name}'s log channel and could not find/send message in priority channel.`)
-                }
-                return
-            };
-
-            const ip = await settings.get("ip")
-            const port = await settings.get("port")
-
-            let server = client.servers[guild.id] ? client.servers[guild.id] : {
-                ip: ip,
-                port: port,
-                players: [],
-                online: false,
-                start: true,
-                statusMessage: {
-                    message: null,
-                    type: "none"
-                }
-            }
-            client.servers[guild.id] = server
-
-            if (server.ip != ip || server.port != port) {
-                server.ip = ip;
-                server.port = port;
-                server.players = [];
-                server.online = false;
-                server.start = true;
-            }
-
-            if (!server.statusMessage.message || server.statusMessage.message.deleted) {
-                await new Promise((resolve, reject) => {
-                    let done = 0
-                    statuses.forEach((status, index) => {
-                        Util.getRecentMessage(channel, status.content).then(message => {
-                            if (message) {
-                                if (server.statusMessage.message && Util.isMessageMoreRecent(message, server.statusMessage.message)) {
-                                    server.statusMessage.message = message
-                                    server.statusMessage.type = status.type
-                                } else if(!server.statusMessage.message) {
-                                    server.statusMessage.message = message
-                                    server.statusMessage.type = status.type
-                                }
-                            }
-
-                            done++
-                        }).catch(e => {
-                            console.error(`Logging[getRecentMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
-                        }).finally(() => {
-                            if (done == statuses.length) resolve();
-                        })
-                    })
-                })
-            }
-
-            Protocol.getInfo(ip, port, false).then(async data => {
-                if (data.online) {
-                    if (!server.online) {
-                        if (["none", "offline"].includes(server.statusMessage.type)) {
-                            if (!server.start && server.statusMessage.message && server.statusMessage.message.member == guild.me && Date.now() - server.statusMessage.message.createdTimestamp < 120*1000) {
-                                server.statusMessage.message.edit(statusContents.restart)
-                            } else {
-                                Util.sendMessage(channel, statusContents.online).then(message => {
-                                    server.statusMessage.message = message
-                                    server.statusMessage.type = "online"
-                                }).catch(e => {
-                                    console.error(`Logging[sendMessage:status]: ${e.toString()};\n${e.method} at ${e.path}`)
-                                })
-                            }
-                        }
-                    }
-
-                    server.online = true
-
-                    let old = server.players
-                    let current = data.players.sample ? data.players.sample : []
-
-                    if (!data.players.sample && data.players.online > 0) {
-                        let text = ":warning: Server has too many players online to log activity"
-                        Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text).catch(e => {
-                                console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
-                            })
-                        }).catch(e => {
-                            console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
-                        })
-                    } else if (server.start && !data.query) {
-                        let text = ":warning: ``enable-query=true`` is required for join logs"
-                        Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text).catch(e => {
-                                console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
-                            })
-                        }).catch(e => {
-                            console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
-                        })
-                    } else if (data.bedrock) {
-                        let text = ":warning: Bedrock servers do not return all players online."
-                        Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text).catch(e => {
-                                console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
-                            })
-                        }).catch(e => {
-                            console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
-                        })
-                    } else if (data.query && current.length == data.players.online) {
-                        if (!server.start) {
-                            function playerMessage(player, text) {
-                                let image = Canvas.createCanvas((16 + 21) * 13 + 26, 28)
-                                let context = image.getContext("2d")
-
-                                context.imageSmoothingEnabled = false
-                                context.font = "20px 'Minecraft'"
-                                context.textBaseline = "top"
-                                context.textAlign = "left"
-                                context.fillStyle = "#fff"
-
-                                Canvas.loadImage(`https://mc-heads.net/avatar/${player}/100`).then(head => {
-                                    context.drawImage(head, 2, 2, 22, 22)
-                                    context.fillText(`${player} ${text}`, 32, 2)
-
-                                    Util.sendMessage(channel, {
-                                        files: [{
-                                            attachment: image.toBuffer("image/png"),
-                                            name: "playeraction.png"
-                                        }]
-                                    }).catch(e => {
-                                        console.error(`Logging[sendMessage:player]: ${e.toString()};\n${e.method} at ${e.path}`)
-                                    })
-                                }).catch(error => {
-                                    Util.sendMessage(channel, `[Failed to load image] ${player} ${text}`).catch(e => {
-                                        console.error(`Logging[sendMessage:player(failed)]: ${e.toString()};\n${e.method} at ${e.path}`)
-                                    })
-                                })
-                            }
-
-                            current.forEach(player => {
-                                if (old.filter(plr => (plr.id && player.id && plr.id == player.id) || plr.name.clean == player.name.clean).length == 0) {
-                                    playerMessage(player.name.clean, "has joined the game.")
-                                }
-                            })
-
-                            old.forEach(async (player) => {
-                                if (current.filter(plr => (plr.id && player.id && plr.id == player.id) || plr.name.clean == player.name.clean).length == 0) {
-                                    playerMessage(player.name.clean, "has left the game.")
-                                }
-                            })
-                        }
-
-                        server.players = current
-                    }
-                    
-                } else {
-                    let wasOnline = server.online
-                    server.online = false
-                    server.players = []
-                    let error = data.error
-
-                    if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                        if (wasOnline || server.start) {
-                            if (["none", "online"].includes(server.statusMessage.type)) {
-                                Util.sendMessage(channel, statusContents.offline).then(message => {
-                                    server.statusMessage.message = message
-                                    server.statusMessage.type = "offline"
-                                }).catch(e => {
-                                    console.error(`Logging[sendMessage:status]: ${e.toString()};\n${e.method} at ${e.path}`)
-                                })
-                            }
-                        }
-                        return
-                    } else if (error.code == "ENOTFOUND") {
-                        let text = ":warning: Could not find server, check that a valid ip and port is set, and is the server running a supported version?"
-                        Util.getRecentMessage(channel, text).then(message => {
-                            if (!message) Util.sendMessage(channel, text).catch(e => {
-                                console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
-                            })
-                        }).catch(e => {
-                            console.error(`Logging[getRecentMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
-                        })
-                        return
-                    }
-                    
-                    let text = ":stop_sign: An error occured when trying to get server info"
-                    Util.getRecentMessage(channel, text).then(message => {
-                        if (!message) Util.sendMessage(channel, text).catch(e => {
-                            console.error(`Logging[sendMessage:error]: ${e.toString()};\n${e.method} at ${e.path}`)
-                        })
-                    }).catch(e => {
-                        console.error(`Logging[getRecentMessage:error]: ${e.toString()};\n${e.method} at ${e.path}`)
-                    })
-
-                    console.error(`Logging[error]: ${error.toString()};\n${error.method} at ${error.path}`)
-                }
-            }).catch(e => {
-                console.error(`Logging[getInfo]: ${e.toString()};\n${e.method} at ${e.path}`)
-            }).finally(() => {
-                server.start = false
-
-                client.servers[guild.id] = server
-            })
-        })
-    }, intervalTime)
-}
-
-
-/**
  * Activity displays
  */
 function activityDisplay() {
@@ -355,8 +100,8 @@ function activityDisplay() {
 
     client.activityIndex = 0;
     client.setInterval(() => {
-        client.globalSettings.get("maintenance").then(async maintenance => {
-            if (maintenance) {
+        client.globalSettings.get("Maintenance").then(async value => {
+            if (value) {
                 client.user.setPresence({
                     status: "dnd",
                     activity: {
@@ -443,7 +188,7 @@ function updateStats() {
     ]
 
     apis.forEach(api => {
-        console.log("Stats sent to " + api.hostname)
+        console.log("[Web] Stats sent to " + api.hostname)
         Util.requestAsync({
             hostname: api.hostname,
             path: api.path,
@@ -455,7 +200,7 @@ function updateStats() {
             },
             data: api.data
         }).then(() => {
-            console.log("Stats updated on " + api.hostname)
+            console.log("[Web] Stats updated on " + api.hostname)
         }).catch(error => {
             console.error(error)
         })
@@ -477,8 +222,7 @@ function updateVotes() {
             "Authorization": process.env.TOPGGTOKEN
         }
     }).then(response => {
-        let data = JSON.parse(response)
-        //console.log(data.length, data)
+        console.log(response)
     }).catch(error => {
         console.error(error)
     })
@@ -488,23 +232,28 @@ function updateVotes() {
 /**
  * Startup
  */
-client.on("ready", () => {
+client.once("ready", () => {
     //BE CAUTIOUS WHEN RUNNING OFF OF PRODUCTION
+    /*
     if (process.env.ISDEV != "TRUE") {
         Settings.Guild.cleanup(client.guilds.cache)
     }
-
+    */
+    
     client.settings = {}
+    client.loggers = []
     client.guilds.cache.forEach(guild => {
-        client.settings[guild.id] = client.settings[guild.id] ? client.settings[guild.id] : new Settings.Guild(guild);
+        client.settings[guild.id] = client.settings[guild.id] ?? new Settings.Guild(guild);
+        client.loggers[guild.id] = client.loggers[guild.id] ?? new ServerLogger(client, guild);
     })
-    console.log(`Loaded settings for ${Object.values(client.settings).length} guild(s)`)
+    console.log(`[Setup] Loaded settings for ${Object.values(client.settings).length} guild(s)`)
+    console.log(`[Setup] Loaded loggers for ${Object.values(client.loggers).length} guild(s)`)
 
     client.commandsProcessed = 0;
     client.lastCommandTime = null;
     client.commands = Util.loadmodules("commands", (command, commands) => {
         command = new command(client)
-        commands.set(command.name(true), command)
+        commands.set(command.name, command)
 
         let aliases = command.aliases ? command.aliases() : null
         if (aliases) {
@@ -514,9 +263,12 @@ client.on("ready", () => {
         }
     })
 
-    updateVotes()
- 
+    console.log("[Setup] Bot started successfully")
+    console.log("[Setup] Starting intervals...")
+
     if (process.env.ISDEV != "TRUE") {
+        //updateVotes()
+
         updateStats()
         client.setInterval(updateStats, 120*60*1000)
     }
@@ -526,19 +278,70 @@ client.on("ready", () => {
         client.setInterval(createHeapSnapshot, 60*60*1000)
     }
 
-    console.log("Bot started successfully")
+    let startup = true
+    const updateLoggers = () => {
+        client.guilds.cache.forEach(guild => {
+            const logger = client.loggers[guild.id]
+            if (!logger) return;
 
-    serverLogs()
+            logger.update(startup)
+        })
+    }
+
+    updateLoggers()
+    client.setInterval(async () => {
+        if (await client.globalSettings.get("Maintenance")) return;
+        updateLoggers()
+        startup = false
+    }, 60*1000)
+
+    client.countCaptureMax = 86400*7000
+    client.countCaptureEvery = 21600*1000
+
+    client.memoryCaptureMax = 3600*3000
+    client.memoryCaptureEvery = 180*1000
+    const memoryLogMax = client.memoryCaptureMax / client.memoryCaptureEvery
+    client.memoryLog = [{
+        x: Date.now(),
+        y: process.memoryUsage().rss
+    }]
+
+    client.setInterval(async () => {
+        if (await client.globalSettings.get("Maintenance")) return;
+        client.globalSettings.update("ServerCountLog", log => {
+            while (record = log[0]) {
+                if (record.x < Date.now() - client.countCaptureMax) {
+                    log.shift()
+                } else break;
+            }
+
+            let recent = log[log.length - 1]
+            if (!recent || recent.x + client.countCaptureEvery < Date.now()) {
+                log.push({
+                    x: Date.now(),
+                    y: client.guilds.cache.size
+                })
+            }
+            return log
+        })
+
+        while (record = client.memoryLog[0]) {
+            if (record.x < Date.now() - client.memoryCaptureMax) {
+                client.memoryLog.shift()
+            } else break;
+        }
+        
+        let recent = client.memoryLog[client.memoryLog.length - 1]
+        if (!recent || recent.x + client.memoryCaptureEvery < Date.now()) {
+            client.memoryLog.push({
+                x: Date.now(),
+                y: process.memoryUsage().rss
+            })
+        }
+    }, 120*1000)
+
     activityDisplay()
 });
-
-
-/**
- * Watch for ratelimiting
- */
-client.on("rateLimit", info => {
-    //console.warn(info)
-})
 
 
 /**
@@ -546,31 +349,18 @@ client.on("rateLimit", info => {
  */
 client.on("guildCreate", async guild => {
     if (!client.settings) client.settings = [];
-    const settings = client.settings[guild.id] ? client.settings[guild.id] : new Settings.Guild(guild);
+    const lang = LocaleManager.getLang(guild.preferredLocale)
+    const settings = client.settings[guild.id] ?? new Settings.Guild(guild);
+    settings.clear()
+
     client.settings[guild.id] = settings
     console.log(`[${guild.id}] Added to guild ${guild.name}`)
 
-    let priorityChannel = Util.getPriorityChannel(guild, chl => Util.doesMemberHavePermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
+    let priorityChannel = Util.getPriorityChannel(guild, chl => Util.hasPermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
     if (priorityChannel) {
-        const prefix = await settings.get("prefix")
-        Util.sendMessage(priorityChannel, {
-            embed: {
-                title: `Thank you for adding ${client.user.username}!`,
-                description: `If you need a reminder on how to use the bot at anytime do: \`\`@${client.user.username}\`\`\n\n**How do I get started?**\nTo run a command you can do \`\`${prefix}<command>\`\` or \`\`@${client.user.username} <command>\`\`!\nIf you would like to view a list of all commands you can do:\n\`\`${prefix}help\`\` or \`\`@${client.user.username} help\`\`.\n\nIf you would like to support the bot and its development, [Click here!](https://donatebot.io/checkout/797779595852120064)\n\n**Need help?**\nJoin our support server, [here!](https://discord.gg/uqVp2XzUP8)`,
-                thumbnail: {
-                    url: client.user.avatarURL({
-                        size: 64,
-                        dynamic: true,
-                        format: "png"
-                    })
-                },
-                color: 5145560,
-                timestamp: Date.now(),
-                footer: {
-                    text: `${client.user.username} • ${process.env.npm_package_version}`
-                }
-            }
-        })
+        const prefix = await settings.get("prefix", "Prefix")
+        const welcomeComand = this.client.commands.get("welcome")
+        welcomeComand.sendMessage(client, priorityChannel, lang, prefix)
     }
 })
 
@@ -585,138 +375,19 @@ client.on("guildDelete", guild => {
     }
 })
 
-    
-/**
- * Command Parser
- */
-const commandUsageCache = new NodeCache({
-    checkperiod: 300,
-    useClones: false
-});
-const commandsWithinTimeout = 4;
-const commandTimeoutTime = 15*1000;
-
-async function parseCommand(message) {
-    const guild = message.guild;
-    const content = message.content;
-    const author = message.author;
-
-    const settings = client.settings[guild.id];
-    const prefix = await settings.get("prefix");
-
-    const mentionStrings = [`<@${client.user.id}>`, `<@!${client.user.id}>`]
-    const botRole = await Util.getRole(guild, client.user.username)
-    if (botRole) mentionStrings.push(`<@&${botRole.id}>`);
-    let firstWord = content.trim().split(" ").shift()
-    firstWord = firstWord.substring(0, firstWord.indexOf(">") + 1)
-    const isMention = mentionStrings.includes(firstWord)
-
-    const isPrefix = content.startsWith(prefix);
-    let command, commandName, inputs;
-
-    if (isPrefix || isMention) {
-        let commandUsage
-        if (commandUsageCache.has(author.id)) commandUsage = commandUsageCache.get(author.id);
-        else {
-            commandUsage = {lastCommand: Date.now(), consCommands: 0};
-            commandUsageCache.set(author.id, commandUsage);
-        }
-
-        if (commandUsage.consCommands > commandsWithinTimeout && commandUsage.lastCommand + commandTimeoutTime > Date.now()) {
-            return Util.sendMessage(message, {
-                embed: {
-                    title: "Running too many commands!",
-                    description: `Please wait ${Math.round((commandTimeoutTime - (Date.now() - commandUsage.lastCommand)) / 1000)} seconds before running another command.`,
-                    color: 12333616
-                }
-            })
-        }
-
-        if (commandUsage.lastCommand + commandTimeoutTime > Date.now()) {
-            commandUsage.consCommands++;
-        } else {
-            commandUsage.consCommands = 0;
-        }
-
-        commandUsage.lastCommand = Date.now();
-        commandUsageCache.ttl(author.id, commandTimeoutTime/1000);
-
-        if (isMention && content.trim() == firstWord) {
-            return Util.sendMessage(message, {
-                embed: {
-                    title: "Getting started",
-                    description: `My **prefix** in this server is: **\`\`${prefix}\`\`**\n\nTo run a command you can do \`\`${prefix}<command>\`\` or \`\`@${client.user.username} <command>\`\`!\nIf you would like to view a list of all commands you can do:\n\`\`${prefix}help\`\` or \`\`@${client.user.username} help\`\`.`,
-                    color: 5145560,
-                    timestamp: Date.now(),
-                    footer: Util.getFooter(client)
-                }
-            })
-        }
-
-        [commandName, ...inputs] = content.trim().substring(isPrefix ? prefix.length : firstWord.length + (content.trim().substr(firstWord.length, 1) == " " ? 1 : 0)).split(" ");
-        if (!commandName || commandName.length == 0) return;
-    
-        if (!client.commands) return console.error("Commands not loaded");
-
-        if (!Util.doesMemberHavePermissionsInChannel(guild.me, message.channel, ["SEND_MESSAGES"])) {
-            return //Util.cannotSendMessages(author, message.channel);
-        }
-
-        command = client.commands.get(commandName.toLowerCase())
-        if (!command) return //Util.couldNotFind(message, "command", commandName);
-
-        if (!command.private && await client.globalSettings.get("maintenance")) return Util.replyWarning(message, "Maintenance mode is currently enabled");
-
-        const disabledCommands = await settings.get("disabledCommands")
-        if (disabledCommands.includes(command.name(true))) return Util.replyWarning(message, "That command is disabled in this server")
-
-        const permissions = command.permissions()
-        if (!Util.doesMemberHavePermission(message.member, permissions)) {
-            return command.secret ? null : Util.replyWarning(message, "You don't have permission to do that")
-        }
-
-        if (inputs.length < command.numOfRequiredArguments()) {
-            const helpCommand = client.commands.get("help")
-
-            if (inputs.length == 0) {
-                return command.secret ? null : helpCommand.commandHelp(message, command)
-            } else {
-                return command.secret ? null : Util.replyError(message, `'${commandName.toLowerCase()}' expects ${command.numOfRequiredArguments()} argument(s), got ${inputs.length}`);
-            }
-        }
-
-        let argumentCount = command.numOfArguments()
-        if (argumentCount == 0 || !command.arguments()[argumentCount - 1].multiple) {
-            argumentCount = Math.min(inputs.length, argumentCount)
-            let end = inputs.slice(argumentCount - 1).join(" ")
-            inputs = inputs.slice(0, argumentCount - 1)
-            inputs[argumentCount - 1] = end
-        }
-
-        client.setImmediate(() => {
-            Promise.resolve(command.execute(message, inputs)).catch(e => {
-                Util.replyError(message, "An error occured while trying to execute that command, please report this to the developer!")
-                console.error(e)
-            }).finally(() => {
-                client.lastCommandTime = Date.now()
-                client.commandsProcessed++
-            })
-        })
-    }
-}
-
 
 /**
  * Message handling
- */
+ */ 
 client.on("message", async message => {
-    if (message.author.bot) return;
+    client.ping = Math.abs(Date.now() - message.createdTimestamp)
+    if (message.author.bot || message.author.system) return;
 
     if (!message.guild) {
         return Util.replyWarning(message, "Commands can only be used in a server that I am in")
     };
 
-    parseCommand(message)
+    client.parser.parse(message)
 });
 
 /**
@@ -731,9 +402,10 @@ client.on("raw", packet => {
 
     if (reactionEvents.includes(packet.t)) {
         Util.getGuildById(client, packet.d.guild_id).then(guild => {
-            const channel = Util.getChannelById(guild, packet.d.channel_id)
+            const channel = Util.getChannelById(guild.channels, packet.d.channel_id)
 
             if (!channel || !channel.viewable || channel.messages.cache.has(packet.d.message_id)) return;
+            if (!Util.hasPermissionsInChannel(guild.me, channel, ["VIEW_CHANNEL", "READ_MESSAGE_HISTORY"]))
 
             channel.messages.fetch(packet.d.message_id).then(async message => {
                 if (packet.t === "MESSAGE_REACTION_REMOVE_ALL") {
@@ -741,7 +413,7 @@ client.on("raw", packet => {
                     return
                 }
                 
-                const emoji = packet.d.emoji.id ? packet.d.emoji.id : packet.d.emoji.name
+                const emoji = packet.d.emoji.id ?? packet.d.emoji.name
                 const reaction = message.reactions.cache.get(emoji)
                 if (!reaction) return;
                 client.users.fetch(packet.d.user_id).then(user => {

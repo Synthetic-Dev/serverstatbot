@@ -6,11 +6,11 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "plugins",
-            desc: "Displays the plugins that are on the server",
+            descId: "COMMAND_PLUGINS",
             args: [
                 {
                     name: "page",
-                    desc: "The starting page to display",
+                    descId: "COMMAND_PLUGINS_ARG1",
                     optional: true
                 }
             ],
@@ -20,26 +20,23 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message, inputs) {
-        const settings = this.client.settings[message.guild.id]
-
-        const ip = await settings.get("ip")
-        const port = await settings.get("port")
+    async execute(options) {
+        const serverData = await options.settings.get("server")
 
         const itemsPerPage = 20
 
-        let startPage = inputs[0] ? Number(inputs[0]) : 1
-        if (typeof(startPage) != "number" || startPage == null || isNaN(startPage)) return Util.replyError(message, "Page must be a number");
+        let startPage = options.inputs[0] ? Number(options.inputs[0]) : 1
+        if (typeof(startPage) != "number" || startPage == null || isNaN(startPage)) return Util.replyError(options.message, options.lang.MUST_NUMBER.format("page"));
 
-        Util.startTyping(message).catch(e => {
+        Util.startTyping(options.message).catch(e => {
             console.error(`Plugins[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
 
-        Protocol.getInfo(ip, port).then(data => {
-            Util.stopTyping(message)
+        Protocol.getInfo(serverData.Ip, serverData.Port, serverData.QueryPort).then(data => {
+            Util.stopTyping(options.message)
 
             if (data.online) {
-                if (!data.plugins || data.plugins.length == 0) return Util.replyMessage(message, "The server does not have any plugins").catch(e => {
+                if (!data.plugins || data.plugins.length == 0) return Util.replyMessage(options.message, options.lang.COMMAND_PLUGINS_NOPLUGINS).catch(e => {
                     console.error(`Plugins[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
                 })
 
@@ -51,8 +48,8 @@ class Command extends CommandBase {
                     if ((index % (itemsPerPage - 1) == 0 && index != 0) || index + 1 == data.plugins.length) {
                         pages.push({
                             embed: {
-                                title: "Server Plugins",
-                                description: `**${data.plugins.length} plugins**\n` + pluginstring.trim(),
+                                title: options.lang.COMMAND_PLUGINS_TITLE,
+                                description: options.lang.COMMAND_PLUGINS_DESC.format(data.plugins.length, pluginstring.trim()),
                                 color: 5145560,
                                 timestamp: Date.now()
                             }
@@ -62,19 +59,23 @@ class Command extends CommandBase {
                     }
                 })
 
-                Util.sendPages(message, pages, Math.max(1, Math.min(pages.length, startPage)) - 1)
+                Util.sendPages(options.message, pages, Math.clamp(startPage, 1, pages.length) - 1)
             } else {
                 let error = data.error
 
                 if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                    return Util.replyMessage(message, "Server is not online").catch(e => {
+                    return Util.replyMessage(options.message, options.lang.SERVER_OFFLINE).catch(e => {
                         console.error(`Plugins[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
                     })
                 } else if (error.code == "ENOTFOUND") {
-                    return Util.replyError(message, "Could not find server, check that a valid ip and port is set, and is the server running a supported version?");
+                    return Util.replyError(options.message, options.lang.SERVER_COULDNOTFIND);
+                } else if (error.message == "Server sent an invalid packet type") {
+                    return Util.replyError(options.message, options.lang.SERVER_WRONGPORT)
+                } else if (error.message == "Blocked host") {
+                    return Util.replyError(options.message, options.lang.SERVER_BLOCKED);
                 }
                 
-                Util.replyError(message, `An error occured, please contact the developer\nYou can join our support server here: discord.gg/uqVp2XzUP8`)
+                Util.replyError(options.message, options.lang.SERVER_ERROR)
                 console.error(`Plugins[error]: ${error.toString()};\n${error.method} at ${error.path}`)
             }
         }).catch(e => {

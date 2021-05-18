@@ -8,34 +8,110 @@ const MODELS = {
     loaded: false
 }
 
-FileSystem.readdir(`${__dirname}/../models/guild`, (error, files) => {
+FileSystem.readdir(`${__dirname}/../models/guild`, async (error, files) => {
     if (error) return console.error(error);
 
     const jsfiles = files.filter(file => file.split(".").pop() == "js")
     if (jsfiles.length == 0) return;
 
+    console.log("[Settings] Loading models and formatting")
+
+    let done = 0
     jsfiles.forEach(file => {
         let name = file.split(".").shift()
         let setting = require(`../models/guild/${file}`)
+
+        // Reformatting stuff
+        setting.updateMany({}, { $rename: { GuildID: "_guildId" } }, { multi: true }, (err, blocks) => {
+            done++
+            if (err) throw err;
+        })
+
+        switch(name) {
+            case "disabledCommands":
+                setting.updateMany({}, { $rename: { Value: "Commands" } }, { multi: true }, (err, blocks) => {
+                    done++
+                    if (err) throw err;
+                })
+                break
+            case "ip":
+                setting.updateMany({}, { $rename: { Value: "Ip" } }, { multi: true }, (err, blocks) => {
+                    done++
+                    if (err) throw err;
+                })
+                break
+            case "ports":
+                setting.updateMany({}, { $rename: { Value: "Port" } }, { multi: true }, (err, blocks) => {
+                    done++
+                    if (err) throw err;
+                })
+                break
+            case "prefix":
+                setting.updateMany({}, { $rename: { Value: "Prefix" } }, { multi: true }, (err, blocks) => {
+                    done++
+                    if (err) throw err;
+                })
+                break
+            default:
+                done++
+                break
+        }
+        //
+
         MODELS.collection.set(name, setting)
     })
+
+    // Reformatting stuff
+    while (done < jsfiles.length * 2) await new Promise(resolve => setTimeout(resolve, 1000));
+
+    console.log("[Settings] Transferring data to new models")
+
+    let model0 = MODELS.collection.get("statuschannel")
+    MODELS.collection.get("logchannel").find({}).then(documents => {
+        let inserted = []
+        documents.forEach(document => {
+            if (inserted.includes(document._guildId)) return;
+            inserted.push(document._guildId)
+            model0.findOne({_guildId: document._guildId}).then(data => {
+                if (!data) {
+                    data = new model0({_guildId: document._guildId, ChannelId: document.Value})
+                    data.save()
+                }
+            }).catch(console.error)
+        })
+    }).catch(console.error)
+
+    let model1 = MODELS.collection.get("server")
+    MODELS.collection.get("ip").find({}).then(documents => {
+        let inserted = []
+        documents.forEach(document => {
+            if (inserted.includes(document._guildId)) return;
+            inserted.push(document._guildId)
+            MODELS.collection.get("ports").findOne({_guildId: document._guildId}).then(portsDoc => {
+                model1.findOne({_guildId: document._guildId}).then(data => {
+                    if (!data) {
+                        data = new model1({_guildId: document._guildId, Ip: document.Ip, Port: portsDoc.Port, QueryPort: portsDoc.QueryPort})
+                        data.save()
+                    }
+                }).catch(console.error)
+            }).catch(console.error)
+        })
+    }).catch(console.error)
+    //
 
     MODELS.loaded = true
 })
 
-class Settings {
-    constructor(options = {
-        queryFilter: () => {return {}},
-        optionsFilter: (_, v) => {return v}
-    }) {
+class GuildSettings {
+    constructor(guild) {
+        this.guild = guild
 
-        this.queryFilter = options.queryFilter
-        this.optionsFilter = options.optionsFilter
-
-        this.models = options.singleModel ? options.singleModel : options.models
+        this.models = MODELS
         this.settings = this.models.collection
+        this.transactions = {}
         this.cache = new NodeCache({
-            checkperiod: 0
+            checkperiod: 0,
+            useClones: false
         })
     }
 
@@ -49,67 +125,216 @@ class Settings {
     }
 
     /**
-     * Get a setting's value
+     * Get multiple setting documents
+     * @param {string} name
+     * @param {Mongoose.FilterQuery}
+     * @returns {Mongoose.Document}
+     */
+     async search(name, query) {
+        await this.isSetting(name)
+
+        const setting = this.settings.get(name)
+        let model = setting;
+
+        if (this.models.single) throw new Error("Cannot search through singleton setting");
+        return await model.find(query)
+    }
+
+    /**
+     * Get a setting's document
+     * @param {string} name
+     * @param {string} key
+     * @returns {Mongoose.Document}
+     */
+    async get(name, key = null) {
+        await this.isSetting(name)
+        while (this.transactions[name]) await new Promise(resolve => setTimeout(resolve, 1000))
+
+        let cachedData = this.cache.get(name)
+        if (cachedData) {
+            if (key) return cachedData[key];
+            return cachedData;
+        }
+
+        const setting = this.settings.get(name)
+
+        this.transactions[name] = true
+        let data = await setting.findOne({_guildId: this.guild.id})
+
+        if (!data) {
+            data = new setting({_guildId: this.guild.id})
+            data.save()
+        }
+
+        this.cache.set(name, data)
+        delete this.transactions[name]
+
+        if (key) return data[key];
+        return data
+    }
+
+    /**
+     * Set a setting's document value(s)
+     * @param {string} name 
+     * @param {Mongoose.Document | *} value 
+     * @param {string} key
+     */
+    async set(name, value, key = null) {
+        await this.isSetting(name)
+        while (this.transactions[name]) await new Promise(resolve => setTimeout(resolve, 1000))
+
+        if (!key) {
+            if (!(value instanceof Mongoose.Document)) throw new Error(`Tried setting '${name}' to non-document value`);
+            value.save()
+            this.cache.set(name, value);
+            return
+        }
+
+        let cachedData = this.cache.get(name)
+        if (cachedData[key] === value) return;
+
+        this.transactions[name] = true
+
+        const setting = this.settings.get(name)
+        setting.findOne({_guildId: this.guild.id}).then(data => {
+            if (data) {
+                data[key] = value
+            } else {
+                let options = {_guildId: this.guild.id}
+                options[key] = value
+                data = new setting(options)
+            }
+
+            data.save()
+            this.cache.set(name, data);
+        }).catch(console.error).finally(() => {
+            delete this.transactions[name]
+        })
+    }
+
+    /**
+     * Sets a setting's document to the returned value of the transform
+     * @param {string} name 
+     * @param {Function} transform 
+     */
+    async update(name, transform) {
+        await this.isSetting(name)
+
+        this.get(name).then(oldData => {
+            Promise.resolve(transform(oldData)).then(newData => {
+                this.set(name, newData)
+            }).catch(console.error)
+        }).catch(console.error)
+    }
+
+    /**
+     * Removes all settings from cache and database
+     */
+    clear() {
+        this.cache.flushAll() 
+        this.settings.each(async (setting, name) => {
+            await setting.deleteMany({_guildId: this.guild.id})
+            console.log(`[Settings] Deleted ${name} document`)
+        })
+    }
+
+    /**
+     * Removes all data from guilds that the bot is no longer in
+     * @param {Discord.Collection} guilds
+     */
+    static async cleanup(guilds) {
+        while (!MODELS.loaded) await new Promise(resolve => setTimeout(resolve, 1000));
+
+        console.log("[Settings] Cleanup started")
+
+        let guildIds = []
+        guilds.forEach(guild => {
+            guildIds.push(guild.id)
+        })
+
+        MODELS.collection.forEach(async (setting, name) => {
+            let result = await setting.deleteMany().where("_guildId").nin(guildIds).where("GuildID").nin(guildIds).exec()
+            console.log(`[Settings] Deleted ${result.deletedCount} unused documents from '${name}' collection`)
+        })
+    }
+}
+
+class GlobalSettings {
+    constructor() {
+        this.model = require(`../models/global.js`)
+        this.transactions = {}
+        this.cache = new NodeCache({
+            checkperiod: 0,
+            useClones: true
+        })
+    }
+
+    /**
+     * Checks if a global setting exists
+     * @param {string} name 
+     */
+    async isSetting(name) {
+        if (!this.model.schema.obj[name]) throw new Error(`No global setting called '${name}' exists`);
+    }
+
+    /**
+     * Get a global setting's value
      * @param {string} name
      * @returns {*}
      */
     async get(name) {
         await this.isSetting(name)
+        while (this.transactions[name]) await new Promise(resolve => setTimeout(resolve, 1000))
 
         let cachedValue = this.cache.get(name)
         if (cachedValue) return cachedValue;
 
-        const setting = this.settings.get(name)
-        let model = setting;
-
-        if (this.models.single) {
-            if (setting.constant) return setting.schema.Value;
-            model = this.models.model
-        }
-
-        let data = await model.findOne(this.queryFilter(name))
+        this.transactions[name] = true
+        let data = await this.model.findOne()
 
         if (!data) {
-            let options = this.optionsFilter(name, {})
-            data = new model(options)
+            data = new this.model()
             data.save()
         }
 
-        this.cache.set(name, data.Value)
-        return data.Value
+        this.cache.set(name, data[name])
+        delete this.transactions[name]
+
+        return data[name]
     }
 
     /**
-     * Set a setting's value
+     * Set a global setting's value
      * @param {string} name 
      * @param {*} value 
      */
     async set(name, value) {
         await this.isSetting(name)
-        this.cache.set(name, value)
+        while (this.transactions[name]) await new Promise(resolve => setTimeout(resolve, 1000))
 
-        const setting = this.settings.get(name)
-        let model = setting;
+        let cachedValue = this.cache.get(name)
+        if (cachedValue === value) return;
 
-        if (this.models.single) {
-            if (setting.constant) throw new Error(`Constant '${name}' cannot be changed`);
-            model = this.models.model
-        }
+        this.transactions[name] = true
 
-        model.findOne(this.queryFilter(name)).then(async data => {
+        this.model.findOne().then(async data => {
             if (data) {
-                data.Value = value
+                data[name] = value
             } else {
-                let options = this.optionsFilter(name, {Value: value})
-                data = new model(options)
+                let options = {}
+                options[name] = value
+                data = new this.model(options)
             }
 
             data.save()
-        }).catch(console.error)
+            this.cache.set(name, value);
+        }).catch(console.error).finally(() => {
+            delete this.transactions[name]
+        })
     }
 
     /**
-     * Sets a setting's value to the returned value of the transform
+     * Sets a global setting's value to the returned value of the transform
      * @param {string} name 
      * @param {Function} transform 
      */
@@ -128,95 +353,12 @@ class Settings {
      */
     clear() {
         this.cache.flushAll()
-        this.settings.each((setting, name) => {
-            let model = setting
-            if (this.models.single) {
-                model = this.models.model
-            }
-
-            model.deleteMany(this.queryFilter(name))
+        this.model.deleteMany().then(() => {
+            console.log(`[Settings] Deleted global document`)
+        }).catch(e => {
+            console.error(`[Settings] Error while deleting global settings: ${e}`)
         })
-    }
-}
-
-class GuildSettings extends Settings {
-    constructor(guild) {
-        super({
-            models: MODELS,
-            queryFilter: () => {
-                return {GuildID: guild.id}
-            }, 
-            optionsFilter: (_, options) => {
-                options.GuildID = guild.id;
-                return options
-            }
-        })
-
-        this.guild = guild
-    }
-
-    /**
-     * Removes all data from guilds that the bot is no longer in
-     * @param {Discord.Collection} guilds
-     */
-    static async cleanup(guilds) {
-        while (!MODELS.loaded) await new Promise(resolve => setTimeout(resolve, 1000));
-
-        console.log("Cleanup started")
-
-        let guildIds = []
-        guilds.forEach(guild => {
-            guildIds.push(guild.id)
-        })
-
-        MODELS.collection.forEach(async (setting, name) => {
-            let result = await setting.deleteMany().where("GuildID").nin(guildIds).exec()
-            console.log(`Deleted ${result.deletedCount} unused documents from '${name}' collection`)
-        })
-    }
-}
-
-class GlobalSettings extends Settings {
-    constructor() {
-        const Schema = new Mongoose.Schema({
-            _name: {
-                type: String
-            },
-            Value: ""
-        })
-
-        const singleModel = {
-            single: true,
-            loaded: false,
-            model: Mongoose.model("globals", Schema),
-            collection: new Discord.Collection()
-        }
-
-        FileSystem.readdir(`${__dirname}/../models/global`, (error, files) => {
-            if (error) return console.error(error);
         
-            const jsfiles = files.filter(file => file.split(".").pop() == "js")
-            if (jsfiles.length == 0) return;
-        
-            jsfiles.forEach(file => {
-                let name = file.split(".").shift()
-                let setting = require(`../models/global/${file}`)
-                singleModel.collection.set(name, setting)
-            })
-        
-            singleModel.loaded = true
-        })
-
-        super({
-            singleModel: singleModel,
-            queryFilter: (name) => {
-                return {_name: name}
-            },
-            optionsFilter: (name, options) => {
-                options._name = name;
-                return options
-            }
-        })
     }
 }
 

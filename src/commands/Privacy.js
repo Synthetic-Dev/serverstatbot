@@ -5,7 +5,7 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "privacy",
-            desc: "View our privacy policy",
+            descId: "COMMAND_PRIVACY",
             aliases: [
                 "policy",
                 "privacypolicy"
@@ -13,13 +13,10 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message) {
-        const settings = this.client.settings[message.guild.id]
-        let prefix = await settings.get("prefix")
-
-        Util.sendMessage(message, {
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
-                title: "Privacy Policy",
+                title: options.lang.COMMAND_PRIVACY_TITLE,
                 color: 5145560,
                 author: {
                     name: this.client.user.username,
@@ -29,27 +26,31 @@ class Command extends CommandBase {
                         format: "png"
                     })
                 },
-                description: "*We reserve the right to make changes and updates to our privacy policy without notifying any of our users.*",
+                description: options.lang.COMMAND_PRIVACY_DESC,
                 fields: [
                     {
-                        name: "What data do we store?",
-                        value: "• The custom prefix in your server will be stored\n• If you add a server address, that ip/hostname and port are stored\n• If you setup a log channel the guild id and channel id are stored\n• If you disable any commands the guild id and list of disabled commands are stored"
+                        name: options.lang.COMMAND_PRIVACY_FIELD1,
+                        value: options.lang.COMMAND_PRIVACY_FIELD1_VAL
                     },
                     {
-                        name: "Why do we store your information?",
-                        value: "• We store your custom prefix in order for you to run commands with the prefix you specifiy\n• Your server address and port are used in order to get information from your minecraft server without the information being reentered every time\n• Log channel id's are stored so we know where to send log messages in your guild\n• Disabled commands are stored so we know what commands to deny users from running in your guild"
+                        name: options.lang.COMMAND_PRIVACY_FIELD2,
+                        value: options.lang.COMMAND_PRIVACY_FIELD2_VAL
                     },
                     {
-                        name: "Who can view this data?",
-                        value: `• You can view all of your settings using the \`\`${prefix}settings\`\` command\n• Only the developer of this bot has access to your stored data`
+                        name: options.lang.COMMAND_PRIVACY_FIELD3,
+                        value: options.lang.COMMAND_PRIVACY_FIELD3_VAL.format(options.prefix)
                     },
                     {
-                        name: "Do you have any questions?",
-                        value: "If you would like information on a specific matter or would like your data to be deleted please [join support server](https://discord.gg/uqVp2XzUP8)"
+                        name: options.lang.COMMAND_PRIVACY_FIELD4,
+                        value: options.lang.COMMAND_PRIVACY_FIELD4_VAL.format(options.prefix)
+                    },
+                    {
+                        name: options.lang.COMMAND_PRIVACY_FIELD5,
+                        value: options.lang.COMMAND_PRIVACY_FIELD5_VAL
                     }
                 ],
                 timestamp: Date.now(),
-                footer: Util.getFooter(this.client)
+                footer: Util.getFooter(options.message)
             }
         }).catch(e => {
             console.error(`Privacy[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)

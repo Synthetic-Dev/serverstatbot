@@ -5,15 +5,11 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "channel",
-            desc: "Gets information about a channel",
+            descId: "COMMAND_DEV_CHANNEL",
             args: [
                 {
-                    name: "server",
-                    desc: "GuildId for the server"
-                },
-                {
                     name: "channel",
-                    desc: "ChannelId for the channel"
+                    descId: "COMMAND_DEV_CHANNEL_ARG1"
                 }
             ],
             perms: [
@@ -23,21 +19,18 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message, inputs) {
-        Util.getGuildById(this.client, inputs[0]).then(guild => {
-            let channel = Util.getChannelById(guild, inputs[1])
-            if (!channel) return Util.replyError(message, "Unknown channel")
-            Util.sendMessage(message, {
-                embed: {
-                    title: `Channel: ${channel.name}`,
-                    description: `**Id:** \`\`${channel.id}\`\`\n**Viewable:** \`\`${channel.viewable}\`\`\n\n**Permissions:**\n\`\`${channel.permissionsFor(channel.guild.me).toArray().join("``, ``")}\`\``
-                }
-            }).catch(e => {
-                console.error(`Channel[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
-            })
-        }).catch(err => {
-            Util.replyError(message, "Error while getting guild")
-            console.error(err)
+    async execute(options) {
+        let channel = Util.getChannelById(this.client.channels, options.inputs[0])
+        if (!channel) return Util.couldNotFind(options.message, options.lang.CHANNEL, options.inputs[0])
+        Util.sendMessage(options.message, {
+            embed: {
+                title: options.lang.COMMAND_DEV_CHANNEL_TITLE.format(channel.name),
+                description: options.lang.COMMAND_DEV_CHANNEL_DESC.format(channel.id, channel.guild.id, channel.viewable, channel.messages.cache.size, channel.permissionsFor(channel.guild.me).toArray().join("``, ``")),
+                color: 4317012,
+                timestamp: Date.now()
+            }
+        }).catch(e => {
+            console.error(`Channel[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
     }
 }

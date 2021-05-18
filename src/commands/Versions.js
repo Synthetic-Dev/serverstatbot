@@ -6,21 +6,21 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "versions",
-            desc: "Lists all minecraft versions that the bot supports",
+            descId: "COMMAND_VERSIONS",
             aliases: [
                 "vers"
             ]
         })
     }
 
-    async execute(message) {
-        Util.sendMessage(message, {
+    async execute(options) {
+        Util.sendMessage(options.message, {
             embed: {
-                title: "Supported Versions",
-                description: `**Disclaimer: Modded versions using forge are supported, however some versions of forge may not work as intended.**\n\nMinecraft Java versions ${Protocol.getMinSupportedVersion()}+ and all official Minecraft Bedrock versions are supported.`,
+                title: options.lang.COMMAND_VERSIONS_TITLE,
+                description: options.lang.COMMAND_VERSIONS_DESC.format(Protocol.getMinSupportedVersion()),
                 color: 5145560,
                 timestamp: Date.now(),
-                footer: Util.getFooter(this.client)
+                footer: Util.getFooter(options.message)
             }
         }).catch(e => {
             console.error(`Versions[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)

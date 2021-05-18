@@ -5,11 +5,11 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "leave",
-            desc: "Makes the bot leave a server",
+            descId: "COMMAND_DEV_LEAVE",
             args: [
                 {
                     name: "server",
-                    desc: "GuildId for the server"
+                    descId: "COMMAND_DEV_LEAVE_ARG1"
                 }
             ],
             perms: [
@@ -19,16 +19,16 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message, inputs) {
-        Util.getGuildById(this.client, inputs[0]).then(guild => {
+    async execute(options) {
+        Util.getGuildById(this.client, options.inputs[0]).then(guild => {
             guild.leave().then(() => {
-                Util.replyMessage(message, `Successfully left guild \`\`${guild.name}\`\``)
+                Util.replyMessage(options.message, `Successfully left guild \`\`${guild.name}\`\``)
             }).catch(err => {
-                Util.replyError(message, "Error while leaving guild")
+                Util.replyError(options.message, "Error while leaving guild")
                 console.error(err)
             })
         }).catch(err => {
-            Util.replyError(message, "Error while getting guild")
+            Util.replyError(options.message, "Error while getting guild")
             console.error(err)
         })
     }

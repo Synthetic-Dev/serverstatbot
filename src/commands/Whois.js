@@ -8,13 +8,13 @@ class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "whois",
-            desc: "Get information about a player",
+            descId: "COMMAND_WHOIS",
             aliases: [
                 "user"
             ],
             args: [{
-                name: "username | uuid",
-                desc: "The username or uuid of the player you want to get information about"
+                name: "username",
+                descId: "COMMAND_WHOIS_ARG1"
             }],
             tags: [
                 "CAN_DISABLE"
@@ -22,10 +22,10 @@ class Command extends CommandBase {
         })
     }
 
-    async execute(message, inputs) {
-        let identifier = inputs[0]
+    async execute(options) {
+        let identifier = options.inputs[0]
 
-        Util.startTyping(message).catch(e => {
+        Util.startTyping(options.message).catch(e => {
             console.error(`Whois[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
         })
 
@@ -38,12 +38,12 @@ class Command extends CommandBase {
         }
 
         if (!nameHistory) {
-            Util.stopTyping(message)
+            Util.stopTyping(options.message)
 
-            return Util.sendMessage(message, {
+            return Util.sendMessage(options.message, {
                 embed: {
-                    title: "<:green_circle_with_tick:818512512500105249> Available account",
-                    description: `No account with the identifier \`\`${identifier}\`\` exists.`,
+                    title: options.lang.COMMAND_WHOIS_AVAILABLE_TITLE,
+                    description: options.lang.COMMAND_WHOIS_AVAILABLE_DESC.format(identifier),
                     color: 4633441,
                     timestamp: Date.now()
                 }
@@ -54,7 +54,7 @@ class Command extends CommandBase {
 
         let nameHistoryString = ""
         nameHistory.changes.forEach(change => {
-            nameHistoryString += `• ${change.changedToAt ? (new Date(change.changedToAt)).toDateString() : "Original"} : **${change.name}**\n`
+            nameHistoryString += `• ${change.changedToAt ? (new Date(change.changedToAt)).toLocaleDateString(options.locale) : options.lang.ORIGINAL} : **${change.name}**\n`
         })
 
         let image = createCanvas(180 + 20 + 180, 432)
@@ -76,9 +76,9 @@ class Command extends CommandBase {
         let averageColor = await getAverageColor(`https://mc-heads.net/body/${uuid}`)
         let decimalColor = (averageColor.value[0] * 256*256) + (averageColor.value[1] * 256) + (averageColor.value[2])
 
-        Util.stopTyping(message)
+        Util.stopTyping(options.message)
 
-        Util.sendMessage(message, {
+        Util.sendMessage(options.message, {
             files: [{
                 attachment: image.toBuffer("image/png"),
                 name: "skin.png"
@@ -92,20 +92,21 @@ class Command extends CommandBase {
                 color: decimalColor,
                 fields: [
                     {
-                        name: "Usernames",
+                        name: options.lang.COMMAND_WHOIS_FIELD1,
                         value: nameHistoryString.trim(),
                         inline: true
                     },
                     {
-                        name: "Skin",
-                        value: `[Download skin](https://mc-heads.net/download/${uuid})\n[Apply skin](https://mc-heads.net/change/${uuid})\nProvided by [mc-heads.net](https://mc-heads.net/)`,
+                        name: options.lang.COMMAND_WHOIS_FIELD2,
+                        value: options.lang.COMMAND_WHOIS_FIELD2_VAL.format(uuid),
                         inline: true
                     }
                 ],
                 image: {
                     url: "attachment://skin.png"
                 },
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                footer: Util.getFooter(options.message, false)
             }
         }).catch(e => {
             console.error(`Whois[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
