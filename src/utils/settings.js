@@ -210,9 +210,12 @@ class GuildSettings {
                 data = new setting(options)
             }
 
-            data.save()
             this.cache.set(name, data);
-        }).catch(console.error).finally(() => {
+            data.save().catch(console.error).finally(() => {
+                delete this.transactions[name]
+            })
+        }).catch(err => {
+            console.error(err)
             delete this.transactions[name]
         })
     }

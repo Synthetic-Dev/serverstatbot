@@ -359,7 +359,7 @@ client.on("guildCreate", async guild => {
     let priorityChannel = Util.getPriorityChannel(guild, chl => Util.hasPermissionsInChannel(guild.me, chl, ["SEND_MESSAGES"]))
     if (priorityChannel) {
         const prefix = await settings.get("prefix", "Prefix")
-        const welcomeComand = this.client.commands.get("welcome")
+        const welcomeComand = client.commands.get("welcome")
         welcomeComand.sendMessage(client, priorityChannel, lang, prefix)
     }
 })
