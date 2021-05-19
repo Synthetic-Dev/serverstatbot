@@ -1,6 +1,12 @@
 const MinecraftUtil = require("minecraft-server-util")
 const NodeCache = require("node-cache")
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+
+const queryMod = __importDefault(require("./queryFullModified.js")).default
+
 const cacheTime = 30;
 const requestCache = new NodeCache({
     checkperiod: cacheTime / 2,
@@ -46,17 +52,22 @@ class Protocol {
         return validIp_HostnameRegex.test(ip)
     }
 
+    /*
     static queryRace(ip, options) {
         options.timeout = options.timeout ?? 5000;
+        return queryMod(ip, options)
+
         return new Promise(async (resolve, reject) => {
-            MinecraftUtil.queryFull(ip, options).then(resolve).catch(reject)
             let timeout
             timeout = setTimeout(() => {
                 reject(new Error("Failed to query server within time"))
                 clearTimeout(timeout)
             }, options.timeout)
+
+            queryMod(ip, options)//MinecraftUtil.queryFull(ip, options)
+            .then(resolve).catch(reject)
         })
-    }
+    }*/
 
     /**
      * Send requests to server to get all available information
@@ -71,8 +82,6 @@ class Protocol {
         if (port > this.maxPort) return [false, new Error("Port exceeds maximum")];
         if (queryPort > this.maxPort) return [false, new Error("Query port exceeds maximum")];
 
-        const queryRace = this.queryRace
-
         let bulkData = new Promise(resolve => {
             let args = [ip, {port: port, timeout: 3000}]
 
@@ -84,7 +93,7 @@ class Protocol {
                 args[1].sessionID = sessionCount
                 args[1].timeout = 5000
 
-                queryRace(...args).then(queryResponse => {
+                queryMod(...args).then(queryResponse => {
                     queryResponse.query = true;
                     queryResponse.ping = statusResponse != null;
 
