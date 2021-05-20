@@ -30,7 +30,7 @@ class Command extends CommandBase {
                 timestamp: Date.now()
             }
         }).catch(e => {
-            console.error(`Channel[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Channel[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

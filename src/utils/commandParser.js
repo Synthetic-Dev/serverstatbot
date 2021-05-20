@@ -1,7 +1,7 @@
 const NodeCache = require("node-cache")
 
 const Util = require("./util.js")
-const LocaleManager = require("./localeManager.js")
+const LocaleManager = require("./managers/localeManager.js")
 
 const commandsWithinTimeout = 4;
 const commandTimeoutTime = 15*1000;
@@ -12,6 +12,11 @@ class Parser {
 
         this.commandUsageCache = new NodeCache({
             checkperiod: 300,
+            useClones: false
+        });
+
+        this.commandTimeoutCache = new NodeCache({
+            checkperiod: 120,
             useClones: false
         });
     }
@@ -102,6 +107,22 @@ class Parser {
                 return Util.replyWarning(message, lang.NOPERMS)
             }
 
+            const commandTimeoutKey = `${author.id}-${command.name}`
+            if (this.commandTimeoutCache.has(commandTimeoutKey)) {
+                let nextTime = this.commandTimeoutCache.get(commandTimeoutKey)
+                if (nextTime > Date.now()) {
+                    return Util.sendMessage(message, {
+                        embed: {
+                            title: lang.COMMANDTIMEOUT,
+                            description: lang.COMMANDTIMEOUT_DESC.format(Math.round((nextTime - Date.now()) / 1000)),
+                            color: 12333616
+                        }
+                    })
+                } else {
+                    this.commandTimeoutCache.del(commandTimeoutKey)
+                }
+            }
+
             let commandOptions = {message: message, channel: message.channel, guild: guild, author: author, member: message.member, settings: settings, prefix: prefix, lang: lang, locale: locale}
 
             if (inputs.length < command.numOfRequiredArguments()) {
@@ -123,6 +144,10 @@ class Parser {
             }
 
             commandOptions.inputs = inputs
+
+            if (command.timeout) {
+                this.commandTimeoutCache.set(commandTimeoutKey, Date.now() + command.timeout)
+            }
 
             this.client.setImmediate(() => {
                 Promise.resolve(command.execute(commandOptions)).catch(e => {

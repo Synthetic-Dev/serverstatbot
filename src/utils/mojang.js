@@ -235,7 +235,7 @@ class Mojang {
                     Canvas.loadImage(`https://mc-heads.net/avatar/${player.name.clean}/22`).then(head => {
                         context.drawImage(head, 2 + (maxColumnWidth * column) + (5 * column), 2 + (i - columnLength * column) * 28, 22, 22)
                     }).catch(e => {
-                        console.error(`Mojang[loadImage:generatePlayerList]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Mojang[loadImage:generatePlayerList]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     }).finally(() => {
                         context.fillText(player.name.clean, 32 + (maxColumnWidth * column) + (5 * column), (i - columnLength * column) * 28 - 2, maxColumnWidth - 32)
                         done++

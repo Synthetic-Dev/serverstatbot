@@ -4,7 +4,7 @@ const HTTPS = require("https")
 const HTTP = require("http")
 const FileSystem = require("fs")
 
-const LocaleManager = require("./localeManager.js")
+const LocaleManager = require("./managers/localeManager.js")
 
 const unicodeEmojis = require("../unicodeEmojis.json")
 const LocalSettings = require("../localSettings.json")
@@ -572,11 +572,11 @@ class Util {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
                 botMessage.delete().catch(e => {
-                    console.error(`replyWarning[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`replyWarning[deleteMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             }, 15000)
         }).catch(e => {
-            console.error(`replyWarning[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`replyWarning[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 
@@ -590,11 +590,11 @@ class Util {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
                 botMessage.delete().catch(e => {
-                    console.error(`sendWarning[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`sendWarning[deleteMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             }, 15000)
         }).catch(e => {
-            console.error(`sendWarning[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`sendWarning[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 
@@ -608,11 +608,11 @@ class Util {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
                 botMessage.delete().catch(e => {
-                    console.error(`replyError[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`replyError[deleteMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             }, 15000)
         }).catch(e => {
-            console.error(`replyError[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`replyError[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 
@@ -626,11 +626,11 @@ class Util {
             if (!botMessage || botMessage.channel instanceof Discord.DMChannel) return;
             botMessage.client.setTimeout(() => {
                 botMessage.delete().catch(e => {
-                    console.error(`sendError[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`sendError[deleteMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             }, 15000)
         }).catch(e => {
-            console.error(`sendError[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`sendError[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 
@@ -692,7 +692,7 @@ class Util {
                     emojis[index] = emoji
                     if (!botMessage || botMessage.deleted) return;
                     botMessage.react(emoji).catch(e => {
-                        console.error(`Pages[addReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Pages[addReaction]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 })
 
@@ -706,7 +706,7 @@ class Util {
                     };
 
                     reaction.users.remove(user).catch(e => {
-                        console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Pages[removeReaction]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
 
                     let oldPage = page
@@ -726,7 +726,7 @@ class Util {
 
                     if (page != oldPage) {
                         botMessage.edit(pages[page]).catch(e => {
-                            console.error(`Pages[editMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            console.error(`Pages[editMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         })
                     }
                 })
@@ -737,18 +737,18 @@ class Util {
                         botMessage.reactions.cache.forEach(reaction => {
                             if (reaction && reaction.me) {
                                 reaction.users.remove().catch(e => {
-                                    console.error(`Pages[removeReaction]: ${e.toString()};\n${e.method} at ${e.path}`)
+                                    console.error(`Pages[removeReaction]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                                 })
                             }
                         })
-                        console.error(`Pages[removeAllReactions]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Pages[removeAllReactions]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 })
             } catch(e) {
-                console.error(`Pages[stack]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Pages[stack]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             }
         }).catch(e => {
-            console.error(`Pages[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Pages[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 
@@ -990,7 +990,7 @@ class Util {
     static getRecentMessage(channel, ...text) {
         return new Promise((resolve, reject) => {
             if (!channel.viewable) return reject(new Error("Not viewable"));
-            channel.messages.fetch({limit: 5}).then((messages) => {
+            channel.messages.fetch({limit: 15}).then((messages) => {
                 let find
                 messages.each(message => {
                     if (find) return;
@@ -1012,7 +1012,7 @@ class Util {
     static getRecentMessageContaining(channel, ...text) {
         return new Promise((resolve, reject) => {
             if (!channel.viewable) return reject(new Error("Not viewable"));
-            channel.messages.fetch({limit: 5}).then(messages => {
+            channel.messages.fetch({limit: 15}).then(messages => {
                 let find
                 messages.each(message => {
                     if (find) return;

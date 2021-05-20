@@ -4,14 +4,14 @@ const { getAverageColor } = require("fast-average-color-node")
 
 const Util = require("../utils/util.js")
 const Mojang = require("../utils/mojang.js")
-const ImageManager = require("../utils/imageManager.js")
+const ImageManager = require("../utils/managers/imageManager.js")
 
 const CommandBase = require("../classes/CommandBase.js")
 
 const LocalSettings = require("../localSettings.json")
 
 const graphCache = ImageManager.getManager("graphs", 3600)
-
+const statsCache = ImageManager.getManager("botstats", 1200)
 
 class Command extends CommandBase {
     constructor(client) {
@@ -63,7 +63,7 @@ class Command extends CommandBase {
 
     hypixelStats_players(options, input, depth) {
         Util.startTyping(options.message).catch(e => {
-            console.error(`Stats[startTyping:hypixelStats_players]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Stats[startTyping:hypixelStats_players]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
         this.client.hypixel.counts().then(counts => {
             Util.stopTyping(options.message)
@@ -173,7 +173,7 @@ class Command extends CommandBase {
             }
 
             if (pages.length == 1) Util.sendMessage(options.message, pages[0]).catch(e => {
-                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             });
             else Util.sendPages(options.message, pages);
         })
@@ -181,7 +181,7 @@ class Command extends CommandBase {
 
     hypixelStats_player(options, input) {
         Util.startTyping(options.message).catch(e => {
-            console.error(`Stats[startTyping:hypixelStats_player]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Stats[startTyping:hypixelStats_player]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
         this.client.hypixel.player(input).then(async player => {
             Util.stopTyping(options.message)
@@ -197,7 +197,7 @@ class Command extends CommandBase {
                     timestamp: Date.now()
                 }
             }).catch(e => {
-                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             });
 
             let averageColor = await getAverageColor(`https://mc-heads.net/avatar/${player.uuid}`)
@@ -234,7 +234,7 @@ class Command extends CommandBase {
                     timestamp: Date.now()
                 }
             }).catch(e => {
-                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             });
         }).catch(error => {
             Util.stopTyping(options.message)
@@ -250,14 +250,14 @@ class Command extends CommandBase {
                     timestamp: Date.now()
                 }
             }).catch(e => {
-                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             });
         })
     }
 
     hypixelStats_playerCompare(options, inputs) {
         Util.startTyping(options.message).catch(e => {
-            console.error(`Stats[startTyping:hypixelStats_player]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Stats[startTyping:hypixelStats_player]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
 
         Promise.all([this.client.hypixel.player(inputs[0]), this.client.hypixel.player(inputs[1])]).then(async players => {
@@ -275,7 +275,7 @@ class Command extends CommandBase {
                         timestamp: Date.now()
                     }
                 }).catch(e => {
-                    console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 });
             })
 
@@ -341,7 +341,7 @@ class Command extends CommandBase {
 
             let afterImage = () => {
                 Util.sendMessage(options.message, content).catch(e => {
-                    console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 });
             }
 
@@ -387,14 +387,14 @@ class Command extends CommandBase {
                     timestamp: Date.now()
                 }
             }).catch(e => {
-                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             });
         })
     }
 
     hypixelStats_leaderboard(options, input) {
         Util.startTyping(options.message).catch(e => {
-            console.error(`Stats[startTyping:hypixelStats_players]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Stats[startTyping:hypixelStats_players]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
         this.client.hypixel.leaderboards().then(leaderboards => {
             let pages = []
@@ -445,7 +445,7 @@ class Command extends CommandBase {
                     if (done2 >= data.length) {
                         Util.stopTyping(options.message)
                         if (pages.length == 1) Util.sendMessage(options.message, pages[0]).catch(e => {
-                            console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         });
                         else Util.sendPages(options.message, pages);
                     }
@@ -466,7 +466,7 @@ class Command extends CommandBase {
                         timestamp: Date.now()
                     }
                 }).catch(e => {
-                    console.error(`Stats[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Stats[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 });
             }
         })
@@ -502,12 +502,26 @@ class Command extends CommandBase {
         let network = OSUtils.netstat
 
         Util.startTyping(options.message).catch(e => {
-            console.error(`Stats[startTyping:botStats]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Stats[startTyping:botStats]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
 
-        let osName = await os.oos()
-        let cpuUsage = await cpu.usage()
-        let netStats = await network.inOut()
+        let osName = statsCache.get("osName")
+        let cpuUsage = statsCache.get("cpuUsage")
+        let netStats = statsCache.get("networkIO")
+        
+        if (!osName) {
+            osName = await os.oos()
+            statsCache.set("osName", osName)
+        }
+        if (!cpuUsage) {
+            cpuUsage = await cpu.usage()
+            statsCache.set("cpuUsage", cpuUsage, 300)
+        }
+        if (!netStats) {
+            netStats = await network.inOut()
+            statsCache.set("networkIO", netStats)
+        }
+
         let uptime = os.uptime()
         let memoryUsage = process.memoryUsage().rss
 

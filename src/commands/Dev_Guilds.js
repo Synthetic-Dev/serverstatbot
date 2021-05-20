@@ -211,7 +211,7 @@ class Command extends CommandBase {
         }
 
         Util.startTyping(options.message).catch(e => {
-            console.error(`Guilds[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Guilds[startTyping]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
 
         let promise = new Promise((resolve, reject) => {
@@ -226,7 +226,7 @@ class Command extends CommandBase {
                         pages.push(page)
                     }
                 }).catch(e => {
-                    console.error(`Guilds[getServer]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Guilds[getServer]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 }).finally(() => {
                     done++
                     if (pages.length >= maxPages || done == cache.size) resolve(pages)
@@ -242,7 +242,7 @@ class Command extends CommandBase {
             if (pages.length == 1) return Util.sendMessage(options.message, pages[0]);
             Util.sendPages(options.message, pages)
         }).catch(e => {
-            console.error(`Guilds[getGuilds]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Guilds[getGuilds]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

@@ -28,7 +28,7 @@ class Command extends CommandBase {
 
         options.settings.set("server", port, "Port")
         Util.replyMessage(options.message, options.lang.COMMAND_SETPORT_CONTENT.format(port)).catch(e => {
-            console.error(`SetPort[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`SetPort[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

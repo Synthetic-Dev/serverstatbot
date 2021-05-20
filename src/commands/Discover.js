@@ -22,7 +22,7 @@ class Command extends CommandBase {
 
     async execute(options) {
         Util.startTyping(options.message).catch(e => {
-            console.error(`Discover[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Discover[startTyping]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
 
         const itemsPerPage = 16
@@ -73,14 +73,14 @@ class Command extends CommandBase {
             })
 
             if (pages.length == 1) Util.sendMessage(options.message, pages[0]).catch(e => {
-                console.error(`Discover[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Discover[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             });
             else Util.sendPages(options.message, pages);
         }).catch(e => {
             Util.stopTyping(options.message)
             Util.replyError(options.message, options.lang.COMMAND_DISCOVER_ERROR)
 
-            console.error(`Discover[searchSetting]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Discover[searchSetting]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

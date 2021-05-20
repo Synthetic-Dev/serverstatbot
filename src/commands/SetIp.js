@@ -27,7 +27,7 @@ class Command extends CommandBase {
         options.settings.set("server", ip, "Ip")
 
         Util.replyMessage(options.message, (port ? options.lang.COMMAND_SETIP_PORTWARNING.format(options.prefix, port, ip) : "") + options.lang.COMMAND_SETIP_CONTENT.format(ip)).catch(e => {
-            console.error(`SetIp[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`SetIp[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

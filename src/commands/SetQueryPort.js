@@ -28,7 +28,7 @@ class Command extends CommandBase {
         if (port == 0 || port == -1) {
             options.settings.set("server", -1, "QueryPort")
             return Util.replyMessage(options.message, options.lang.COMMAND_SETQUERYPORT_REMOVED).catch(e => {
-                console.error(`SetQueryPort[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`SetQueryPort[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         }
         
@@ -37,7 +37,7 @@ class Command extends CommandBase {
 
         options.settings.set("server", port, "QueryPort")
         Util.replyMessage(options.message, options.lang.COMMAND_SETQUERYPORT_CONTENT.format(port)).catch(e => {
-            console.error(`SetQueryPort[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`SetQueryPort[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

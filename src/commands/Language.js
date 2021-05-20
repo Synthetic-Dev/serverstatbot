@@ -1,5 +1,5 @@
 const Util = require("../utils/util.js")
-const LocaleManager = require("../utils/localeManager.js")
+const LocaleManager = require("../utils/managers/localeManager.js")
 const CommandBase = require("../classes/CommandBase.js")
 
 class Command extends CommandBase {
@@ -53,7 +53,7 @@ class Command extends CommandBase {
                 footer: Util.getFooter(options.message)
             }
         }).catch(e => {
-            console.error(`Language[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Language[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

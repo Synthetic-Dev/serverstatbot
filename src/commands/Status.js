@@ -3,7 +3,7 @@ const Canvas = require("canvas")
 const Util = require("../utils/util.js")
 const Protocol = require("../utils/protocol.js")
 const Mojang = require("../utils/mojang.js")
-const ImageManager = require("../utils/imageManager.js")
+const ImageManager = require("../utils/managers/imageManager.js")
 
 const CommandBase = require("../classes/CommandBase.js")
 
@@ -29,7 +29,7 @@ class Command extends CommandBase {
 
     displayInfo(options, displayOptions, additionals) {
         Util.startTyping(options.message).catch(e => {
-            console.error(`Status[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Status[startTyping]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
 
         Protocol.getInfo(displayOptions.ip, displayOptions.port, displayOptions.queryPort).then(data => {
@@ -102,7 +102,7 @@ class Command extends CommandBase {
                     }
 
                     return Util.sendMessage(options.message, content).catch(e => {
-                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 }
 
@@ -126,12 +126,12 @@ class Command extends CommandBase {
                         }
 
                         Util.sendMessage(options.message, content).catch(e => {
-                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         })
                     }
                     favicon.onerror = () => {
                         Util.sendMessage(options.message, content).catch(e => {
-                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         })
                     }
                     favicon.src = data.favicon
@@ -144,40 +144,42 @@ class Command extends CommandBase {
                     }
 
                     Util.sendMessage(options.message, content).catch(e => {
-                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 }
             } else {
                 let error = data.error
+                let errorText
 
-                if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
-                    return Util.sendMessage(options.message, {
-                        embed: {
-                            title: options.lang.COMMAND_STATUS_TITLE.format("").trim(),
-                            description: options.lang.COMMAND_STATUS_FAIL_DESC.format(
-                                displayOptions.ip, displayOptions.port,
-                                error.message == "Failed to query server within time" ? "\n" + options.lang.SERVER_IFONLINE : ""
-                            ),
-                            color: 5145560,
-                            timestamp: Date.now()
-                        }
-                    }).catch(e => {
-                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
-                    })
-                } else if (error.code == "ENOTFOUND") {
-                    return Util.replyError(options.message, options.lang.SERVER_COULDNOTFIND);
-                } else if (error.message == "Server sent an invalid packet type") {
-                    return Util.replyError(options.message, options.lang.SERVER_WRONGPORT)
-                } else if (error.message == "Blocked host") {
-                    return Util.replyError(options.message, options.lang.SERVER_BLOCKED);
+                switch(Protocol.getErrorType(error)) {
+                    case "offline":
+                        Util.sendMessage(options.message, {
+                            embed: {
+                                title: options.lang.COMMAND_STATUS_TITLE.format("").trim(),
+                                description: options.lang.COMMAND_STATUS_FAIL_DESC.format(
+                                    displayOptions.ip, displayOptions.port,
+                                    error.message.includes("Failed to query server") ? "\n" + options.lang.SERVER_IFONLINE : ""
+                                ),
+                                color: 5145560,
+                                timestamp: Date.now()
+                            }
+                        }).catch(e => {
+                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
+                        })
+                        break
+                    case "notfound": errorText = pptions.lang.SERVER_COULDNOTFIND; break;
+                    case "badport": errorText = pptions.lang.SERVER_WRONGPORT; break;
+                    case "blocked": errorText = pptions.lang.SERVER_BLOCKED; break;
+                    default:
+                        errorText = pptions.lang.SERVER_ERROR
+                        console.error(`Status[error]: ${error.toString()};\n${error.method} at ${error.path}`)
                 }
-                
-                Util.replyError(options.message, options.lang.SERVER_ERROR)
-                console.error(`Status[error]: ${error.toString()};\n${error.method} at ${error.path}`)
+
+                if (errorText) Util.replyError(options.message, errorText);
             }
         }).catch(e => {
             console.error(e)
-            console.error(`Status[getInfo]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Status[getInfo]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 

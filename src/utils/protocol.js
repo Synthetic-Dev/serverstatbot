@@ -1,11 +1,14 @@
 const MinecraftUtil = require("minecraft-server-util")
 const NodeCache = require("node-cache")
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
+const McUtilMod = require("./minecraft-server-util-mod")
 
-const queryMod = __importDefault(require("./queryFullModified.js")).default
+const failStrings = [
+    "Failed to retrieve the status of the server within time",
+    "Failed to retrieve the status of the server",
+    "Failed to query server within time",
+    "Failed to query server"
+]
 
 const cacheTime = 30;
 const requestCache = new NodeCache({
@@ -35,7 +38,7 @@ class Protocol {
     static getErrorType(error) {
         if (!error) return "offline";
         
-        if (["Failed to retrieve the status of the server within time", "Failed to query server within time"].includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
+        if (failStrings.includes(error.message) || error.code == "ETIMEDOUT" || error.code == "EHOSTUNREACH" || error.code == "ECONNREFUSED") {
             return "offline"
         } else if (error.code == "ENOTFOUND") {
             return "notfound"
@@ -93,7 +96,7 @@ class Protocol {
                 args[1].sessionID = sessionCount
                 args[1].timeout = 5000
 
-                queryMod(...args).then(queryResponse => {
+                McUtilMod.queryFull(...args).then(queryResponse => {
                     queryResponse.query = true;
                     queryResponse.ping = statusResponse != null;
 
@@ -124,7 +127,7 @@ class Protocol {
             }
 
             function attemptBedrock() {
-                MinecraftUtil.statusBedrock(...args).then(response => {
+                McUtilMod.statusBedrock(...args).then(response => {
                     response.bedrock = true;
                     query(response)
                 }).catch(() => {query()})
@@ -132,10 +135,14 @@ class Protocol {
 
             if (port == 19132) attemptBedrock()
             else {
-                MinecraftUtil.status(...args).then(query).catch(e => {
+                McUtilMod.status(...args).then(data => {
+                    query(data)
+                }).catch(e => {
                     if (!e) query()
                     else if (e.message == "Failed to retrieve the status of the server within time") {
-                        MinecraftUtil.statusFE01(...args).then(query).catch(() => {query()})
+                        McUtilMod.statusFE01(...args).then(data => {
+                            query(data)
+                        }).catch(() => {query()})
                     } else if (e.code == "ECONNREFUSED" && port != 25565) attemptBedrock()
                     else resolve([false, e]);
                 })

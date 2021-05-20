@@ -15,7 +15,7 @@ class Command extends CommandBase {
     async execute(options) {
         options.settings.clear()
         Util.replyMessage(options.message, options.lang.COMMAND_RESETSETTINGS_CONTENT).catch(e => {
-            console.error(`SetPort[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`SetPort[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

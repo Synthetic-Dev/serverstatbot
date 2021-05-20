@@ -11,7 +11,7 @@ class Command extends CommandBase {
 
     async execute(options) {
         Util.replyMessage(options.message, `${options.lang.PONG} ${this.client.ping}ms`).catch(e => {
-            console.error(`BotPing[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`BotPing[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

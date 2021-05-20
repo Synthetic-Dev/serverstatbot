@@ -44,13 +44,13 @@ class Command extends CommandBase {
         this.setOptionFunc("display.on", options => {
             options.settings.set("server", true, "Discovery")
             Util.replyMessage(options.message, options.lang.COMMAND_SETSERVERDISCOVERY_CONTENT.format(options.lang.ENABLED.toLowerCase())).catch(e => {
-                console.error(`SetServerDiscovery[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`SetServerDiscovery[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         })
         this.setOptionFunc("display.off", options => {
             options.settings.set("server", false, "Discovery")
             Util.replyMessage(options.message, options.lang.COMMAND_SETSERVERDISCOVERY_CONTENT.format(options.lang.DISABLED.toLowerCase())).catch(e => {
-                console.error(`SetServerDiscovery[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`SetServerDiscovery[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         })
         this.setOptionFunc("invite", (options, input) => {
@@ -61,7 +61,7 @@ class Command extends CommandBase {
                 
                 options.settings.set("server", code, "DiscoveryInvite")
                 Util.replyMessage(options.message, options.lang.COMMAND_SETSERVERDISCOVERY_INVITE_ADD.format(code)).catch(e => {
-                    console.error(`SetServerDiscovery[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`SetServerDiscovery[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             } else {
                 Util.replyError(options.message, options.lang.COMMAND_SETSERVERDISCOVERY_INVITE_INVALID.format(input))
@@ -70,7 +70,7 @@ class Command extends CommandBase {
         this.setOptionFunc("invite.remove", options => {
             options.settings.set("server", "", "DiscoveryInvite")
             Util.replyMessage(options.message, options.lang.COMMAND_SETSERVERDISCOVERY_INVITE_REMOVE).catch(e => {
-                console.error(`SetServerDiscovery[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`SetServerDiscovery[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         })
     }

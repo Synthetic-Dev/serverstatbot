@@ -42,7 +42,7 @@ class Command extends CommandBase {
             let deleting = true
             channel.bulkDelete(messages, true).then((deletedMessages) => {deleted += deletedMessages.size; deleting = false}).catch(e => {
                 Util.replyMessage(options.message, options.lang.COMMAND_CLEAR_DELETING_MANUALLY).catch(e => {
-                    console.error(`Clear[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Clear[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
 
                 deleting = true
@@ -56,13 +56,13 @@ class Command extends CommandBase {
                         };
 
                         msg.delete().then(() => {deleted++}).catch(e => {
-                            console.error(`Clear[deleteMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            console.error(`Clear[deleteMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         }).finally(() => {
                             completed++
                             if (deleting && completed >= messages.length) deleting = false;
                         })
                     } catch(e) {
-                        console.error(`Clear[deleteMessage:stack]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Clear[deleteMessage:stack]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         completed++
                         if (deleting && completed >= messages.length) deleting = false;
                     }
@@ -73,15 +73,15 @@ class Command extends CommandBase {
                     botMessage.delete({
                         timeout: 5000
                     }).catch(e => {
-                        console.error(`Clear[deleteMessage:count]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Clear[deleteMessage:count]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 }).catch(e => {
-                    console.error(`Clear[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Clear[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
 
                 if (options.message && !options.message.deleted && Util.hasPermissionsInChannel(channel.guild.me, channel, ["MANAGE_MESSAGES"])) {
                     options.message.delete().then(() => {deleted++}).catch(e => {
-                        console.error(`Clear[deleteMessage:command]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Clear[deleteMessage:command]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 }
             })
@@ -97,16 +97,16 @@ class Command extends CommandBase {
                     botMessage.delete({
                         timeout: 5000
                     }).catch(e => {
-                        console.error(`Clear[deleteMessage:date]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Clear[deleteMessage:date]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 }).catch(e => {
-                    console.error(`Clear[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Clear[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
 
                 if (Date.now() - date.getTime() < 0) return Util.replyError(options.message, options.lang.COMMAND_CLEAR_CANT_DELETE_IN_FUTURE);
                 if (Date.now() - date.getTime() > 14*24*60*60*1000) return Util.replyError(options.message, options.lang.COMMAND_CLEAR_CANNOT_DELETE_2WEEKS);
                 Util.getRecentMessagesAfter(channel, this.client.user, date.getTime()).then(deleteMessages).catch(e => {
-                    console.error(`Clear[getRecentMessagesAfter]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Clear[getRecentMessagesAfter]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             },
             count: value => {
@@ -115,12 +115,12 @@ class Command extends CommandBase {
                 count = Math.abs(count)
 
                 Util.getRecentMessagesFrom(channel, this.client.user, count).then(deleteMessages).catch(e => {
-                    console.error(`Clear[getRecentMessagesFrom]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Clear[getRecentMessagesFrom]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             },
             previous: () => {
                 Util.getRecentMessagesFrom(channel, this.client.user, 1).then(deleteMessages).catch(e => {
-                    console.error(`Clear[getRecentMessagesFrom]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Clear[getRecentMessagesFrom]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             }
         }

@@ -10,8 +10,8 @@ const Heroku = require('heroku-client')
 const Util = require("./utils/util.js")
 const Settings = require("./utils/settings.js")
 const Parser = require("./utils/commandParser.js")
-const LocaleManager = require("./utils/localeManager.js")
-const ServerLogger = require("./utils/serverLogger.js")
+const LocaleManager = require("./utils/managers/localeManager.js")
+const StatusManager = require("./utils/managers/statusManager.js")
 
 const LocalSettings = require("./localSettings.json")
 
@@ -61,7 +61,7 @@ Mongoose.connect(`mongodb+srv://${process.env.DBUSER}:${process.env.DBPASS}@${pr
 }).then(connection => {
     client.db = connection
 }).catch(e => {
-    console.error(`Database[connection]: ${e.toString()};\n${e.method} at ${e.path}`)
+    console.error(`Database[connection]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
 })
 
 
@@ -109,7 +109,7 @@ function activityDisplay() {
                         type: "PLAYING"
                     }
                 }).catch(e => {
-                    console.error(`Activity[setPresence]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Activity[setPresence]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
                 return
             }
@@ -122,13 +122,13 @@ function activityDisplay() {
                     type: activity.type
                 }
             }).catch(e => {
-                console.error(`Activity[setPresence]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Activity[setPresence]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
 
             client.activityIndex++
             if (client.activityIndex == activities.length) client.activityIndex = 0;
         }).catch(e => {
-            console.error(`Activity[getSetting]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Activity[getSetting]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }, 15000)
 }
@@ -244,7 +244,7 @@ client.once("ready", () => {
     client.loggers = []
     client.guilds.cache.forEach(guild => {
         client.settings[guild.id] = client.settings[guild.id] ?? new Settings.Guild(guild);
-        client.loggers[guild.id] = client.loggers[guild.id] ?? new ServerLogger(client, guild);
+        client.loggers[guild.id] = client.loggers[guild.id] ?? new StatusManager(client, guild);
     })
     console.log(`[Setup] Loaded settings for ${Object.values(client.settings).length} guild(s)`)
     console.log(`[Setup] Loaded loggers for ${Object.values(client.loggers).length} guild(s)`)
@@ -279,21 +279,23 @@ client.once("ready", () => {
     }
 
     let startup = true
-    const updateLoggers = () => {
-        client.guilds.cache.forEach(guild => {
-            const logger = client.loggers[guild.id]
-            if (!logger) return;
+    if (process.env.NOUPDATE != "TRUE") {
+        const updateLoggers = () => {
+            client.guilds.cache.forEach(guild => {
+                const logger = client.loggers[guild.id]
+                if (!logger) return;
 
-            logger.update(startup)
-        })
-    }
+                logger.update(startup)
+            })
+        }
 
-    updateLoggers()
-    client.setInterval(async () => {
-        if (await client.globalSettings.get("Maintenance")) return;
         updateLoggers()
-        startup = false
-    }, 60*1000)
+        client.setInterval(async () => {
+            if (await client.globalSettings.get("Maintenance")) return;
+            updateLoggers()
+            startup = false
+        }, 60*1000)
+    }
 
     client.countCaptureMax = 86400*7000
     client.countCaptureEvery = 21600*1000
@@ -360,7 +362,7 @@ client.on("guildCreate", async guild => {
     if (priorityChannel) {
         const prefix = await settings.get("prefix", "Prefix")
         const welcomeComand = client.commands.get("welcome")
-        welcomeComand.sendMessage(client, priorityChannel, lang, prefix)
+        welcomeComand.sendWelcome(client, priorityChannel, lang, prefix)
     }
 })
 
@@ -371,7 +373,6 @@ client.on("guildDelete", guild => {
         let settings = client.settings[guild.id]
         settings.clear()
         delete client.settings[guild.id];
-        console.log(`[${guild.id}] Settings deleted from database`)
     }
 })
 
@@ -424,13 +425,13 @@ client.on("raw", packet => {
                         client.emit("messageReactionRemove", reaction, user);
                     }
                 }).catch(e => {
-                    console.error(`Raw[fetchUser]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Raw[fetchUser]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             }).catch(e => {
-                console.error(`Raw[fetchMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Raw[fetchMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         }).catch(e => {
-            console.error(`Raw[getGuild]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Raw[getGuild]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 });

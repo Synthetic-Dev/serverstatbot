@@ -16,7 +16,8 @@ class Command extends CommandBase {
             }],
             tags: [
                 "CAN_DISABLE"
-            ]
+            ],
+            timeout: 30*1000
         })
     }
 
@@ -33,7 +34,7 @@ class Command extends CommandBase {
                 }
             ]
         }).catch(e => {
-            console.error(`CreateMotd[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`CreateMotd[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

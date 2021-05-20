@@ -86,7 +86,7 @@ class Command extends CommandBase {
         }
 
         if (pages.length == 1) Util.sendMessage(options.message, pages[0]).catch(e => {
-            console.error(`Help[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Help[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         });
         else Util.sendPages(options.message, pages);
     }
@@ -213,7 +213,7 @@ class Command extends CommandBase {
         Util.replyMessage(options.message, {
             embed: embed
         }).catch(e => {
-            console.error(`Help[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Help[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 

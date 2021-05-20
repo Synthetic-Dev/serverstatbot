@@ -26,7 +26,7 @@ class Command extends CommandBase {
         let identifier = options.inputs[0]
 
         Util.startTyping(options.message).catch(e => {
-            console.error(`Whois[startTyping]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Whois[startTyping]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
 
         let uuid = identifier.replace("-", "")
@@ -48,7 +48,7 @@ class Command extends CommandBase {
                     timestamp: Date.now()
                 }
             }).catch(e => {
-                console.error(`Whois[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Whois[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         }
 
@@ -109,7 +109,7 @@ class Command extends CommandBase {
                 footer: Util.getFooter(options.message, false)
             }
         }).catch(e => {
-            console.error(`Whois[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Whois[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

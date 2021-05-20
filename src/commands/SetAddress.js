@@ -38,7 +38,7 @@ class Command extends CommandBase {
         })
 
         Util.replyMessage(options.message, options.lang.COMMAND_SETADDRESS_CONTENT.format(ip, port)).catch(e => {
-            console.error(`SetAddress[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`SetAddress[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

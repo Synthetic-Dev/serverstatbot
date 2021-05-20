@@ -48,13 +48,13 @@ class Command extends CommandBase {
             
             options.settings.set("statuschannel", channel.id, "ChannelId")
             Util.replyMessage(options.message, options.lang.COMMAND_SETSTATUSCHANNEL_SET.format(channel.id)).catch(e => {
-                console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         })
         this.setOptionFunc("remove", options => {
             options.settings.update("statuschannel", data => {
                 Util.replyMessage(options.message, options.lang.COMMAND_SETSTATUSCHANNEL_REMOVE.format(data.ChannelId)).catch(e => {
-                    console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
                 data.ChannelId = "0"
                 return data
@@ -68,7 +68,7 @@ class Command extends CommandBase {
             
             options.settings.set("statuschannel", channel.id, "ChannelId")
             Util.replyMessage(options.message, options.lang.COMMAND_SETSTATUSCHANNEL_SET.format(channel.id)).catch(e => {
-                console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         })
         this.setOptionFunc("display", (options, input) => {
@@ -79,7 +79,7 @@ class Command extends CommandBase {
             options.settings.set("statuschannel", "0", "MessageId")
             options.settings.set("statuschannel", id, "Type")
             Util.replyMessage(options.message, options.lang.COMMAND_SETSTATUSCHANNEL_TYPE.format(input)).catch(e => {
-                console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         })
         this.setOptionFunc("message", async (options, input) => {
@@ -95,7 +95,7 @@ class Command extends CommandBase {
 
             options.settings.set("statuschannel", message.id, "MessageId")
             Util.replyMessage(options.message, options.lang.COMMAND_SETSTATUSCHANNEL_MESSAGE.format(message.id)).catch(e => {
-                console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`SetStatusChannel[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         })
     }

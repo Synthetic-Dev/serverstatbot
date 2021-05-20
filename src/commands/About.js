@@ -62,7 +62,7 @@ class Command extends CommandBase {
                 footer: Util.getFooter(options.message)
             }
         }).catch(e => {
-            console.error(`About[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`About[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 }

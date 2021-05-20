@@ -188,8 +188,8 @@ class GuildSettings {
 
             this.transactions[name] = true
 
-            this.cache.set(name, value);
             value.save().catch(console.error).finally(() => {
+                this.cache.set(name, value)
                 delete this.transactions[name]
             })
             return
@@ -210,8 +210,8 @@ class GuildSettings {
                 data = new setting(options)
             }
 
-            this.cache.set(name, data);
             data.save().catch(console.error).finally(() => {
+                this.cache.set(name, data);
                 delete this.transactions[name]
             })
         }).catch(err => {
@@ -239,10 +239,10 @@ class GuildSettings {
      * Removes all settings from cache and database
      */
     clear() {
+        console.log(`[Settings] Deleting (${this.guild.id}) ${this.guild.name} documents`)
         this.cache.flushAll() 
         this.settings.each(async (setting, name) => {
             await setting.deleteMany({_guildId: this.guild.id})
-            console.log(`[Settings] Deleted ${name} document`)
         })
     }
 
