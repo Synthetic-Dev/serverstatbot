@@ -1,6 +1,6 @@
 {
   "name": "serverstat",
-  "version": "1.10a.2",
+  "version": "1.10b",
   "description": "",
   "main": "index.js",
   "engines": {
