@@ -1,9 +1,9 @@
 key,en-us,fr,es-es,pl,ru
 language,English,French,Spanish,,Russian
 language_native,English,Français,Español,,Русский
-STATUS_MESSAGE_ONLINE,<:green_circle_with_tick:818512512500105249> Server is online,<:green_circle_with_tick:818512512500105249> Le serveur est en ligne,<:green_circle_with_tick:818512512500105249> El servidor está en línea,,<:green_circle_with_tick:818512512500105249> Сервер онлайн
-STATUS_MESSAGE_OFFLINE,<:red_circle_with_cross:818512512764084265> Server is offline,<:red_circle_with_cross:818512512764084265> Le serveur est hors ligne,<:red_circle_with_cross:818512512764084265> El servidor está sin conexión,,<:red_circle_with_cross:818512512764084265> Сервер оффлайн
-STATUS_MESSAGE_RESTART,:arrows_counterclockwise: Server restarted,:arrows_counterclockwise: Le serveur a redémarré,:arrows_counterclockwise: Servidor reiniciado,,:arrows_counterclockwise: Сервер перезапустился
+STATUS_MESSAGE_ONLINE,Server is online,<:green_circle_with_tick:818512512500105249> Le serveur est en ligne,<:green_circle_with_tick:818512512500105249> El servidor está en línea,,<:green_circle_with_tick:818512512500105249> Сервер онлайн
+STATUS_MESSAGE_OFFLINE,Server is offline,<:red_circle_with_cross:818512512764084265> Le serveur est hors ligne,<:red_circle_with_cross:818512512764084265> El servidor está sin conexión,,<:red_circle_with_cross:818512512764084265> Сервер оффлайн
+STATUS_MESSAGE_RESTART,Server restarted,:arrows_counterclockwise: Le serveur a redémarré,:arrows_counterclockwise: Servidor reiniciado,,:arrows_counterclockwise: Сервер перезапустился
 STATUS_MESSAGE_TOOMANYPLAYERS,Server has too many players online to log activity,Le serveur a trop de joueurs en ligne pour enregistrer l'activité,El servidor tiene demasiados jugadores en línea para registrar la actividad,,На сервере слишком много человек для ведения лога активности
 STATUS_MESSAGE_NOQUERY,``enable-query=true`` must be set and query port must be set to the ``query.port`` in server.properties for join logs,``enable-query=true`` doit être défini et le port de requêtes doit être défini sur ``query.port`` dans server.properties pour les journaux d'entrées,``enable-query=true`` debe establecerse y el puerto de consulta debe establecerse en ``query.port`` en server.properties para los registros de combinación,,Должен быть настроен параметр ``enable-query=true`` и установлено значение порта у параметра ``query.port`` в server.properties для ведения лога
 STATUS_MESSAGE_ERROR,:stop_sign: An error occured when trying to get server info,:stop_sign: Une erreur s'est produite lors de la tentative d'obtention des informations sur le serveur,:stop_sign: Se ha producido un error al intentar obtener información del servidor,,":stop_sign: При попытке получить информацию о сервере, произошла ошибка"
@@ -277,6 +277,8 @@ SEND_MESSAGES_NOPERMS,I do not have permission to send messages in that channel!
 NOPERMS,You don't have permission to do that,Tu n'as pas la permission de faire ça,,,
 TOOMANYCOMMANDS,Running too many commands!,Vous éxecutez trop de commandes!,,,
 TOOMANYCOMMANDS_DESC,Please wait {0} seconds before running another command.,Veuillez patienter {0} secondes avant d'exécuter une autre commande.,,,
+COMMANDTIMEOUT,That command has a timeout!,,,,
+COMMANDTIMEOUT_DESC,Please wait {0} seconds before trying to run the command again.,,,,
 DISABLED_COMMAND,That command is disabled in this server,Cette commande est désactivée sur ce serveur,,,
 ERROR_COMMAND,"An error occured while trying to execute that command, please report this to the developer!","Une erreur s'est produite lors de la tentative d'exécution de cette commande, veuillez le signaler au développeur!",,,
 ARGUMENTS_EXPECTED,"{0}' expects atleast {1} argument(s), got {2}","{0}' attend au moins {1} argument (s), a obtenu {2}",,,
