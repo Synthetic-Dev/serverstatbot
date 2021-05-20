@@ -36,7 +36,7 @@ let parser = CSV.parse({
 .on("finish", function() {
     console.log("[Locales] Loading complete")
 })
-FileSystem.createReadStream(`${__dirname}/../lang.csv`).pipe(parser)
+FileSystem.createReadStream(`${__dirname}/../../lang.csv`).pipe(parser)
 
 class LocaleManager {
     constructor() {

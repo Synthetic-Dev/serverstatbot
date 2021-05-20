@@ -36,7 +36,7 @@ function applyDefaultOptions(options) {
  */
 function queryFull(host, options) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
-    return new Promise(async (resolve, reject) => {//__awaiter(this, void 0, void 0, function* () {
+    return new Promise(async (resolve, reject) => {   //__awaiter(this, void 0, void 0, function* () {
         // Applies the provided options on top of the default options
         const opts = applyDefaultOptions(options);
 
@@ -61,6 +61,15 @@ function queryFull(host, options) {
         opts.sessionID &= 0x0F0F0F0F;
         let challengeToken;
         let srvRecord = null;
+        let socket = null;
+
+        let timeout
+        timeout = setTimeout(() => {
+            if (socket) socket.destroy();
+
+            reject(new Error("Failed to query server within time"))
+            clearTimeout(timeout)
+        }, opts.timeout)
         
         // Automatically resolve from host (e.g. play.hypixel.net) into a connect-able address
         if (opts.enableSRV && !ipAddressRegEx.test(host)) {
@@ -68,18 +77,10 @@ function queryFull(host, options) {
         }
 
         const startTime = Date.now();
-
-        // Create a new UDP connection to the specified address
-        const socket = new UDPSocket_1.default((_a = srvRecord === null || srvRecord === void 0 ? void 0 : srvRecord.host) !== null && _a !== void 0 ? _a : host, opts.port);
-        
-        let timeout
-        timeout = setTimeout(() => {
-            socket.destroy()
-            reject(new Error("Failed to query server within time"))
-            clearTimeout(timeout)
-        }, opts.timeout)
         
         try {
+            // Create a new UDP connection to the specified address
+            socket = new UDPSocket_1.default((_a = srvRecord === null || srvRecord === void 0 ? void 0 : srvRecord.host) !== null && _a !== void 0 ? _a : host, opts.port);
 
             {
                 // Create a Handshake packet and send it to the server
@@ -97,12 +98,10 @@ function queryFull(host, options) {
                 const type = responsePacket.readByte();
                 const sessionID = responsePacket.readIntBE();
                 challengeToken = parseInt(responsePacket.readStringNT());
-                if (type !== 0x09)
-                    reject(new Error('Server sent an invalid payload type'));
-                if (sessionID !== opts.sessionID)
-                    reject(new Error('Session ID in response did not match client session ID'));
-                if (isNaN(challengeToken))
-                    reject(new Error('Server sent an invalid challenge token'));
+
+                if (type !== 0x09) reject(new Error('Server sent an invalid payload type'));
+                if (sessionID !== opts.sessionID) reject(new Error('Session ID in response did not match client session ID'));
+                if (isNaN(challengeToken)) reject(new Error('Server sent an invalid challenge token'));
             }
 
             {
@@ -122,24 +121,29 @@ function queryFull(host, options) {
             {
                 // Create an empty map of key,value pairs for the response
                 const map = new Map();
+
                 // Read the response packet for the Full stat from the server
                 const responsePacket = await socket.readPacket();
                 const type = responsePacket.readByte();
                 const sessionID = responsePacket.readIntBE();
-                if (type !== 0x00)
-                    reject(new Error('Server sent an invalid payload type'));
-                if (sessionID !== opts.sessionID)
-                    reject(new Error('Session ID in response did not match client session ID'));
+
+                if (type !== 0x00) reject(new Error('Server sent an invalid payload type'));
+                if (sessionID !== opts.sessionID) reject(new Error('Session ID in response did not match client session ID'));
+
                 responsePacket.readBytes(11);
+
                 let key;
                 while ((key = responsePacket.readStringNT()) !== '') {
                     map.set(key, responsePacket.readStringNT());
                 }
+
                 responsePacket.readBytes(10);
+
                 let player;
                 while ((player = responsePacket.readStringNT()) !== '') {
                     players.push(player);
                 }
+
                 const pluginsRaw = (map.get('plugins') || '').split(';');
                 gameType = (_b = map.get('gametype')) !== null && _b !== void 0 ? _b : null;
                 version = (_c = map.get('version')) !== null && _c !== void 0 ? _c : null;
@@ -150,8 +154,6 @@ function queryFull(host, options) {
                 maxPlayers = (_g = parseInt(map.get('maxplayers') || '')) !== null && _g !== void 0 ? _g : null;
                 description = parseDescription_1.default((_h = map.get('motd')) !== null && _h !== void 0 ? _h : '');
             }
-
-            clearTimeout(timeout)
 
             resolve({
                 host,
@@ -170,9 +172,13 @@ function queryFull(host, options) {
             });
         }
 
+        catch(e) {
+            reject(new Error("Failed to query server"))
+        }
+
         finally {
             // Destroy the socket, it is no longer needed
-            socket.destroy();
+            if (socket) socket.destroy();
             clearTimeout(timeout)
         }
     });

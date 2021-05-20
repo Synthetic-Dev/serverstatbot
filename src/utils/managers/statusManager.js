@@ -1,12 +1,12 @@
 const Canvas = require("canvas")
 
-const Util = require("./util.js")
-const Mojang = require("./mojang.js")
-const Protocol = require("./protocol.js")
+const Util = require("../util.js")
+const Mojang = require("../mojang.js")
+const Protocol = require("../protocol.js")
 const LocaleManager = require("./localeManager.js")
 const ImageManager = require("./imageManager.js")
 
-const LocalSettings = require("../localSettings.json")
+const LocalSettings = require("../../localSettings.json")
 
 const statusContents = {
     online: "STATUS_MESSAGE_ONLINE",
@@ -33,7 +33,7 @@ const playerListCache = ImageManager.getManager("playerlists")
 const motdCache = ImageManager.getManager("motds")
 const faviconCache = ImageManager.getManager("favicons", 3600)
 
-class ServerLogger {
+class StatusManager {
     constructor(client, guild) {
         this.client = client;
         this.guild = guild;
@@ -77,11 +77,11 @@ class ServerLogger {
                     name: "playeraction.png"
                 }]
             }).catch(e => {
-                console.error(`Logging[sendMessage:player]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Logging[sendMessage:player]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         }).catch(error => {
             Util.sendMessage(this.channel, this.lang.STATUS_PLAYER_FAILEDIMAGE.format(text)).catch(e => {
-                console.error(`Logging[sendMessage:player(failed)]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Logging[sendMessage:player(failed)]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         })
     }
@@ -108,11 +108,11 @@ class ServerLogger {
         if (data.online) {
             if ((!this.server.online && !this.statusMessage.online) || this.channelChanged) {
                 if (!this.server.start && this.statusMessage.message && this.statusMessage.message.member == this.guild.me && Date.now() - this.statusMessage.message.createdTimestamp < 120*1000) {
-                    this.statusMessage.message.edit(this.lang[statusContents.restart]).catch(e => {
-                        console.error(`Logging[editMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    this.statusMessage.message.edit("<:cyan_circle_with_circular_arrow:845041455981789226> " + this.lang[statusContents.restart]).catch(e => {
+                        console.error(`Logging[editMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
-                } else {
-                    Util.sendMessage(this.channel, this.lang[statusContents.online]).then(message => {
+                } else if (!this.statusMessage.message) {
+                    Util.sendMessage(this.channel, "<:green_circle_with_tick:818512512500105249> " + this.lang[statusContents.online]).then(message => {
                         this.settings.set("statuschannel", message.id, "MessageId")
                         this.statusMessage = {
                             message: message,
@@ -120,11 +120,12 @@ class ServerLogger {
                         }
                         
                     }).catch(e => {
-                        console.error(`Logging[sendMessage:status]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Logging[sendMessage:status]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 }
             }
 
+            this.statusMessage.online = true
             this.server.online = true
 
             let old = this.server.players
@@ -143,10 +144,10 @@ class ServerLogger {
                 Util.getRecentMessage(this.channel, warningText).then(message => {
                     if (message) return;
                     Util.sendMessage(this.channel, warningText).catch(e => {
-                        console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.method} at ${e.path}`)
+                        console.error(`Logging[sendMessage:warning]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 }).catch(e => {
-                    console.error(`Logging[getRecentMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Logging[getRecentMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
                 return
             }
@@ -180,7 +181,7 @@ class ServerLogger {
         switch(Protocol.getErrorType(error)) {
             case "offline":
                 if (((wasOnline || this.server.start) && (this.statusMessage.online == null || this.statusMessage.online == true)) || this.channelChanged) {
-                    errorText = this.lang[statusContents.offline]
+                    errorText = "<:red_circle_with_cross:818512512764084265> " + this.lang[statusContents.offline]
                     callback = message => {
                         this.settings.set("statuschannel", message.id, "MessageId")
                         this.statusMessage = {
@@ -202,10 +203,10 @@ class ServerLogger {
             Util.getRecentMessage(this.channel, errorText).then(message => {
                 if (message) return;
                 Util.sendMessage(this.channel, errorText).then(callback).catch(e => {
-                    console.error(`Logging[sendMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                    console.error(`Logging[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                 })
             }).catch(e => {
-                console.error(`Logging[getRecentMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                console.error(`Logging[getRecentMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
             })
         }
     }
@@ -225,7 +226,7 @@ class ServerLogger {
                 online: online
             }
         }).catch(e => {
-            console.error(`Logging[updateMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Logging[updateMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         })
     }
 
@@ -347,7 +348,7 @@ class ServerLogger {
         switch(Protocol.getErrorType(error)) {
             case "offline":
                 if (((wasOnline || this.server.start) && (this.statusMessage.online == null || this.statusMessage.online == true)) || this.channelChanged) {
-                    errorText = this.lang[statusContents.offline]
+                    errorText = "<:red_circle_with_cross:818512512764084265> " + this.lang[statusContents.offline]
                 }
                 break
             case "notfound": errorText = ":warning: " + this.lang.SERVER_COULDNOTFIND; break;
@@ -528,7 +529,7 @@ class ServerLogger {
 
                     let done = 0
                     statuses.forEach(status => {
-                        Util.getRecentMessage(this.channel, this.lang[status.contentId]).then(message => {
+                        Util.getRecentMessageContaining(this.channel, this.lang[status.contentId]).then(message => {
                             done++
                             if (!message) return;
                             if (!this.statusMessage.message || (this.statusMessage.message && Util.isMessageMoreRecent(message, this.statusMessage.message))) {
@@ -538,7 +539,7 @@ class ServerLogger {
                                 }
                             } 
                         }).catch(e => {
-                            console.error(`Logging[getRecentMessage]: ${e.toString()};\n${e.method} at ${e.path}`)
+                            console.error(`Logging[getRecentMessageContaining]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         }).finally(() => {
                             if (done == statuses.length) resolve();
                         })
@@ -563,11 +564,11 @@ class ServerLogger {
         Protocol.getInfo(this.server.ip, this.server.port, this.server.queryPort).then(async data => {
             displayMethod.call(this, data)
         }).catch(e => {
-            console.error(`Logging[getInfo]: ${e.toString()};\n${e.method} at ${e.path}`)
+            console.error(`Logging[getInfo]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
         }).finally(() => {
             this.server.start = false
         })
     }
 }
 
-module.exports = ServerLogger
+module.exports = StatusManager
