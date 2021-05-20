@@ -22,7 +22,8 @@ class CommandBase {
         }
 
         this.name = (data.name || this.constructor.name).toLowerCase()
-        this.descId = data.descId ?? "COMMAND_BASE";
+        this.descId = data.descId ?? "COMMAND_BASE"
+        this.timeout = data.timeout ?? null
         
         this.private = data.private ?? false;
 
