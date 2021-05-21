@@ -1,3 +1,4 @@
+const Crypto = require("crypto")
 const Canvas = require("canvas")
 
 const Util = require("../utils/util.js")
@@ -43,7 +44,7 @@ class Command extends CommandBase {
                     },
                     {
                         name: options.lang.COMMAND_STATUS_FIELD2,
-                        value: (data.bedrock ? options.lang.BEDROCK : (data.modded ? options.lang.MODS.format(data.mods.modList.length) : options.lang.VANILLA)) + (data.plugins && data.plugins.length > 0 ? options.lang.PLUGINS.format(data.plugins.length) : "")
+                        value: (data.bedrock ? options.lang.BEDROCK : (data.modded ? options.lang.MODS.format(data.mods.modList.length) : options.lang.VANILLA)) + (data.plugins && data.plugins.length > 0 ? " " + options.lang.PLUGINS.format(data.plugins.length) : "")
                     }
                 ]
 
@@ -74,9 +75,13 @@ class Command extends CommandBase {
                     }
                 }
 
-                let motdLink = motdCache.get(data.motd.raw)
+                let hash = Crypto.createHash("md5")
+                hash.update(data.motd.raw)
+                const motdKey = hash.digest("hex")
+
+                let motdLink = motdCache.get(motdKey)
                 if (motdLink) {
-                    motdCache.ttl(data.motd.raw, 600)
+                    motdCache.ttl(motdKey, 600)
                 } else {
                     motdLink = "attachment://motd.png"
 
@@ -92,21 +97,25 @@ class Command extends CommandBase {
                     url: motdLink
                 }
 
-                const faviconKey = `${data.ip}:${data.port}`
-                let faviconLink = faviconCache.get(faviconKey)
-                if (faviconLink) {
-                    faviconCache.ttl(faviconKey, 3600)
+                let faviconLink
+                if (data.favicon) {
+                    let hash = Crypto.createHash("md5")
+                    hash.update(data.favicon)
+                    const faviconKey = hash.digest("hex")
+                    
+                    faviconLink = faviconCache.get(faviconKey)
+                    if (faviconLink) {
+                        faviconCache.ttl(faviconKey, 3600)
 
-                    content.embed.thumbnail = {
-                        url: faviconLink
+                        content.embed.thumbnail = {
+                            url: faviconLink
+                        }
+
+                        return Util.sendMessage(options.message, content).catch(e => {
+                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
+                        })
                     }
 
-                    return Util.sendMessage(options.message, content).catch(e => {
-                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
-                    })
-                }
-
-                if (data.favicon) {
                     faviconLink = "attachment://favicon.png"
 
                     let image = Canvas.createCanvas(64, 64)
@@ -167,11 +176,11 @@ class Command extends CommandBase {
                             console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         })
                         break
-                    case "notfound": errorText = pptions.lang.SERVER_COULDNOTFIND; break;
-                    case "badport": errorText = pptions.lang.SERVER_WRONGPORT; break;
-                    case "blocked": errorText = pptions.lang.SERVER_BLOCKED; break;
+                    case "notfound": errorText = options.lang.SERVER_COULDNOTFIND; break;
+                    case "badport": errorText = options.lang.SERVER_WRONGPORT; break;
+                    case "blocked": errorText = options.lang.SERVER_BLOCKED; break;
                     default:
-                        errorText = pptions.lang.SERVER_ERROR
+                        errorText = options.lang.SERVER_ERROR
                         console.error(`Status[error]: ${error.toString()};\n${error.method} at ${error.path}`)
                 }
 

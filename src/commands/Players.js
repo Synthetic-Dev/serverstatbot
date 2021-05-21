@@ -1,3 +1,5 @@
+const Crypto = require("crypto")
+
 const Util = require("../utils/util.js")
 const Protocol = require("../utils/protocol.js")
 const CommandBase = require("../classes/CommandBase.js")
@@ -44,10 +46,11 @@ class Command extends CommandBase {
                     }
                 }
 
-                let playerListKey = ""
+                let hash = Crypto.createHash("md5")
                 data.players.sample.forEach(player => {
-                    playerListKey += player.name.clean
+                    hash.update(player.name.clean)
                 })
+                const playerListKey = hash.digest("hex")
 
                 let playerListLink = playerListCache.get(playerListKey)
                 if (!playerListLink) {
@@ -89,11 +92,11 @@ class Command extends CommandBase {
                             console.error(`Players[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                         })
                         break
-                    case "notfound": errorText = pptions.lang.SERVER_COULDNOTFIND; break;
-                    case "badport": errorText = pptions.lang.SERVER_WRONGPORT; break;
-                    case "blocked": errorText = pptions.lang.SERVER_BLOCKED; break;
+                    case "notfound": errorText = options.lang.SERVER_COULDNOTFIND; break;
+                    case "badport": errorText = options.lang.SERVER_WRONGPORT; break;
+                    case "blocked": errorText = options.lang.SERVER_BLOCKED; break;
                     default:
-                        errorText = pptions.lang.SERVER_ERROR
+                        errorText = options.lang.SERVER_ERROR
                         console.error(`Players[error]: ${error.toString()};\n${error.method} at ${error.path}`)
                 }
 

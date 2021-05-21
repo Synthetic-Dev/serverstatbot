@@ -1,3 +1,4 @@
+const Crypto = require("crypto")
 const Canvas = require("canvas")
 
 const Util = require("../util.js")
@@ -108,7 +109,7 @@ class StatusManager {
         if (data.online) {
             if ((!this.server.online && !this.statusMessage.online) || this.channelChanged) {
                 if (!this.server.start && this.statusMessage.message && this.statusMessage.message.member == this.guild.me && Date.now() - this.statusMessage.message.createdTimestamp < 120*1000) {
-                    this.statusMessage.message.edit("<:cyan_circle_with_circular_arrow:845041455981789226> " + this.lang[statusContents.restart]).catch(e => {
+                    this.statusMessage.message.edit("<:cyan_circle_with_circular_arrow:845041391247032350> " + this.lang[statusContents.restart]).catch(e => {
                         console.error(`Logging[editMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
                     })
                 } else if (!this.statusMessage.message) {
@@ -273,68 +274,70 @@ class StatusManager {
                 await Promise.resolve(imageMethod(botGuild, content))
             }
 
-            const faviconKey = `${this.server.ip}:${this.server.port}`
-            let faviconLink = faviconCache.get(faviconKey)
-            if (faviconLink) {
-                faviconCache.ttl(faviconKey, 3600)
-                content.embed.thumbnail = {
-                    url: faviconLink
-                }
-                return this.updateMessage(content, true)
-            }
-
+            let faviconLink
             const faviconChannel = botGuild ? Util.getChannelById(botGuild.channels, LocalSettings.botserver.channels.favicons) : null
-            if (faviconChannel) {
-                if (data.favicon) {
-                    let image = Canvas.createCanvas(64, 64)
-                    let context = image.getContext("2d")
-                    context.imageSmoothingEnabled = false
+            if (faviconChannel && data.favicon) {
+                let hash = Crypto.createHash("md5")
+                hash.update(data.favicon)
+                const faviconKey = hash.digest("hex")
 
-                    let favicon = new Canvas.Image()
-                    favicon.onload = async () => {
-                        context.drawImage(favicon, 0, 0, 64, 64)
-
-                        let promise = Util.sendMessage(faviconChannel, {
-                            files: [
-                                {
-                                    attachment: image.toBuffer("image/png"),
-                                    name: `favicon-${this.guild.id}-${Date.now()}.png`
-                                }
-                            ]
-                        })
-                        try {
-                            let message = await promise
-                            let image = message.attachments.first()
-                            if (image) {
-                                faviconLink = image.url
-                                faviconCache.set(faviconKey, faviconLink)
-                            }
-                        } catch (e) {}
-
-                        if (faviconLink) {
-                            content.embed.thumbnail = {
-                                url: faviconLink
-                            }
-                        }
-
-                        this.updateMessage(content, true)
-                    }
-                    favicon.onerror = () => {
-                        this.updateMessage(content, true)
-                    }
-                    
-                    favicon.src = data.favicon
-                } else {
-                    if (data.bedrock) faviconLink = LocalSettings.images.textures.bedrock;
-                    else faviconLink = LocalSettings.images.textures.grass;
-                    faviconCache.set(faviconKey, faviconLink)
-
+                faviconLink = faviconCache.get(faviconKey)
+                if (faviconLink) {
+                    faviconCache.ttl(faviconKey, 3600)
                     content.embed.thumbnail = {
                         url: faviconLink
+                    }
+                    return this.updateMessage(content, true)
+                }
+
+                let image = Canvas.createCanvas(64, 64)
+                let context = image.getContext("2d")
+                context.imageSmoothingEnabled = false
+
+                let favicon = new Canvas.Image()
+                favicon.onload = async () => {
+                    context.drawImage(favicon, 0, 0, 64, 64)
+
+                    let promise = Util.sendMessage(faviconChannel, {
+                        files: [
+                            {
+                                attachment: image.toBuffer("image/png"),
+                                name: `favicon-${this.guild.id}-${Date.now()}.png`
+                            }
+                        ]
+                    })
+                    try {
+                        let message = await promise
+                        let image = message.attachments.first()
+                        if (image) {
+                            faviconLink = image.url
+                            faviconCache.set(faviconKey, faviconLink)
+                        }
+                    } catch (e) {}
+
+                    if (faviconLink) {
+                        content.embed.thumbnail = {
+                            url: faviconLink
+                        }
                     }
 
                     this.updateMessage(content, true)
                 }
+                favicon.onerror = () => {
+                    this.updateMessage(content, true)
+                }
+                
+                favicon.src = data.favicon
+            } else {
+                if (data.bedrock) faviconLink = LocalSettings.images.textures.bedrock;
+                else faviconLink = LocalSettings.images.textures.grass;
+                faviconCache.set(faviconKey, faviconLink)
+
+                content.embed.thumbnail = {
+                    url: faviconLink
+                }
+
+                this.updateMessage(content, true)
             }
             return this.updateMessage(content, true)
         }
@@ -380,9 +383,13 @@ class StatusManager {
 
     async panel(data) {
         this._panel(data, async (botGuild, content) => {
-            let motdLink = motdCache.get(data.motd.raw)
+            let hash = Crypto.createHash("md5")
+            hash.update(data.motd.raw)
+            const motdKey = hash.digest("hex")
+
+            let motdLink = motdCache.get(motdKey)
             if (motdLink) {
-                motdCache.ttl(data.motd.raw, 600)
+                motdCache.ttl(motdKey, 600)
             } else {
                 let motd = Mojang.generateMOTD(data.motd.raw, 4, 10)
                 const motdChannel = botGuild ? Util.getChannelById(botGuild.channels, LocalSettings.botserver.channels.motds) : null
@@ -401,7 +408,7 @@ class StatusManager {
                         let image = message.attachments.first()
                         if (image) {
                             motdLink = image.url
-                            motdCache.set(data.motd.raw, motdLink)
+                            motdCache.set(motdKey, motdLink)
                         }
                     } catch (e) {}
                 }
@@ -419,10 +426,11 @@ class StatusManager {
         this._panel(data, async (botGuild, content) => {
             if (data.players.online == 0 || !data.players.sample || data.players.sample.length == 0) return;
 
-            let playerListKey = ""
+            let hash = Crypto.createHash("md5")
             data.players.sample.forEach(player => {
-                playerListKey += player.name.clean
+                hash.update(player.name.clean)
             })
+            const playerListKey = hash.digest("hex")
 
             let playerListLink = playerListCache.get(playerListKey)
             if (playerListLink) {
