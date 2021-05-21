@@ -331,7 +331,6 @@ class StatusManager {
             } else {
                 if (data.bedrock) faviconLink = LocalSettings.images.textures.bedrock;
                 else faviconLink = LocalSettings.images.textures.grass;
-                faviconCache.set(faviconKey, faviconLink)
 
                 content.embed.thumbnail = {
                     url: faviconLink
