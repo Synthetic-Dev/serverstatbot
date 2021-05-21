@@ -437,6 +437,11 @@ client.on("raw", packet => {
 });
 
 
+process.on("uncaughtException", err => {
+    console.error("[UncaughtException Error] " + err)
+})
+
+
 /**
  * Login
  */
