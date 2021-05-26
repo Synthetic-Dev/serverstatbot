@@ -90,7 +90,7 @@ class Command extends CommandBase {
         let types = {
             after: value => {
                 if (!value) return Util.replyError(options.message, options.lang.COMMAND_CLEAR_NEED_DATE);
-                let date = Util.parseDate(value)
+                let date = Util.parseDate(value, options.lang)
                 if (!date) return Util.replyError(options.message, options.lang.INVALID_DATE);
 
                 Util.sendMessage(channel, options.lang.COMMAND_CLEAR_DELETING_AFTER.format(date.toLocaleString(options.locale, {hour12: false}))).then(botMessage => {

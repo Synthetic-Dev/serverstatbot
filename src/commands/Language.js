@@ -19,10 +19,12 @@ class Command extends CommandBase {
     async execute(options) {
         const langs = LocaleManager.getLangs()
         let languages = []
+        let got = []
         Object.keys(langs).forEach(key => {
             let lang = langs[key]
-            if (lang.language && lang.language_native) {
+            if (lang.language && lang.language_native && got.indexOf(lang.language) < 0) {
                 languages.push(`• ${lang.language} (${lang.language_native})`)
+                got.push(lang.language)
             }
         })
 
@@ -46,7 +48,7 @@ class Command extends CommandBase {
                     },
                     {
                         name: options.lang.COMMAND_LANGUAGE_FIELD2,
-                        value: ["• SyntheticDev#9931", "• Leclowndu93150#1371 (French)", "• Арсений#8132 (Russian)"].join("\n")
+                        value: ["• SyntheticDev", "• Leclowndu93150 (French)", "• Арсений (Russian)", "MickyDerJuni (German)"].join("\n")
                     }
                 ],
                 timestamp: Date.now(),

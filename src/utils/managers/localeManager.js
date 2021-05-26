@@ -3,7 +3,8 @@ const FileSystem = require("fs")
 
 const langs = {}
 
-let headers, keyIndex
+const defaultKey = "en-us"
+let headers, keyIndex, defaultIndex
 let parser = CSV.parse({
     delimiter: ',',
     //quote: "\"",
@@ -16,7 +17,9 @@ let parser = CSV.parse({
             keyIndex = headers.indexOf("key")
 
             for (i = keyIndex + 1; i < headers.length; i++) {
-                langs[headers[i]] = {}
+                let locale = headers[i].toLowerCase()
+                if (locale == defaultKey) defaultIndex = i;
+                langs[locale] = {}
             }
 
             continue
@@ -26,7 +29,7 @@ let parser = CSV.parse({
 
         
         for (i = keyIndex + 1; i < headers.length; i++) {
-            langs[headers[i]][record[keyIndex]] = record[i] ? record[i].replace(/\\n/g, "\n") : ""
+            langs[headers[i]][record[keyIndex]] = record[i] ? record[i].replace(/\\n/g, "\n") : (record[defaultIndex] ? record[defaultIndex].replace(/\\n/g, "\n") : "ERROR")
         }
     }
 })
@@ -49,7 +52,7 @@ class LocaleManager {
      * @returns {Object<string, string>}
      */
      static getLang(locale) {
-        const defaultLang = langs["en-us"];
+        const defaultLang = langs[defaultKey];
         return defaultLang
 
         if (!locale) return defaultLang;

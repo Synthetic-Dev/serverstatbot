@@ -1222,7 +1222,7 @@ class Util {
      * @param {string} input
      * @returns {Date} 
      */
-    static parseDate(input) {
+    static parseDate(input, lang) {
         let number = Number(input)
         let date = !isNaN(number) ? new Date(number) : new Date(input)
         date = isNaN(date) ? null : date
@@ -1230,12 +1230,12 @@ class Util {
         if (!date) {
             let currentDate = new Date()
             let namedDates = {
-                lasthalfhour: new Date(Date.now() - 1800000),
-                lasthour: new Date(Date.now() - 3600000),
-                today: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate()),
-                yesterday: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - 1),
-                thisweek: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - currentDate.getUTCDay()),
-                lastweek: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - currentDate.getUTCDay() - 7),
+                [lang[TIME_KEYWORD_HALFHOUR]]: new Date(Date.now() - 1800000),
+                [lang[TIME_KEYWORD_LASTHOUR]]: new Date(Date.now() - 3600000),
+                [lang[TIME_KEYWORD_TODAY]]: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate()),
+                [lang[TIME_KEYWORD_YESTERDAY]]: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - 1),
+                [lang[TIME_KEYWORD_THISWEEK]]: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - currentDate.getUTCDay()),
+                [lang[TIME_KEYWORD_LASTWEEK]]: new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - currentDate.getUTCDay() - 7),
             }
             date = namedDates[input.toLowerCase().trim().replace(/ /g, "")]
         }
