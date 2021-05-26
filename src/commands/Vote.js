@@ -1,12 +1,15 @@
 const Util = require("../utils/util.js")
 const CommandBase = require("../classes/CommandBase.js")
 
+const LocalSettings = require("../localSettings.json")
+
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "vote",
             descId: "COMMAND_VOTE",
             aliases: [
+                "rate",
                 "upvote",
                 "votes"
             ]
@@ -14,9 +17,16 @@ class Command extends CommandBase {
     }
 
     async execute(options) {
+        let votes = []
+
+        LocalSettings.botsites.forEach(site => {
+            if (!site.vote && !site.rate) return;
+            votes.push(`• ${site.vote ? `[(Vote)](${site.vote}) ` : ""}${site.rate ? `[(Rate)](${site.rate}) ` : ""}${site.hostname}`)
+        })
+
         Util.sendMessage(options.message, {
             embed: {
-                description: options.lang.COMMAND_VOTE_DESC.format("• [top.gg/vote](https://top.gg/bot/759415210628087841/vote)\n• [discordbotlist.com/vote](https://discordbotlist.com/bots/server-stat/upvote)\n• [botsfordiscord.com/vote](https://botsfordiscord.com/bot/759415210628087841/vote)\n• [discordextremelist.xyz/vote](https://discordextremelist.xyz/en-US/bots/759415210628087841/upvote)"),
+                description: options.lang.COMMAND_VOTE_DESC.format(votes.join("\n")),
                 author: {
                     name: this.client.user.username,
                     icon_url: this.client.user.avatarURL({

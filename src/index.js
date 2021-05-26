@@ -142,65 +142,31 @@ function updateStats() {
     client.guilds.cache.forEach(guild => {
         users += guild.memberCount
     })
+    let servers = client.guilds.cache.size
+    let shards = 1
 
-    const apis = [
-        {
-            hostname: "top.gg",
-            path: "/api/bots/759415210628087841/stats",
-            token: process.env.TOPGGTOKEN,
-            data: JSON.stringify({
-                server_count: client.guilds.cache.size
-            })
-        },
-        {
-            hostname: "discordbotlist.com",
-            path: "/api/v1/bots/759415210628087841/stats",
-            token: process.env.BOTLISTTOKEN,
-            data: JSON.stringify({
-                guilds: client.guilds.cache.size,
-                users: users
-            })
-        },
-        {
-            hostname: "discord.bots.gg",
-            path: "/api/v1/bots/759415210628087841/stats",
-            token: process.env.BOTSGGTOKEN,
-            data: JSON.stringify({
-                guildCount: client.guilds.cache.size
-            })
-        },
-        {
-            hostname: "botsfordiscord.com",
-            path: "/api/bot/759415210628087841",
-            token: process.env.BFDTOKEN,
-            data: JSON.stringify({
-                server_count: client.guilds.cache.size
-            })
-        },
-        {
-            hostname: "api.discordextremelist.xyz",
-            path: "/v2/bot/759415210628087841/stats",
-            token: process.env.DELTOKEN,
-            data: JSON.stringify({
-                guildCount: client.guilds.cache.size
-            })
-        },
-    ]
+    LocalSettings.botsites.forEach(site => {
+        console.log("[Web] Stats sent to " + site.hostname)
 
-    apis.forEach(api => {
-        console.log("[Web] Stats sent to " + api.hostname)
+        let data = {}
+        if (site.api.countkey) data[site.api.countkey] = servers;
+        if (site.api.userskey) data[site.api.userskey] = users;
+        if (site.api.shardkey) data[site.api.shardkey] = shards;
+
+        if (Object.keys(data).length == 0) return;
+
         Util.requestAsync({
-            hostname: api.hostname,
-            path: api.path,
+            hostname: site.api.hostname ?? site.hostname,
+            path: site.api.path,
             protocol: "HTTPS",
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": api.token
+                "Authorization": process.env[site.api.token]
             },
-            data: api.data
+            data: JSON.stringify(data)
         }).then(() => {
-            console.log("[Web] Stats updated on " + api.hostname)
+            console.log("[Web] Stats updated on " + site.hostname)
         }).catch(error => {
             console.error(error)
         })

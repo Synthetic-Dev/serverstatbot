@@ -6,6 +6,84 @@
 
     ],
 
+    "botsites": [
+        {
+            "hostname": "top.gg",
+            "main": "https://top.gg/bot/759415210628087841",
+            "vote": "https://top.gg/bot/759415210628087841/vote",
+            "rate": "https://top.gg/bot/759415210628087841#reviews",
+            "api": {
+                "path": "/api/bots/759415210628087841/stats",
+                "token": "TOPGGTOKEN",
+                "countkey": "server_count",
+                "shardkey": "shard_count"
+            }
+        },
+        {
+            "hostname": "discordbotlist.com",
+            "main": "https://discordbotlist.com/bots/server-stat",
+            "vote": "https://discordbotlist.com/bots/server-stat/upvote",
+            "api": {
+                "path": "/api/v1/bots/759415210628087841/stats",
+                "token": "BOTLISTTOKEN",
+                "countkey": "guilds",
+                "userskey": "users"
+            }
+        },
+        {
+            "hostname": "discord.bots.gg",
+            "main": "https://discord.bots.gg/bots/759415210628087841",
+            "api": {
+                "path": "/api/v1/bots/759415210628087841/stats",
+                "token": "BOTSGGTOKEN",
+                "countkey": "guildCount",
+                "shardkey": "shardCount"
+            }
+        },
+        {
+            "hostname": "botsfordiscord.com",
+            "main": "https://botsfordiscord.com/bot/759415210628087841",
+            "vote": "https://botsfordiscord.com/bot/759415210628087841/vote",
+            "api": {
+                "path": "/api/bot/759415210628087841",
+                "token": "BFDTOKEN",
+                "countkey": "server_count"
+            }
+        },
+        {
+            "hostname": "discordextremelist.xyz",
+            "main": "https://discordextremelist.xyz/en-US/bots/759415210628087841",
+            "vote": "https://discordextremelist.xyz/en-US/bots/759415210628087841/upvote",
+            "api": {
+                "hostname": "api.discordextremelist.xyz",
+                "path": "/v2/bot/759415210628087841/stats",
+                "token": "DELTOKEN",
+                "countkey": "guildCount",
+                "shardkey": "shardCount"
+            }
+        },
+        {
+            "hostname": "discord.boats",
+            "main": "https://discord.boats/bot/759415210628087841",
+            "vote": "https://discord.boats/bot/759415210628087841/vote",
+            "rate": "https://discord.boats/bot/759415210628087841/rate",
+            "api": {
+                "path": "/api/bot/759415210628087841",
+                "token": "BOATSTOKEN",
+                "countkey": "server_count"
+            }
+        },
+        {
+            "hostname": "sentcord.com",
+            "main": "https://sentcord.com/bot/759415210628087841",
+            "api": {
+                "path": "/api/bot/759415210628087841",
+                "token": "SENTTOKEN",
+                "countkey": "serverCount"
+            }
+        }
+    ],
+
     "botserver": {
         "id": "797779595852120064",
         "channels": {

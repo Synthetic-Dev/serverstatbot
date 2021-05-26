@@ -1,6 +1,8 @@
 const Util = require("../utils/util.js")
 const CommandBase = require("../classes/CommandBase.js")
 
+const LocalSettings = require("../localSettings.json")
+
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
@@ -14,9 +16,15 @@ class Command extends CommandBase {
     }
 
     async execute(options) {
+        let invites = []
+
+        LocalSettings.botsites.forEach(site => {
+            invites.push(`• [${site.hostname}](${site.main})`)
+        })
+
         Util.sendMessage(options.message, {
             embed: {
-                description: options.lang.COMMAND_INVITE_DESC.format("• [top.gg](https://top.gg/bot/759415210628087841)\n• [bots.gg](https://discord.bots.gg/bots/759415210628087841)\n• [discordbotlist.com](https://discordbotlist.com/bots/server-stat)\n• [botsfordiscord.com](https://botsfordiscord.com/bot/759415210628087841)\n• [discordextremelist.xyz](https://discordextremelist.xyz/en-US/bots/759415210628087841)", options.prefix),
+                description: options.lang.COMMAND_INVITE_DESC.format(invites.join("\n"), options.prefix),
                 author: {
                     name: this.client.user.username,
                     icon_url: this.client.user.avatarURL({
