@@ -1,23 +1,29 @@
 {
   "name": "serverstat",
-  "version": "1.10c",
+  "version": "1.10c.01",
   "description": "",
+
   "main": "index.js",
+
   "engines": {
     "node": "^15.x",
     "nodemon": "^2.x"
   },
+
   "scripts": {
-    "start": "node --max-old-space-size=3000 ./src/index.js",
-    "dev": "nodemon ./src/index.js"
+    "start": "node --max-old-space-size=3000 ./src/",
+    "dev": "nodemon ./src/"
   },
+
   "keywords": [],
   "author": "",
   "license": "ISC",
+  
   "dependencies": {
     "canvas": "^2.7.0",
     "csv": "^5.5.0",
     "csv-writer": "^1.6.0",
+    "discord-buttons": "github:AngeloCore/discord-buttons",
     "discord.js": "^12.5.1",
     "donatebot-node-api": "^1.0.3",
     "dotenv": "^8.2.0",
