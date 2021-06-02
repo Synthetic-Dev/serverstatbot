@@ -143,7 +143,7 @@ class Protocol {
                         McUtilMod.statusFE01(...args).then(data => {
                             query(data)
                         }).catch(() => {query()})
-                    } else if (e.code == "ECONNREFUSED" && port != 25565) attemptBedrock()
+                    } else if ((e.code == "ECONNREFUSED" || e.message == "Failed to retrieve the status of the server") && port != 25565) attemptBedrock()
                     else resolve([false, e]);
                 })
             }
