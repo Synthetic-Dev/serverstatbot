@@ -1,59 +1,61 @@
-const Util = require("../utils/util.js")
-const CommandBase = require("../classes/CommandBase.js")
+const Discord = require("discord.js")
+
+const Util = require("../utils/Util")
+const CommandBase = require("../classes/CommandBase")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "privacy",
             descId: "COMMAND_PRIVACY",
-            aliases: [
-                "policy",
-                "privacypolicy"
-            ]
+            aliases: ["policy", "privacypolicy"],
         })
     }
 
     async execute(options) {
-        Util.sendMessage(options.message, {
-            embed: {
-                title: options.lang.COMMAND_PRIVACY_TITLE,
-                color: 5145560,
-                author: {
-                    name: this.client.user.username,
-                    icon_url: this.client.user.avatarURL({
-                        size: 64,
-                        dynamic: true,
-                        format: "png"
-                    })
+        const embed = new Discord.MessageEmbed()
+            .setTitle(options.lang.COMMAND_PRIVACY_TITLE)
+            .setDescription(options.lang.COMMAND_PRIVACY_DESC)
+            .setColor(5145560)
+            .setAuthor(
+                this.client.user.username,
+                this.client.user.avatarURL({
+                    size: 64,
+                    dynamic: true,
+                    format: "png",
+                })
+            )
+            .addFields([
+                {
+                    name: options.lang.COMMAND_PRIVACY_FIELD1,
+                    value: options.lang.COMMAND_PRIVACY_FIELD1_VAL,
                 },
-                description: options.lang.COMMAND_PRIVACY_DESC,
-                fields: [
-                    {
-                        name: options.lang.COMMAND_PRIVACY_FIELD1,
-                        value: options.lang.COMMAND_PRIVACY_FIELD1_VAL
-                    },
-                    {
-                        name: options.lang.COMMAND_PRIVACY_FIELD2,
-                        value: options.lang.COMMAND_PRIVACY_FIELD2_VAL
-                    },
-                    {
-                        name: options.lang.COMMAND_PRIVACY_FIELD3,
-                        value: options.lang.COMMAND_PRIVACY_FIELD3_VAL.format(options.prefix)
-                    },
-                    {
-                        name: options.lang.COMMAND_PRIVACY_FIELD4,
-                        value: options.lang.COMMAND_PRIVACY_FIELD4_VAL.format(options.prefix)
-                    },
-                    {
-                        name: options.lang.COMMAND_PRIVACY_FIELD5,
-                        value: options.lang.COMMAND_PRIVACY_FIELD5_VAL
-                    }
-                ],
-                timestamp: Date.now(),
-                footer: Util.getFooter(options.message)
-            }
-        }).catch(e => {
-            console.error(`Privacy[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
+                {
+                    name: options.lang.COMMAND_PRIVACY_FIELD2,
+                    value: options.lang.COMMAND_PRIVACY_FIELD2_VAL,
+                },
+                {
+                    name: options.lang.COMMAND_PRIVACY_FIELD3,
+                    value: options.lang.COMMAND_PRIVACY_FIELD3_VAL.format(
+                        options.prefix
+                    ),
+                },
+                {
+                    name: options.lang.COMMAND_PRIVACY_FIELD4,
+                    value: options.lang.COMMAND_PRIVACY_FIELD4_VAL.format(
+                        options.prefix
+                    ),
+                },
+                {
+                    name: options.lang.COMMAND_PRIVACY_FIELD5,
+                    value: options.lang.COMMAND_PRIVACY_FIELD5_VAL,
+                },
+            ])
+            .setFooter(Util.getFooter(options.message).text)
+            .setTimestamp()
+
+        Util.sendMessage(options.message, { embed: embed }).catch((e) => {
+            Util.error(e, "Privacy", "sendMessage")
         })
     }
 }

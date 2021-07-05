@@ -1,68 +1,68 @@
-const Util = require("../utils/util.js")
-const CommandBase = require("../classes/CommandBase.js")
+const Discord = require("discord.js")
+const { MessageButton, MessageActionRow } = require("discord-buttons")
+
+const Util = require("../utils/Util")
+const CommandBase = require("../classes/CommandBase")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "about",
             descId: "COMMAND_ABOUT",
-            aliases: [
-                "version",
-                "abt"
-            ]
+            aliases: ["version", "abt"],
         })
     }
 
     async execute(options) {
-        Util.sendMessage(options.message, {
-            embed: {
-                title: options.lang.COMMAND_ABOUT_TITLE,
-                color: 5145560,
-                author: {
-                    name: this.client.user.username,
-                    icon_url: this.client.user.avatarURL({
-                        size: 64,
-                        dynamic: true,
-                        format: "png"
-                    })
+        const embed = new Discord.MessageEmbed()
+            .setTitle(options.lang.COMMAND_ABOUT_TITLE)
+            .setColor(5145560)
+            .setAuthor(
+                this.client.user.username,
+                this.client.user.avatarURL({
+                    size: 64,
+                    dynamic: true,
+                    format: "png",
+                })
+            )
+            .addFields(
+                {
+                    name: options.lang.COMMAND_ABOUT_FIELD1,
+                    value: process.env.npm_package_version,
+                    inline: true,
                 },
-                fields: [
-                    {
-                        name: options.lang.COMMAND_ABOUT_FIELD1,
-                        value: process.env.npm_package_version,
-                        inline: true
-                    },
-                    {
-                        name: options.lang.COMMAND_ABOUT_FIELD2,
-                        value: "SyntheticDev",
-                        inline: true
-                    },
-                    {
-                        name: options.lang.COMMAND_ABOUT_FIELD3,
-                        value: "[mc-heads.net](https://mc-heads.net/)",
-                        inline: true
-                    },
-                    {
-                        name: options.lang.COMMAND_ABOUT_FIELD4,
-                        value: this.client.guilds.cache.size,
-                        inline: true
-                    },
-                    {
-                        name: options.lang.COMMAND_ABOUT_FIELD5,
-                        value: `[discord.js](https://discord.js.org/)`,
-                        inline: true
-                    },
-                    {
-                        name: options.lang.COMMAND_ABOUT_FIELD6,
-                        value: `[${options.lang.COMMAND_ABOUT_FIELD6_VAL}](https://discord.gg/uqVp2XzUP8)`,
-                        inline: true
-                    }
-                ],
-                timestamp: Date.now(),
-                footer: Util.getFooter(options.message)
-            }
-        }).catch(e => {
-            console.error(`About[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
+                {
+                    name: options.lang.COMMAND_ABOUT_FIELD2,
+                    value: this.client.guilds.cache.size,
+                    inline: true,
+                },
+                {
+                    name: options.lang.COMMAND_ABOUT_FIELD3,
+                    value: "SyntheticDev",
+                    inline: true,
+                }
+            )
+            .setFooter(Util.getFooter(options.message).text)
+            .setTimestamp()
+
+        let supportButton = new MessageButton()
+            .setStyle("url")
+            .setLabel(options.lang.COMMAND_ABOUT_BUTTON1)
+            .setURL("https://discord.gg/uqVp2XzUP8")
+
+        let libraryButton = new MessageButton()
+            .setStyle("url")
+            .setLabel(options.lang.COMMAND_ABOUT_BUTTON2.format("discord.js"))
+            .setURL("https://discord.js.org/")
+
+        Util.sendMessage(options.message, {
+            embed: embed,
+            component: new MessageActionRow().addComponents(
+                supportButton,
+                libraryButton
+            ),
+        }).catch((e) => {
+            Util.error(e, "About", "sendMessage")
         })
     }
 }

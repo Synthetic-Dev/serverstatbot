@@ -1,47 +1,114 @@
-const Util = require("../utils/util.js")
-const CommandBase = require("../classes/CommandBase.js")
+const Discord = require("discord.js")
+const {
+    MessageMenu,
+    MessageMenuOption,
+    MessageButton,
+    MessageActionRow,
+} = require("discord-buttons")
+
+const Util = require("../utils/Util")
+
+const CommandBase = require("../classes/CommandBase")
+const MenuInputManager = require("../classes/MenuInputManager")
 
 const LocalSettings = require("../localSettings.json")
+
+const emojis = [":blush:", ":sunglasses:", ":star_struck:", ":partying_face:"]
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "vote",
             descId: "COMMAND_VOTE",
-            aliases: [
-                "rate",
-                "upvote",
-                "votes"
-            ]
+            aliases: ["rate", "upvote", "votes"],
         })
     }
 
     async execute(options) {
-        let votes = []
+        const votes = new MessageMenu()
+            .setID("votes")
+            .setMinValues(0)
+            .setMaxValues(1)
+            .setPlaceholder("Select a site")
 
-        LocalSettings.botsites.forEach(site => {
-            if (!site.vote && !site.rate) return;
-            votes.push(`• ${site.vote ? `[(Vote)](${site.vote}) ` : ""}${site.rate ? `[(Rate)](${site.rate}) ` : ""}${site.hostname}`)
+        LocalSettings.botsites.forEach((site) => {
+            if (!site.vote && !site.rate) return
+
+            const vote = new MessageMenuOption()
+                .setValue(site.main)
+                .setLabel(site.hostname)
+
+            votes.addOption(vote)
         })
 
-        Util.sendMessage(options.message, {
-            embed: {
-                description: options.lang.COMMAND_VOTE_DESC.format(votes.join("\n")),
-                author: {
-                    name: this.client.user.username,
-                    icon_url: this.client.user.avatarURL({
-                        size: 64,
-                        dynamic: true,
-                        format: "png"
+        const embed = new Discord.MessageEmbed()
+            .setDescription(options.lang.COMMAND_VOTE_DESC)
+            .setColor(5145560)
+            .setAuthor(
+                this.client.user.username,
+                this.client.user.avatarURL({
+                    size: 64,
+                    dynamic: true,
+                    format: "png",
+                })
+            )
+
+        Util.sendMessage(options.message, embed, votes)
+            .then((message) => {
+                let component
+
+                const filter = (menu) =>
+                    menu.clicker.user.id == options.author.id
+                const manager = new MenuInputManager(message, filter)
+                    .start()
+                    .on("input", (menu) => {
+                        let sites = LocalSettings.botsites.filter(
+                            (s) => s.main == menu.values[0]
+                        )
+                        if (sites.length == 0) return menu.reply.defer()
+                        let site = sites.shift()
+
+                        const row = new MessageActionRow()
+
+                        if (site.vote) {
+                            row.addComponent(
+                                new MessageButton()
+                                    .setStyle("url")
+                                    .setLabel("Vote")
+                                    .setURL(site.main)
+                            )
+                        }
+
+                        if (site.rate) {
+                            row.addComponent(
+                                new MessageButton()
+                                    .setStyle("url")
+                                    .setLabel("Rate")
+                                    .setURL(site.rate)
+                            )
+                        }
+
+                        const opts = {
+                            ephemeral: true,
+                            components: row,
+                        }
+                        const emoji =
+                            emojis[
+                                Math.round(Math.random() * (emojis.length - 1))
+                            ]
+
+                        if (component) {
+                            component.reply.edit(emoji, opts)
+                            menu.reply.defer()
+                        } else {
+                            component = menu
+                            component.reply.send(emoji, opts)
+                        }
                     })
-                },
-                color: 5145560,
-                timestamp: Date.now(),
-                footer: Util.getFooter(options.message)
-            }
-        }).catch(e => {
-            console.error(`Vote[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
-        })
+            })
+            .catch((e) => {
+                Util.error(e, "Vote", "sendMessage")
+            })
     }
 }
 

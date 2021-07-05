@@ -1,14 +1,12 @@
-const CommandBase = require("../classes/CommandBase.js")
+const CommandBase = require("../classes/CommandBase")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "stop",
             descId: "COMMAND_DEV_STOP",
-            perms: [
-                "DEV"
-            ],
-            private: true
+            perms: ["DEV"],
+            private: true,
         })
     }
 

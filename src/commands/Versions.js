@@ -1,29 +1,32 @@
-const Util = require("../utils/util.js")
-const Protocol = require("../utils/protocol.js")
-const CommandBase = require("../classes/CommandBase.js")
+const Discord = require("discord.js")
+
+const Util = require("../utils/Util")
+const Protocol = require("../utils/Protocol")
+const CommandBase = require("../classes/CommandBase")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "versions",
             descId: "COMMAND_VERSIONS",
-            aliases: [
-                "vers"
-            ]
+            aliases: ["vers"],
         })
     }
 
     async execute(options) {
-        Util.sendMessage(options.message, {
-            embed: {
-                title: options.lang.COMMAND_VERSIONS_TITLE,
-                description: options.lang.COMMAND_VERSIONS_DESC.format(Protocol.getMinSupportedVersion()),
-                color: 5145560,
-                timestamp: Date.now(),
-                footer: Util.getFooter(options.message)
-            }
-        }).catch(e => {
-            console.error(`Versions[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
+        const embed = new Discord.MessageEmbed()
+            .setTitle(options.lang.COMMAND_VERSIONS_TITLE)
+            .setDescription(
+                options.lang.COMMAND_VERSIONS_DESC.format(
+                    Protocol.getMinSupportedVersion()
+                )
+            )
+            .setColor(5145560)
+            .setFooter(Util.getFooter(options.message).text)
+            .setTimestamp()
+
+        Util.sendMessage(options.message, { embed: embed }).catch((e) => {
+            Util.error(e, "Versions", "sendMessage")
         })
     }
 }

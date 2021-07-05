@@ -1,29 +1,34 @@
-const Util = require("../utils/util.js")
-const CommandBase = require("../classes/CommandBase.js")
+const Util = require("../utils/Util")
+const CommandBase = require("../classes/CommandBase")
 
 class Command extends CommandBase {
     constructor(client) {
         super(client, {
             name: "setprefix",
             descId: "COMMAND_SETPREFIX",
-            aliases: [
-                "prefix"
+            aliases: ["prefix"],
+            args: [
+                {
+                    name: "prefix",
+                },
             ],
-            args: [{
-                name: "prefix"
-            }],
-            perms: [
-                "MANAGE_MESSAGES"
-            ]
+            perms: ["MANAGE_MESSAGES"],
         })
     }
 
     async execute(options) {
-        if (options.inputs[0].length > 3) return Util.replyError(options.message, options.lang.COMMAND_SETPREFIX_LIMIT)
+        if (options.inputs[0].length > 3)
+            return Util.replyError(
+                options.message,
+                options.lang.COMMAND_SETPREFIX_LIMIT
+            )
 
         options.settings.set("prefix", options.inputs[0], "Prefix")
-        Util.replyMessage(options.message, options.lang.COMMAND_SETPREFIX_CONTENT.format(options.inputs[0])).catch(e => {
-            console.error(`SetPrefix[replyMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
+        Util.replyMessage(
+            options.message,
+            options.lang.COMMAND_SETPREFIX_CONTENT.format(options.inputs[0])
+        ).catch((e) => {
+            Util.error(e, "SetPrefix", "replyMessage")
         })
     }
 }

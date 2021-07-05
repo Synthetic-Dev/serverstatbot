@@ -1,12 +1,13 @@
 const Crypto = require("crypto")
 const Canvas = require("canvas")
+const Discord = require("discord.js")
 
-const Util = require("../utils/util.js")
-const Protocol = require("../utils/protocol.js")
-const Mojang = require("../utils/mojang.js")
-const ImageManager = require("../utils/managers/imageManager.js")
+const Util = require("../utils/Util")
+const Protocol = require("../utils/Protocol")
+const Mojang = require("../utils/Mojang")
+const ImageManager = require("../classes/ImageManager")
 
-const CommandBase = require("../classes/CommandBase.js")
+const CommandBase = require("../classes/CommandBase")
 
 const LocalSettings = require("../localSettings.json")
 
@@ -18,184 +19,256 @@ class Command extends CommandBase {
         super(client, {
             name: "status",
             descId: "COMMAND_STATUS",
-            aliases: [
-                "info",
-                "serverinfo"
-            ],
-            tags: [
-                "CAN_DISABLE"
-            ]
+            aliases: ["info", "serverinfo"],
+            tags: ["CAN_DISABLE"],
         })
     }
 
     displayInfo(options, displayOptions, additionals) {
-        Util.startTyping(options.message).catch(e => {
-            console.error(`Status[startTyping]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
+        Util.startTyping(options.message).catch((e) => {
+            Util.error(e, "Status", "startTyping")
         })
 
-        Protocol.getInfo(displayOptions.ip, displayOptions.port, displayOptions.queryPort).then(data => {
-            Util.stopTyping(options.message)
+        Protocol.getInfo(
+            displayOptions.ip,
+            displayOptions.port,
+            displayOptions.queryPort
+        )
+            .then((data) => {
+                Util.stopTyping(options.message)
 
-            if (data.online) {
-                let fields = [
-                    {
-                        name: options.lang.COMMAND_STATUS_FIELD1,
-                        value: data.version.minecraft ?? options.lang.NOT_PROVIDED
-                    },
-                    {
-                        name: options.lang.COMMAND_STATUS_FIELD2,
-                        value: (data.bedrock ? options.lang.BEDROCK : (data.modded ? options.lang.MODS.format(data.mods.modList.length) : options.lang.VANILLA)) + (data.plugins && data.plugins.length > 0 ? " " + options.lang.PLUGINS.format(data.plugins.length) : "")
+                if (data.online) {
+                    let fields = [
+                        {
+                            name: options.lang.COMMAND_STATUS_FIELD1,
+                            value:
+                                data.version.minecraft ??
+                                options.lang.NOT_PROVIDED,
+                        },
+                        {
+                            name: options.lang.COMMAND_STATUS_FIELD2,
+                            value:
+                                (data.bedrock
+                                    ? options.lang.BEDROCK
+                                    : data.modded
+                                    ? options.lang.MODS.format(
+                                          data.mods.modList.length
+                                      )
+                                    : options.lang.VANILLA) +
+                                (data.plugins && data.plugins.length > 0
+                                    ? " " +
+                                      options.lang.PLUGINS.format(
+                                          data.plugins.length
+                                      )
+                                    : ""),
+                        },
+                    ]
+
+                    if (data.levelName) {
+                        fields.unshift({
+                            name: options.lang.COMMAND_STATUS_FIELD3,
+                            value: data.levelName,
+                        })
                     }
-                ]
 
-                if (data.levelName) {
-                    fields.unshift({
-                        name: options.lang.COMMAND_STATUS_FIELD3,
-                        value: data.levelName
-                    })
-                }
-
-                if (additionals) {
-                    additionals(data, fields)
-                }
-
-                let content = {
-                    embed: {
-                        title: options.lang.COMMAND_STATUS_TITLE.format(data.bedrock ? `(${options.lang.BEDROCK})` : `(${options.lang.JAVA})`),
-                        description: options.lang.COMMAND_STATUS_DESC.format(
-                            displayOptions.ip + ([19132, 25565].includes(displayOptions.port) ? "" : `:${displayOptions.port}`),
-                            data.latency > 0 ? `\n${options.lang.SERVER_LATENCY.format(data.latency)}` : "",
-                            data.players.online, data.players.max,
-                            data.gameMode ? `\n${options.lang.SERVER_GAMEMODE.format(data.gameMode)}` : (data.gameType ? `\n${options.lang.SERVER_GAMETYPE.format(data.gameType)}` : ""),
-                            data.serverID ? `\n${options.lang.SERVER_SEED.format(data.serverID)}` : ""
-                        ),
-                        color: 5145560,
-                        fields: fields,
-                        timestamp: Date.now()
+                    if (additionals) {
+                        additionals(data, fields)
                     }
-                }
 
-                let hash = Crypto.createHash("md5")
-                hash.update(data.motd.raw)
-                const motdKey = hash.digest("hex")
+                    const embed = new Discord.MessageEmbed()
+                        .setTitle(
+                            options.lang.COMMAND_STATUS_TITLE.format(
+                                data.bedrock
+                                    ? `(${options.lang.BEDROCK})`
+                                    : `(${options.lang.JAVA})`
+                            )
+                        )
+                        .setDescription(
+                            options.lang.COMMAND_STATUS_DESC.format(
+                                displayOptions.ip +
+                                    ([19132, 25565].includes(
+                                        displayOptions.port
+                                    )
+                                        ? ""
+                                        : `:${displayOptions.port}`),
+                                data.latency > 0
+                                    ? `\n${options.lang.SERVER_LATENCY.format(
+                                          data.latency
+                                      )}`
+                                    : "",
+                                data.players.online,
+                                data.players.max,
+                                data.gameMode
+                                    ? `\n${options.lang.SERVER_GAMEMODE.format(
+                                          data.gameMode
+                                      )}`
+                                    : data.gameType
+                                    ? `\n${options.lang.SERVER_GAMETYPE.format(
+                                          data.gameType
+                                      )}`
+                                    : "",
+                                data.serverID
+                                    ? `\n${options.lang.SERVER_SEED.format(
+                                          data.serverID
+                                      )}`
+                                    : ""
+                            )
+                        )
+                        .setColor(5145560)
+                        .addFields(fields)
+                        .setTimestamp()
 
-                let motdLink = motdCache.get(motdKey)
-                if (motdLink) {
-                    motdCache.ttl(motdKey, 600)
-                } else {
-                    motdLink = "attachment://motd.png"
+                    const hash = Crypto.createHash("md5")
+                    hash.update(data.motd.raw)
+                    const motdKey = hash.digest("hex")
 
-                    let motd = Mojang.generateMOTD(data.motd.raw, 4, 10)
+                    let motdLink = motdCache.get(motdKey)
+                    if (motdLink) {
+                        motdCache.ttl(motdKey, 600)
+                    } else {
+                        motdLink = "attachment://motd.png"
 
-                    content.files = [{
-                        attachment: motd.toBuffer("image/png"),
-                        name: "motd.png"
-                    }]
-                }
+                        let motd = Mojang.generateMOTD(data.motd.raw, 4, 10)
 
-                content.embed.image = {
-                    url: motdLink
-                }
+                        embed.attachFiles([
+                            {
+                                attachment: motd.toBuffer("image/png"),
+                                name: "motd.png",
+                            },
+                        ])
+                    }
 
-                let faviconLink
-                if (data.favicon) {
-                    let hash = Crypto.createHash("md5")
-                    hash.update(data.favicon)
-                    const faviconKey = hash.digest("hex")
-                    
-                    faviconLink = faviconCache.get(faviconKey)
-                    if (faviconLink) {
-                        faviconCache.ttl(faviconKey, 3600)
+                    embed.setImage(motdLink)
 
-                        content.embed.thumbnail = {
-                            url: faviconLink
+                    //console.log(data.favicon)
+
+                    let faviconLink
+                    if (data.favicon) {
+                        const hash = Crypto.createHash("md5")
+                        hash.update(data.favicon)
+                        const faviconKey = hash.digest("hex")
+
+                        faviconLink = faviconCache.get(faviconKey)
+                        if (faviconLink) {
+                            faviconCache.ttl(faviconKey, 3600)
+
+                            embed.setThumbnail(faviconLink)
+                            return Util.sendMessage(
+                                options.message,
+                                embed
+                            ).catch((e) => {
+                                Util.error(e, "Status", "sendMessage1")
+                            })
                         }
 
-                        return Util.sendMessage(options.message, content).catch(e => {
-                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
-                        })
-                    }
+                        faviconLink = "attachment://favicon.png"
 
-                    faviconLink = "attachment://favicon.png"
+                        let image = Canvas.createCanvas(64, 64)
+                        let context = image.getContext("2d")
+                        context.imageSmoothingEnabled = false
 
-                    let image = Canvas.createCanvas(64, 64)
-                    let context = image.getContext("2d")
-                    context.imageSmoothingEnabled = false
+                        let favicon = new Canvas.Image()
+                        favicon.onload = () => {
+                            context.drawImage(favicon, 0, 0, 64, 64)
 
-                    let favicon = new Canvas.Image()
-                    favicon.onload = () => {
-                        context.drawImage(favicon, 0, 0, 64, 64)
-
-                        content.files.push({
-                            attachment: image.toBuffer("image/png"),
-                            name: "favicon.png"
-                        })
-                        content.embed.thumbnail = {
-                            url: faviconLink
+                            embed.attachFiles([
+                                {
+                                    attachment: image.toBuffer("image/png"),
+                                    name: "favicon.png",
+                                },
+                            ])
+                            embed.setThumbnail(faviconLink)
+                            Util.sendMessage(options.message, embed).catch(
+                                (e) => {
+                                    Util.error(e, "Status", "sendMessage2")
+                                }
+                            )
                         }
+                        favicon.onerror = () => {
+                            Util.sendMessage(options.message, embed).catch(
+                                (e) => {
+                                    Util.error(e, "Status", "sendMessage3")
+                                }
+                            )
+                        }
+                        favicon.src = data.favicon
+                    } else {
+                        if (data.bedrock)
+                            faviconLink = LocalSettings.images.textures.bedrock
+                        else faviconLink = LocalSettings.images.textures.grass
 
-                        Util.sendMessage(options.message, content).catch(e => {
-                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
+                        embed.setThumbnail(faviconLink)
+                        Util.sendMessage(options.message, embed).catch((e) => {
+                            Util.error(e, "Status", "sendMessage4")
                         })
                     }
-                    favicon.onerror = () => {
-                        Util.sendMessage(options.message, content).catch(e => {
-                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
-                        })
-                    }
-                    favicon.src = data.favicon
                 } else {
-                    if (data.bedrock) faviconLink = LocalSettings.images.textures.bedrock;
-                    else faviconLink = LocalSettings.images.textures.grass;
+                    let error = data.error
+                    let errorText
 
-                    content.embed.thumbnail = {
-                        url: faviconLink
+                    switch (Protocol.getErrorType(error)) {
+                        case "offline":
+                            const embed = new Discord.MessageEmbed()
+                                .setTitle(
+                                    options.lang.COMMAND_STATUS_TITLE.format(
+                                        ""
+                                    ).trim()
+                                )
+                                .setDescription(
+                                    options.lang.COMMAND_STATUS_FAIL_DESC.format(
+                                        displayOptions.ip,
+                                        displayOptions.port,
+                                        error.message.includes(
+                                            "Failed to query server"
+                                        )
+                                            ? "\n" +
+                                                  options.lang.SERVER_IFONLINE
+                                            : ""
+                                    )
+                                )
+                                .setColor(5145560)
+                                .setTimestamp()
+
+                            Util.sendMessage(options.message, {
+                                embed: embed,
+                            }).catch((e) => {
+                                Util.error(e, "Status", "sendMessage5")
+                            })
+                            break
+                        case "notfound":
+                            errorText = options.lang.SERVER_COULDNOTFIND
+                            break
+                        case "badport":
+                            errorText = options.lang.SERVER_WRONGPORT
+                            break
+                        case "blocked":
+                            errorText = options.lang.SERVER_BLOCKED
+                            break
+                        default:
+                            errorText = options.lang.SERVER_ERROR
+                            console.error(
+                                `Status[error]: ${error.toString()};\n${
+                                    error.method
+                                } at ${error.path}`
+                            )
                     }
 
-                    Util.sendMessage(options.message, content).catch(e => {
-                        console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
-                    })
+                    if (errorText) Util.replyError(options.message, errorText)
                 }
-            } else {
-                let error = data.error
-                let errorText
-
-                switch(Protocol.getErrorType(error)) {
-                    case "offline":
-                        Util.sendMessage(options.message, {
-                            embed: {
-                                title: options.lang.COMMAND_STATUS_TITLE.format("").trim(),
-                                description: options.lang.COMMAND_STATUS_FAIL_DESC.format(
-                                    displayOptions.ip, displayOptions.port,
-                                    error.message.includes("Failed to query server") ? "\n" + options.lang.SERVER_IFONLINE : ""
-                                ),
-                                color: 5145560,
-                                timestamp: Date.now()
-                            }
-                        }).catch(e => {
-                            console.error(`Status[sendMessage]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
-                        })
-                        break
-                    case "notfound": errorText = options.lang.SERVER_COULDNOTFIND; break;
-                    case "badport": errorText = options.lang.SERVER_WRONGPORT; break;
-                    case "blocked": errorText = options.lang.SERVER_BLOCKED; break;
-                    default:
-                        errorText = options.lang.SERVER_ERROR
-                        console.error(`Status[error]: ${error.toString()};\n${error.method} at ${error.path}`)
-                }
-
-                if (errorText) Util.replyError(options.message, errorText);
-            }
-        }).catch(e => {
-            console.error(e)
-            console.error(`Status[getInfo]: ${e.toString()};\n${e.message}${e.method ? `::${e.method}` : ""} at ${e.path ? `${e.path} ` : ""}${e.lineNumber ? `line ${e.lineNumber}` : ""}`)
-        })
+            })
+            .catch((e) => {
+                Util.error(e, "Status", "getInfo")
+            })
     }
 
     async execute(options) {
         const serverData = await options.settings.get("server")
 
-        this.displayInfo(options, {ip: serverData.Ip, port: serverData.Port, queryPort: serverData.QueryPort})
+        this.displayInfo(options, {
+            ip: serverData.Ip,
+            port: serverData.Port,
+            queryPort: serverData.QueryPort,
+        })
     }
 }
 
